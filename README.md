@@ -47,7 +47,7 @@ impl Program for MyProgram {
         let chunks = Layout::vertical([
             Constraint::Length(3),
             Constraint::Length(1),
-        ]).split(area.inner_centered(20, 4));
+        ]).split(area.inner_centered(31, 4));
         if ctx.left_clicked(&chunks[1]) {
             self.should_quit = true;
             return;
@@ -58,7 +58,7 @@ impl Program for MyProgram {
             Style::default()
         };
         Block::bordered().style(block_style).render(chunks[0], buf);
-        Label::styled("Hover Me!", block_style).render(chunks[0].inner(), buf);
+        Label::styled("Hover Me!", block_style).render(chunks[0].inner(Margin::new(1, 1)), buf);
         Label::styled(
             "press [q] or click here to quit", 
             Style::default().fg(Color::DarkGray),
