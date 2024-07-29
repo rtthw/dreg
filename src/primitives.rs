@@ -260,7 +260,7 @@ impl Rect {
 }
 
 impl Rect {
-    pub fn split_h(&self, portion: f32) -> (Self, Self) {
+    pub fn split_h_portion(&self, portion: f32) -> (Self, Self) {
         let width_a = (self.width as f32 * portion).floor() as u16;
         let width_b = self.width - width_a;
         (
@@ -269,7 +269,7 @@ impl Rect {
         )
     }
 
-    pub fn split_v(&self, portion: f32) -> (Self, Self) {
+    pub fn split_v_portion(&self, portion: f32) -> (Self, Self) {
         let height_a = (self.height as f32 * portion).floor() as u16;
         let height_b = self.height - height_a;
         (
@@ -277,6 +277,31 @@ impl Rect {
             Rect::new(self.x, self.y + height_a, self.width, height_b),
         )
     }
+
+    pub fn split_h_len(&self, length: u16) -> (Self, Self) {
+        if length >= self.width {
+            return (*self, Rect::ZERO);
+        }
+        (
+            Rect::new(self.x, self.y, length, self.height),
+            Rect::new(self.x + length, self.y, self.width - length, self.height),
+        )
+    }
+
+    pub fn split_v_len(&self, length: u16) -> (Self, Self) {
+        if length >= self.height {
+            return (*self, Rect::ZERO);
+        }
+        (
+            Rect::new(self.x, self.y, self.width, length),
+            Rect::new(self.x, self.y + length, self.width, self.height - length),
+        )
+    }
+
+    // pub fn split_h<const N: usize>(&self, portions: [u16; N]) -> [Self; N] {
+    //     if portions.len() > self.width as usize {
+    //     }
+    // }
 
     pub fn inner_centered(&self, width: u16, height: u16) -> Self {
         let x = self.x + (self.width.saturating_sub(width) / 2);
@@ -379,3 +404,19 @@ impl Offset {
 
 
 // ================================================================================================
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn splitting() {
+        let test_rect = Rect::new(0, 0, 7, 11);
+
+        assert_eq!(test_rect.split_h_len(3), (Rect::new(0, 0, 3, 11), Rect::new(3, 0, 4, 11)));
+        assert_eq!(test_rect.split_h_len(8), (Rect::new(0, 0, 7, 11), Rect::new(0, 0, 0, 0)));
+        assert_eq!(test_rect.split_v_len(7), (Rect::new(0, 0, 7, 7), Rect::new(0, 7, 7, 4)));
+        assert_eq!(test_rect.split_v_len(12), (Rect::new(0, 0, 7, 11), Rect::new(0, 0, 0, 0)));
+    }
+}
