@@ -41,28 +41,27 @@ impl Program for MyProgram {
                 Input::KeyDown(KeyCode::Char('q'), _) => {
                     self.should_quit = true;
                 }
-              _ => {}
+                _ => {}
             }
         }
-        let chunks = Layout::vertical([
-            Constraint::Length(3),
-            Constraint::Length(1),
-        ]).split(area.inner_centered(31, 4));
-        if ctx.left_clicked(&chunks[1]) {
+        let (top_area, bottom_area) = area
+            .inner_centered(31, 4)
+            .split_v(0.75);
+        if ctx.left_clicked(&top_area) {
             self.should_quit = true;
             return;
         }
-        let block_style = if ctx.hovered(&chunks[0]) {
+        let block_style = if ctx.hovered(&top_area) {
             Style::default().fg(Color::Green)
         } else {
             Style::default()
         };
-        Block::bordered().style(block_style).render(chunks[0], buf);
-        Label::styled("Hover Me!", block_style).render(chunks[0].inner(Margin::new(1, 1)), buf);
+        Block::bordered().style(block_style).render(top_area, buf);
+        Label::styled("Hover Me!", block_style).render(top_area.inner(Margin::new(1, 1)), buf);
         Label::styled(
             "press [q] or click here to quit", 
             Style::default().fg(Color::DarkGray),
-        ).render(chunks[1], buf);
+        ).render(bottom_area, buf);
     }
 }
 

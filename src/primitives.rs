@@ -260,6 +260,24 @@ impl Rect {
 }
 
 impl Rect {
+    pub fn split_h(&self, portion: f32) -> (Self, Self) {
+        let width_a = (self.width as f32 * portion).floor() as u16;
+        let width_b = self.width - width_a;
+        (
+            Rect::new(self.x, self.y, width_a, self.height),
+            Rect::new(self.x + width_a, self.y, width_b, self.height),
+        )
+    }
+
+    pub fn split_v(&self, portion: f32) -> (Self, Self) {
+        let height_a = (self.height as f32 * portion).floor() as u16;
+        let height_b = self.height - height_a;
+        (
+            Rect::new(self.x, self.y, self.width, height_a),
+            Rect::new(self.x, self.y + height_a, self.width, height_b),
+        )
+    }
+
     pub fn inner_centered(&self, width: u16, height: u16) -> Self {
         let x = self.x + (self.width.saturating_sub(width) / 2);
         let y = self.y + (self.height.saturating_sub(height) / 2);

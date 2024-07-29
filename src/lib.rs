@@ -37,7 +37,6 @@ pub mod block;
 pub mod buffer;
 pub mod ctx;
 pub mod label;
-pub mod layout;
 pub mod primitives;
 pub mod style;
 pub mod terminal;
@@ -54,7 +53,6 @@ pub mod prelude {
         buffer::{Buffer, Cell},
         ctx::{Context, Input, KeyCode, KeyModifiers},
         label::Label,
-        layout::{Constraint, Flex, Layout},
         primitives::{Margin, Offset, Padding, Pos, Rect},
         style::{Color, Modifier, Style},
         terminal::{Element, Frame, Program, Terminal, TerminalSettings},

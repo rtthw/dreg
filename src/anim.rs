@@ -273,8 +273,6 @@ pub enum CellFilter {
     NoneOf(Vec<CellFilter>),
     /// Negates the given filter
     Not(Box<CellFilter>),
-    /// Selects cells within the specified layout, denoted by the index
-    Layout(Layout, u16),
     /// Selects cells by predicate function
     PositionFn(Rc<RefCell<dyn Fn(Pos) -> bool>>),
 }
@@ -315,7 +313,6 @@ impl CellSelector {
             CellFilter::Not(m)               => Self::resolve_area(area, m.as_ref()),
             CellFilter::FgColor(_)           => area,
             CellFilter::BgColor(_)           => area,
-            CellFilter::Layout(layout, idx)  => layout.split(area)[*idx as usize],
             CellFilter::PositionFn(_)        => area,
         }
     }
@@ -330,7 +327,6 @@ impl CellSelector {
     fn valid_position(&self, pos: Pos, mode: &CellFilter) -> bool {
         match mode {
             CellFilter::All           => self.inner_area.contains(pos),
-            CellFilter::Layout(_, _)  => self.inner_area.contains(pos),
             CellFilter::Inner(_)      => self.inner_area.contains(pos),
             CellFilter::Outer(_)      => !self.inner_area.contains(pos),
             CellFilter::Text          => self.inner_area.contains(pos),
