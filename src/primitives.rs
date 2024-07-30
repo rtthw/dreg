@@ -298,6 +298,44 @@ impl Rect {
         )
     }
 
+    pub fn hsplit_inverse_portion(&self, portion: f32) -> (Self, Self) {
+        let width_a = (self.width as f32 * portion).floor() as u16;
+        let width_b = self.width - width_a;
+        (
+            Rect::new(self.x, self.y, width_a, self.height),
+            Rect::new(self.x + width_a, self.y, width_b, self.height),
+        )
+    }
+
+    pub fn vsplit_inverse_portion(&self, portion: f32) -> (Self, Self) {
+        let height_a = (self.height as f32 * portion).floor() as u16;
+        let height_b = self.height - height_a;
+        (
+            Rect::new(self.x, self.y, self.width, height_a),
+            Rect::new(self.x, self.y + height_a, self.width, height_b),
+        )
+    }
+
+    pub fn hsplit_inverse_len(&self, length: u16) -> (Self, Self) {
+        if length >= self.width {
+            return (Rect::ZERO, *self);
+        }
+        (
+            Rect::new(self.x + length, self.y, self.width - length, self.height),
+            Rect::new(self.x, self.y, length, self.height),
+        )
+    }
+
+    pub fn vsplit_inverse_len(&self, length: u16) -> (Self, Self) {
+        if length >= self.height {
+            return (Rect::ZERO, *self);
+        }
+        (
+            Rect::new(self.x, self.y + length, self.width, self.height - length),
+            Rect::new(self.x, self.y, self.width, length),
+        )
+    }
+
     // pub fn split_h<const N: usize>(&self, portions: [u16; N]) -> [Self; N] {
     //     if portions.len() > self.width as usize {
     //     }
