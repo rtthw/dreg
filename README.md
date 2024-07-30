@@ -46,7 +46,7 @@ impl Program for MyProgram {
         }
         let (top_area, bottom_area) = area
             .inner_centered(31, 4)
-            .split_v_len(3);
+            .vsplit_len(3);
         if ctx.left_clicked(&top_area) {
             self.should_quit = true;
             return;

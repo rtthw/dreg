@@ -260,7 +260,7 @@ impl Rect {
 }
 
 impl Rect {
-    pub fn split_h_portion(&self, portion: f32) -> (Self, Self) {
+    pub fn hsplit_portion(&self, portion: f32) -> (Self, Self) {
         let width_a = (self.width as f32 * portion).floor() as u16;
         let width_b = self.width - width_a;
         (
@@ -269,7 +269,7 @@ impl Rect {
         )
     }
 
-    pub fn split_v_portion(&self, portion: f32) -> (Self, Self) {
+    pub fn vsplit_portion(&self, portion: f32) -> (Self, Self) {
         let height_a = (self.height as f32 * portion).floor() as u16;
         let height_b = self.height - height_a;
         (
@@ -278,7 +278,7 @@ impl Rect {
         )
     }
 
-    pub fn split_h_len(&self, length: u16) -> (Self, Self) {
+    pub fn hsplit_len(&self, length: u16) -> (Self, Self) {
         if length >= self.width {
             return (*self, Rect::ZERO);
         }
@@ -288,7 +288,7 @@ impl Rect {
         )
     }
 
-    pub fn split_v_len(&self, length: u16) -> (Self, Self) {
+    pub fn vsplit_len(&self, length: u16) -> (Self, Self) {
         if length >= self.height {
             return (*self, Rect::ZERO);
         }
@@ -302,8 +302,8 @@ impl Rect {
         let width_a = (self.width as f32 * portion).floor() as u16;
         let width_b = self.width - width_a;
         (
-            Rect::new(self.x, self.y, width_a, self.height),
-            Rect::new(self.x + width_a, self.y, width_b, self.height),
+            Rect::new(self.x + width_b, self.y, width_a, self.height),
+            Rect::new(self.x, self.y, width_b, self.height),
         )
     }
 
@@ -311,8 +311,8 @@ impl Rect {
         let height_a = (self.height as f32 * portion).floor() as u16;
         let height_b = self.height - height_a;
         (
-            Rect::new(self.x, self.y, self.width, height_a),
-            Rect::new(self.x, self.y + height_a, self.width, height_b),
+            Rect::new(self.x, self.y + height_b, self.width, height_a),
+            Rect::new(self.x, self.y, self.width, height_b),
         )
     }
 
@@ -321,8 +321,8 @@ impl Rect {
             return (Rect::ZERO, *self);
         }
         (
-            Rect::new(self.x + length, self.y, self.width - length, self.height),
-            Rect::new(self.x, self.y, length, self.height),
+            Rect::new(self.width - length, self.y, length, self.height),
+            Rect::new(self.x, self.y, self.width - length, self.height),
         )
     }
 
@@ -331,8 +331,8 @@ impl Rect {
             return (Rect::ZERO, *self);
         }
         (
-            Rect::new(self.x, self.y + length, self.width, self.height - length),
-            Rect::new(self.x, self.y, self.width, length),
+            Rect::new(self.x, self.height - length, self.width, length),
+            Rect::new(self.x, self.y, self.width, self.height - length),
         )
     }
 
@@ -449,12 +449,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn splitting() {
-        let test_rect = Rect::new(0, 0, 7, 11);
+    fn rect_splitting() {
+        let test_rect = Rect::new(0, 0, 10, 20);
 
-        assert_eq!(test_rect.split_h_len(3), (Rect::new(0, 0, 3, 11), Rect::new(3, 0, 4, 11)));
-        assert_eq!(test_rect.split_h_len(8), (Rect::new(0, 0, 7, 11), Rect::new(0, 0, 0, 0)));
-        assert_eq!(test_rect.split_v_len(7), (Rect::new(0, 0, 7, 7), Rect::new(0, 7, 7, 4)));
-        assert_eq!(test_rect.split_v_len(12), (Rect::new(0, 0, 7, 11), Rect::new(0, 0, 0, 0)));
+        assert_eq!(test_rect.hsplit_len(3), (Rect::new(0, 0, 3, 20), Rect::new(3, 0, 7, 20)));
+        assert_eq!(test_rect.hsplit_len(11), (Rect::new(0, 0, 10, 20), Rect::new(0, 0, 0, 0)));
+        assert_eq!(test_rect.vsplit_len(7), (Rect::new(0, 0, 10, 7), Rect::new(0, 7, 10, 13)));
+        assert_eq!(test_rect.vsplit_len(22), (Rect::new(0, 0, 10, 20), Rect::new(0, 0, 0, 0)));
+
+        assert_eq!(
+            test_rect.hsplit_inverse_len(3), 
+            (Rect::new(7, 0, 3, 20), Rect::new(0, 0, 7, 20)),
+        );
     }
 }
