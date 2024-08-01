@@ -31,7 +31,7 @@ fn main() {
 }
 
 struct MyProgram {
-    should_quit: false,
+    should_quit: bool,
 }
 
 impl Program for MyProgram {
@@ -56,8 +56,10 @@ impl Program for MyProgram {
         } else {
             Style::default()
         };
-        Block::bordered().style(block_style).render(top_area, buf);
-        Label::styled("Hover Me!", block_style).render(top_area.inner(Margin::new(1, 1)), buf);
+        Block::bordered().style(block_style)
+            .render(top_area, buf);
+        Label::styled("Hover Me!", block_style)
+            .render(top_area.inner(Margin::new(1, 1)), buf);
         Label::styled(
             "press [q] or click here to quit", 
             Style::default().fg(Color::DarkGray),
