@@ -111,6 +111,7 @@ impl Context {
 #[derive(Clone, Copy)]
 pub enum Input {
     KeyDown(KeyCode, KeyModifiers),
+    KeyUp(KeyCode, KeyModifiers),
 
     MouseMove(Pos, KeyModifiers),
     MouseDown(Pos, MouseButton),
@@ -135,6 +136,7 @@ impl From<crossterm::event::Event> for Input {
                 } = event;
                 match kind {
                     crossterm::event::KeyEventKind::Press => Input::KeyDown(code, mods),
+                    crossterm::event::KeyEventKind::Release => Input::KeyUp(code, mods),
                     _ => Input::Null,
                 }
             }
