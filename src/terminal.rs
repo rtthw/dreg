@@ -297,7 +297,7 @@ impl<W: Write> Terminal<W> {
         Ok(())
     }
 
-    fn size(&self) -> std::io::Result<Rect> {
+    pub fn size(&self) -> std::io::Result<Rect> {
         let (width, height) = crossterm::terminal::size()?;
         Ok(Rect::new(0, 0, width, height))
     }
