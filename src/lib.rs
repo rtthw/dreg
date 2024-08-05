@@ -32,10 +32,11 @@
 
 #[cfg(feature = "anim")]
 pub mod anim;
-
 pub mod block;
 pub mod buffer;
 pub mod ctx;
+#[cfg(feature = "img")]
+pub mod image;
 pub mod label;
 pub mod primitives;
 pub mod style;
@@ -48,6 +49,8 @@ pub mod prelude {
         coalesce,
         dissolve,
     };
+    #[cfg(feature = "img")]
+    pub use crate::image::Image;
     pub use crate::{
         block::{Block, BorderType, Borders, Clear},
         buffer::{Buffer, Cell},
