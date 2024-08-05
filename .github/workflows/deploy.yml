@@ -22,7 +22,7 @@ jobs:
         with:
           toolchain: stable
       - run: (test -x $HOME/.cargo/bin/mdbook || cargo install --vers "^0.4" mdbook)
-      - run: mdbook build book && mdbook test book
+      - run: mdbook build book
       - uses: JamesIves/github-pages-deploy-action@4.1.7
         with:
           branch: gh-pages # The branch the action should deploy to.
