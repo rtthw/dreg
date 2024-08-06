@@ -42,6 +42,10 @@ impl Default for Context {
 }
 
 impl Context {
+    pub fn mouse_pos(&self) -> Option<Pos> {
+        self.last_mouse_pos
+    }
+
     pub fn take_last_input(&mut self) -> Option<Input> {
         self.last_input.take()
     }

@@ -57,7 +57,7 @@ pub mod prelude {
         ctx::{Context, Input, KeyCode, KeyModifiers},
         label::Label,
         primitives::{Margin, Offset, Padding, Pos, Rect},
-        style::{Color, Modifier, Style},
+        style::{Color, Modifier, ColorMode, Style},
         terminal::{Element, Frame, Program, Terminal, TerminalSettings},
     };
 }

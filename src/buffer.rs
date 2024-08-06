@@ -463,6 +463,7 @@ impl Cell {
     #[must_use]
     pub const fn style(&self) -> Style {
         Style {
+            color_mode: ColorMode::overwrite(),
             fg: Some(self.fg),
             bg: Some(self.bg),
             #[cfg(feature = "underline-color")]

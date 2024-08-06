@@ -12,17 +12,19 @@ use crate::prelude::*;
 
 
 // TODO: Different image types (other than halfblocks).
+#[derive(Clone)]
 pub enum Image {
     Halfblocks {
         data: Vec<(Color, Color)>,
         rect: Rect,
+        color_mode: ColorMode,
     },
 }
 
 impl Element for Image {
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
         match self {
-            Image::Halfblocks { data, rect } => {
+            Image::Halfblocks { data, rect, color_mode } => {
                 for (i, hb) in data.iter().enumerate() {
                     let x = i as u16 % rect.width;
                     let y = i as u16 / rect.width;
@@ -30,9 +32,13 @@ impl Element for Image {
                         continue;
                     }
         
-                    buf.get_mut(area.x + x, area.y + y)
-                        .set_fg(hb.0) // Upper
-                        .set_bg(hb.1) // Lower
+                    let cell = buf.get_mut(area.x + x, area.y + y);
+                    let style = cell.style().patch(Style::new()
+                        .fg(hb.0)
+                        .bg(hb.1)
+                        .color_mode(*color_mode));
+                    
+                    cell.set_style(style)
                         .set_char('▀');
                 }
             }
@@ -45,9 +51,23 @@ impl Image {
         Self::Halfblocks {
             data: encode_halfblocks(source, rect), 
             rect,
+            color_mode: ColorMode::overwrite(),
         }
     }
 
+    pub fn color_mode(self, color_mode: ColorMode) -> Self {
+        match self {
+            Self::Halfblocks { data, rect, .. } => {
+                Self::Halfblocks { data, rect, color_mode }
+            }
+        }
+    }
+
+    pub fn get_color_mode(&self) -> ColorMode {
+        match self {
+            Self::Halfblocks { color_mode, .. } => *color_mode,
+        }
+    }
 }
 
 fn encode_halfblocks(img: &DynamicImage, rect: Rect) -> Vec<(Color, Color)> {

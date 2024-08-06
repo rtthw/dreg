@@ -10,9 +10,10 @@ use std::{fmt, str::FromStr};
 
 
 
-#[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Style {
+    pub color_mode: ColorMode,
     pub fg: Option<Color>,
     pub bg: Option<Color>,
     #[cfg(feature = "underline-color")]
@@ -24,6 +25,7 @@ pub struct Style {
 impl Style {
     pub const fn new() -> Self {
         Self {
+            color_mode: ColorMode::overwrite(),
             fg: None,
             bg: None,
             #[cfg(feature = "underline-color")]
@@ -43,6 +45,11 @@ impl Style {
         self
     }
 
+    pub const fn color_mode(mut self, color_mode: ColorMode) -> Self {
+        self.color_mode = color_mode;
+        self
+    }
+
     pub const fn add_modifier(mut self, modifier: Modifier) -> Self {
         self.sub_modifier = self.sub_modifier.difference(modifier);
         self.add_modifier = self.add_modifier.union(modifier);
@@ -58,9 +65,133 @@ impl Style {
 
 impl Style {
     pub fn patch<S: Into<Self>>(mut self, other: S) -> Self {
-        let other = other.into();
-        self.fg = other.fg.or(self.fg);
-        self.bg = other.bg.or(self.bg);
+        let other: Style = other.into();
+        match other.color_mode {
+            ColorMode::Overwrite => {
+                self.fg = other.fg.or(self.fg);
+                self.bg = other.bg.or(self.bg);
+            }
+            ColorMode::Additive => {
+                if let Some(other_fg) = other.fg {
+                    if let Some(self_fg) = self.fg {
+                        let other_rgb = other_fg.as_rgb();
+                        let self_rgb = self_fg.as_rgb();
+
+                        // let r = ((other_rgb.0 as u16) * (self_rgb.0 as u16)).div_ceil(255) as u8;
+                        // let g = ((other_rgb.1 as u16) * (self_rgb.1 as u16)).div_ceil(255) as u8;
+                        // let b = ((other_rgb.2 as u16) * (self_rgb.2 as u16)).div_ceil(255) as u8;
+                        let r = other_rgb.0.saturating_add(self_rgb.0);
+                        let g = other_rgb.1.saturating_add(self_rgb.1);
+                        let b = other_rgb.2.saturating_add(self_rgb.2);
+
+                        self.fg = Some(Color::Rgb(r, g, b));
+                    } else {
+                        self.fg = Some(other_fg);
+                    }
+                }
+                if let Some(other_bg) = other.bg {
+                    if let Some(self_bg) = self.bg {
+                        let other_rgb = other_bg.as_rgb();
+                        let self_rgb = self_bg.as_rgb();
+                        
+                        let r = other_rgb.0.saturating_add(self_rgb.0);
+                        let g = other_rgb.1.saturating_add(self_rgb.1);
+                        let b = other_rgb.2.saturating_add(self_rgb.2);
+                        // let r = ((other_rgb.0 as u16) * (self_rgb.0 as u16)).div_ceil(255) as u8;
+                        // let g = ((other_rgb.1 as u16) * (self_rgb.1 as u16)).div_ceil(255) as u8;
+                        // let b = ((other_rgb.2 as u16) * (self_rgb.2 as u16)).div_ceil(255) as u8;
+
+                        self.bg = Some(Color::Rgb(r, g, b));
+                    } else {
+                        self.bg = Some(other_bg);
+                    }
+                }
+            }
+            ColorMode::Subtractive => {
+                if let Some(other_fg) = other.fg {
+                    if let Some(self_fg) = self.fg {
+                        let other_rgb = other_fg.as_rgb();
+                        let self_rgb = self_fg.as_rgb();
+                        let r = other_rgb.0.saturating_sub(self_rgb.0);
+                        let g = other_rgb.1.saturating_sub(self_rgb.1);
+                        let b = other_rgb.2.saturating_sub(self_rgb.2);
+
+                        self.fg = Some(Color::Rgb(r, g, b));
+                    } else {
+                        self.fg = Some(other_fg);
+                    }
+                }
+                if let Some(other_bg) = other.bg {
+                    if let Some(self_bg) = self.bg {
+                        let other_rgb = other_bg.as_rgb();
+                        let self_rgb = self_bg.as_rgb();
+                        let r = other_rgb.0.saturating_sub(self_rgb.0);
+                        let g = other_rgb.1.saturating_sub(self_rgb.1);
+                        let b = other_rgb.2.saturating_sub(self_rgb.2);
+
+                        self.bg = Some(Color::Rgb(r, g, b));
+                    } else {
+                        self.bg = Some(other_bg);
+                    }
+                }
+            }
+            ColorMode::Blend => {
+                if let Some(other_fg) = other.fg {
+                    if let Some(self_fg) = self.fg {
+                        let other_rgb = other_fg.as_rgb();
+                        let self_rgb = self_fg.as_rgb();
+                        let r = other_rgb.0.saturating_add(self_rgb.0.saturating_sub(other_rgb.0));
+                        let g = other_rgb.1.saturating_add(self_rgb.1.saturating_sub(other_rgb.1));
+                        let b = other_rgb.2.saturating_add(self_rgb.2.saturating_sub(other_rgb.2));
+
+                        self.fg = Some(Color::Rgb(r, g, b));
+                    } else {
+                        self.fg = Some(other_fg);
+                    }
+                }
+                if let Some(other_bg) = other.bg {
+                    if let Some(self_bg) = self.bg {
+                        let other_rgb = other_bg.as_rgb();
+                        let self_rgb = self_bg.as_rgb();
+                        let r = other_rgb.0.saturating_add(self_rgb.0.saturating_sub(other_rgb.0));
+                        let g = other_rgb.1.saturating_add(self_rgb.1.saturating_sub(other_rgb.1));
+                        let b = other_rgb.2.saturating_add(self_rgb.2.saturating_sub(other_rgb.2));
+
+                        self.bg = Some(Color::Rgb(r, g, b));
+                    } else {
+                        self.bg = Some(other_bg);
+                    }
+                }
+            }
+            ColorMode::Mix => {
+                if let Some(other_fg) = other.fg {
+                    if let Some(self_fg) = self.fg {
+                        let other_rgb = other_fg.as_rgb();
+                        let self_rgb = self_fg.as_rgb();
+                        let r = self_rgb.0.saturating_add(other_rgb.0.saturating_sub(self_rgb.0));
+                        let g = self_rgb.1.saturating_add(other_rgb.1.saturating_sub(self_rgb.1));
+                        let b = self_rgb.2.saturating_add(other_rgb.2.saturating_sub(self_rgb.2));
+
+                        self.fg = Some(Color::Rgb(r, g, b));
+                    } else {
+                        self.fg = Some(other_fg);
+                    }
+                }
+                if let Some(other_bg) = other.bg {
+                    if let Some(self_bg) = self.bg {
+                        let other_rgb = other_bg.as_rgb();
+                        let self_rgb = self_bg.as_rgb();
+                        let r = self_rgb.0.saturating_add(other_rgb.0.saturating_sub(self_rgb.0));
+                        let g = self_rgb.1.saturating_add(other_rgb.1.saturating_sub(self_rgb.1));
+                        let b = self_rgb.2.saturating_add(other_rgb.2.saturating_sub(self_rgb.2));
+
+                        self.bg = Some(Color::Rgb(r, g, b));
+                    } else {
+                        self.bg = Some(other_bg);
+                    }
+                }
+            }
+        }
 
         #[cfg(feature = "underline-color")]
         {
@@ -76,6 +207,49 @@ impl Style {
     }
 }
 
+
+
+// ================================================================================================
+
+
+
+/// The way in which an [`Element`] is rendered to the screen.
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
+pub enum ColorMode {
+    /// Ignore the buffer's current contents and overwrite cells with the colors provided to the 
+    /// renderer.
+    #[default]
+    Overwrite,
+    /// Add the renderer's colors to the current cells in the buffer.
+    Additive,
+    Subtractive,
+    /// Blend the renderer's colors with the current cells in the buffer. This is absolutely 
+    /// necessary for transparent images and overlays.
+    Blend,
+    Mix,
+}
+
+impl ColorMode {
+    pub const fn overwrite() -> Self {
+        Self::Overwrite
+    }
+
+    pub const fn additive() -> Self {
+        Self::Additive
+    }
+
+    pub const fn subtractive() -> Self {
+        Self::Subtractive
+    }
+
+    pub const fn blend() -> Self {
+        Self::Blend
+    }
+
+    pub const fn mix() -> Self {
+        Self::Mix
+    }
+}
 
 
 // ================================================================================================
@@ -264,6 +438,13 @@ impl Color {
         let g = (u >> 8) as u8;
         let b = u as u8;
         Self::Rgb(r, g, b)
+    }
+
+    pub fn as_rgb(&self) -> (u8, u8, u8) {
+        match self {
+            Self::Rgb(r, g, b) => (*r, *g, *b),
+            _ => (0, 0, 0),
+        }
     }
 }
 
