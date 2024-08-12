@@ -1,6 +1,10 @@
 //! Image
 
 
+#[cfg(feature = "kitty_img")]
+pub mod kitty;
+
+
 use image::{imageops::FilterType, DynamicImage};
 
 use crate::prelude::*;
@@ -18,6 +22,14 @@ pub enum Image {
         data: Vec<(Color, Color)>,
         rect: Rect,
         color_mode: ColorMode,
+    },
+    /// Adapted from: https://github.com/benjajaja/ratatui-image/blob/master/src/protocol/kitty.rs
+    #[cfg(feature = "kitty_img")]
+    Kitty {
+        state: KittyState,
+        unique_id: u8,
+        rect: Rect,
+        color_mode: ColorMode, // TODO: `ColorMode` support?
     },
 }
 
@@ -42,16 +54,29 @@ impl Element for Image {
                         .set_char('▀');
                 }
             }
+            #[cfg(feature = "kitty_img")]
+            Image::Kitty { ref mut state, unique_id, rect, .. } => {
+                // Transmit only once
+                let mut seq = match state {
+                    KittyState::TransmitAndPlace(seq) => {
+                        let seq = std::mem::take(seq);
+                        *state = KittyState::Place;
+                        Some(seq)
+                    }
+                    KittyState::Place => None,
+                };
+                kitty::render_kitty(area, *rect, buf, *unique_id, &mut seq);
+            }
         }
     }
 }
 
 impl Image {
-    pub fn new(source: &DynamicImage, rect: Rect) -> Self {
+    pub fn new_halfblocks(source: &DynamicImage, rect: Rect) -> Self {
         Self::Halfblocks {
             data: encode_halfblocks(source, rect), 
             rect,
-            color_mode: ColorMode::overwrite(),
+            color_mode: ColorMode::default(),
         }
     }
 
@@ -60,12 +85,18 @@ impl Image {
             Self::Halfblocks { data, rect, .. } => {
                 Self::Halfblocks { data, rect, color_mode }
             }
+            #[cfg(feature = "kitty_img")]
+            Self::Kitty { state, unique_id, rect, .. } => {
+                Self::Kitty { state, unique_id, rect, color_mode }
+            }
         }
     }
 
     pub fn get_color_mode(&self) -> ColorMode {
         match self {
             Self::Halfblocks { color_mode, .. } => *color_mode,
+            #[cfg(feature = "kitty_img")]
+            Self::Kitty { color_mode, .. } => *color_mode,
         }
     }
 }

@@ -51,6 +51,8 @@ pub mod prelude {
     };
     #[cfg(feature = "img")]
     pub use crate::image::Image;
+    #[cfg(all(feature = "kitty_img", feature = "kitty_img"))]
+    pub use crate::image::kitty::*;
     pub use crate::{
         block::{Block, BorderType, Borders, Clear},
         buffer::{Buffer, Cell},
