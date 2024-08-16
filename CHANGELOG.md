@@ -4,6 +4,8 @@
 
 - **CHANGE/ADDITION (BREAKING)** - [Kitty image protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/) support
 
+- **CHANGE/ADDITION (BREAKING)** - Shape elements
+
 ## 0.1.0 - 8/7/2024
 
 Initial release.

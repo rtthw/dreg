@@ -39,6 +39,7 @@ pub mod ctx;
 pub mod image;
 pub mod label;
 pub mod primitives;
+pub mod shapes;
 pub mod style;
 pub mod terminal;
 
@@ -59,6 +60,7 @@ pub mod prelude {
         ctx::{Context, Input, KeyCode, KeyModifiers},
         label::Label,
         primitives::{Margin, Offset, Padding, Pos, Rect},
+        shapes::line::{Line, LineCapping, LineDirection, LineType},
         style::{Color, Modifier, ColorMode, Style},
         terminal::{Element, Frame, Program, Terminal, TerminalSettings},
     };
