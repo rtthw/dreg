@@ -50,7 +50,7 @@ impl Context {
         self.last_input.take()
     }
 
-    pub (crate) fn handle_input(&mut self, input: Input) {
+    pub fn handle_input(&mut self, input: Input) {
         self.last_input = Some(input);
         match input {
             Input::MouseMove(pos, _mods) => {
