@@ -1,38 +1,31 @@
 [package]
 name = "dreg"
-version = "0.1.1"
+version = "1.0.0"
 authors = ["Matthew Martin"]
 edition = "2021"
 description = "A simple terminal user interface library"
 readme = "README.md"
-homepage = "https://rtthw.github.io/dreg-book"
+homepage = "https://rtthw.github.io/dreg"
 repository = "https://github.com/rtthw/dreg"
 license-file = "LICENSE"
 # keywords = [""]
 # categories = [""]
 
 
-
 [features]
-default = ["anim", "img", "kitty_img", "mouse"]
-all = ["anim", "img", "kitty_img", "mouse", "serde", "underline-color"]
-anim = ["dep:rand"]
-img = ["dep:image"]
-kitty_img = ["img", "dep:base64"]
+default = ["mouse"]
 mouse = []
-serde = []
-underline-color = []
-
 
 
 [dependencies]
-anyhow = "1.0.86"
-base64 = { version = "0.22.1", optional = true }
-bog = "0.1.0"
+anyhow = "1"
+# base64 = { version = "0.22.1", optional = true }
 bitflags = "2.6.0"
 compact_str = "0.7.1"
-crossterm = "0.27.0"
-image = { version = "0.24.9", default_features = false, features = ["jpeg"], optional = true }
-rand = { version = "0.8.5", features = ["small_rng"], optional = true }
+crossterm = "0.28"
+# image = { version = "0.24.9", default_features = false, features = [
+#     "jpeg",
+# ], optional = true }
+# rand = { version = "0.8.5", features = ["small_rng"], optional = true }
 unicode-segmentation = "1.10.1"
 unicode-width = "0.1.13"
