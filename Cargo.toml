@@ -13,19 +13,28 @@ license-file = "LICENSE"
 
 
 [features]
-default = ["mouse"]
-mouse = []
+default = ["crossterm"]
+crossterm = ["dep:dreg-crossterm"]
 
 
 [dependencies]
+dreg-core = { workspace = true }
+dreg-crossterm = { path = "crates/dreg-crossterm", optional = true }
+
 anyhow = "1"
 # base64 = { version = "0.22.1", optional = true }
 bitflags = "2.6.0"
 compact_str = "0.7.1"
-crossterm = "0.28"
 # image = { version = "0.24.9", default_features = false, features = [
 #     "jpeg",
 # ], optional = true }
 # rand = { version = "0.8.5", features = ["small_rng"], optional = true }
 unicode-segmentation = "1.10.1"
 unicode-width = "0.1.13"
+
+
+[workspace]
+members = ["crates/dreg-core", "crates/dreg-crossterm"]
+
+[workspace.dependencies]
+dreg-core = { path = "crates/dreg-core" }
