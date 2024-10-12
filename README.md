@@ -5,6 +5,7 @@
   - [Quickstart](#quickstart)
   - [Overview](#overview)
     - [Design Philosophy](#design-philosophy)
+    - [Limitations](#limitations)
   - [Acknowledgments](#acknowledgments)
   - [License](#license)
 
@@ -31,9 +32,15 @@ A simple terminal user interface library.
 
 ### Design Philosophy
 
-Dreg started out as a fork of the [`ratatui`] crate (the successor to [`tui-rs`]) after I realized how bloated it had become.
-
 The design of Dreg has been radical simplicity from the very start.
+
+### Features
+
+- Runs on anything[^1].
+
+### Limitations
+
+- No support for variable width fonts; even on platforms that do support them.
 
 ## Acknowledgments
 
@@ -50,3 +57,5 @@ The design of Dreg has been radical simplicity from the very start.
 [Docs Badge]: https://img.shields.io/docsrs/dreg?logo=rust&style=flat-square&logoColor=E05D44
 [Docs]: https://docs.rs/dreg
 [License Badge]: https://img.shields.io/crates/l/dreg?style=flat-square&color=1370D3
+
+[^1]: It's not gonna run on your toaster, but it might run on your smart fridge.
