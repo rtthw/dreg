@@ -18,6 +18,8 @@ pub struct CrosstermPlatform {
     current: usize,
 }
 
-// impl Platform for CrosstermPlatform {
-//     fn ctx(&mut self) -> &mut Context { &mut self.ctx }
-// }
+impl Platform for CrosstermPlatform {
+    fn run(self, program: impl dreg_core::Program) -> Result<()> {
+        Ok(())
+    }
+}

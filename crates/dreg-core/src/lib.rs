@@ -7,6 +7,7 @@ pub mod primitives;
 pub mod style;
 
 pub mod prelude {
+    pub use anyhow::Result;
     pub use crate::{
         buffer::{Buffer, Cell},
         primitives::Rect,
@@ -14,15 +15,28 @@ pub mod prelude {
         context::{Context, Input, Scancode},
         Frame,
         Platform,
+        Program,
+        run_program,
     };
 }
 
 use prelude::*;
 
-pub trait Platform {
-    fn ctx(&mut self) -> &mut Context;
 
+
+pub fn run_program(program: impl Program, platform: impl Platform) -> Result<()> {
+    platform.run(program)?;
+    Ok(())
+}
+
+
+
+pub trait Program {
     fn render(&mut self, render_fn: impl FnMut(&mut Frame));
+}
+
+pub trait Platform {
+    fn run(self, program: impl Program) -> Result<()>;
 }
 
 pub struct Frame<'a> {

@@ -16,7 +16,7 @@ impl Context {
                 let _repeat = self.handle_key_down(code);
             }
             Input::KeyUp(code) => {
-                let _valid = self.handle_key_up(&code);
+                let _valid_keypress = self.handle_key_up(&code);
             }
             Input::MouseMove { x, y } => {
                 self.last_mouse_pos = Some((x, y));
@@ -62,6 +62,7 @@ impl Scancode {
     /// Middle mouse button (middle click).
     pub const MMB: Self = Self(0x112);
 }
+
 
 
 #[derive(Clone, Copy)]
