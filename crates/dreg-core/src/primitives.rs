@@ -2,44 +2,11 @@
 
 
 
-#[derive(Clone, Copy)]
-pub struct Pos(pub u16, pub u16);
-
-impl Pos {
-    #[inline(always)]
-    pub const fn new(x: u16, y: u16) -> Self {
-        Self(x, y)
-    }
-
-    #[inline(always)]
-    pub const fn x(&self) -> u16 {
-        self.0
-    }
-
-    #[inline(always)]
-    pub const fn y(&self) -> u16 {
-        self.1
-    }
-
-    #[inline(always)]
-    pub const fn col(&self) -> u16 {
-        self.0
-    }
-
-    #[inline(always)]
-    pub const fn row(&self) -> u16 {
-        self.1
-    }
-}
-
-
-
 /// A rectangular area.
 ///
 /// A simple rectangle used in the computation of the layout and to give widgets a hint about the
 /// area they are supposed to render to.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Rect {
     /// The x coordinate of the top left corner of the `Rect`.
     pub x: u16,
@@ -131,16 +98,16 @@ impl Rect {
     ///
     /// If the margin is larger than the `Rect`, the returned `Rect` will have no area.
     #[must_use = "method returns the modified value"]
-    pub const fn inner(self, margin: Margin) -> Self {
-        let doubled_margin_horizontal = margin.horizontal.saturating_mul(2);
-        let doubled_margin_vertical = margin.vertical.saturating_mul(2);
+    pub const fn inner(self, margin_x: u16, margin_y: u16) -> Self {
+        let doubled_margin_horizontal = margin_x.saturating_mul(2);
+        let doubled_margin_vertical = margin_y.saturating_mul(2);
 
         if self.width < doubled_margin_horizontal || self.height < doubled_margin_vertical {
             Self::ZERO
         } else {
             Self {
-                x: self.x.saturating_add(margin.horizontal),
-                y: self.y.saturating_add(margin.vertical),
+                x: self.x.saturating_add(margin_x),
+                y: self.y.saturating_add(margin_y),
                 width: self.width.saturating_sub(doubled_margin_horizontal),
                 height: self.height.saturating_sub(doubled_margin_vertical),
             }
@@ -156,13 +123,13 @@ impl Rect {
     ///
     /// See [`Offset`] for details.
     #[must_use = "method returns the modified value"]
-    pub fn offset(self, offset: Offset) -> Self {
+    pub fn offset(self, x: i32, y: i32) -> Self {
         Self {
             x: i32::from(self.x)
-                .saturating_add(offset.x())
+                .saturating_add(x)
                 .clamp(0, i32::from(u16::MAX - self.width)) as u16,
             y: i32::from(self.y)
-                .saturating_add(offset.y())
+                .saturating_add(y)
                 .clamp(0, i32::from(u16::MAX - self.height)) as u16,
             ..self
         }
@@ -211,11 +178,11 @@ impl Rect {
     /// Returns true if the given position is inside the `Rect`.
     ///
     /// The position is considered inside the `Rect` if it is on the `Rect`'s border.
-    pub const fn contains(self, position: Pos) -> bool {
-        position.x() >= self.x
-            && position.x() < self.right()
-            && position.y() >= self.y
-            && position.y() < self.bottom()
+    pub const fn contains(self, x: u16, y: u16) -> bool {
+        x >= self.x
+            && x < self.right()
+            && y >= self.y
+            && y < self.bottom()
     }
 
     /// Clamp this `Rect` to fit inside the other `Rect`.
@@ -346,76 +313,6 @@ impl Rect {
                 Rect::new(self.left(), self.top() + row_index, self.width, self.height)
             })
             .collect()
-    }
-}
-
-
-
-#[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
-pub struct Margin {
-    pub horizontal: u16,
-    pub vertical: u16,
-}
-
-impl Margin {
-    pub const fn new(horizontal: u16, vertical: u16) -> Self {
-        Self {
-            horizontal,
-            vertical,
-        }
-    }
-}
-
-impl std::fmt::Display for Margin {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}x{}", self.horizontal, self.vertical)
-    }
-}
-
-
-
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-pub struct Padding {
-    pub l: u16,
-    pub r: u16,
-    pub t: u16,
-    pub b: u16,
-}
-
-impl Padding {
-    /// `Padding` with all fields set to `0`.
-    pub const ZERO: Self = Self {
-        l: 0,
-        r: 0,
-        t: 0,
-        b: 0,
-    };
-}
-
-
-
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-pub struct Offset(i32, i32);
-
-impl Offset {
-    #[inline(always)]
-    pub const fn x(&self) -> i32 {
-        self.0
-    }
-
-    #[inline(always)]
-    pub const fn y(&self) -> i32 {
-        self.1
-    }
-
-    #[inline(always)]
-    pub const fn col(&self) -> i32 {
-        self.0
-    }
-
-    #[inline(always)]
-    pub const fn row(&self) -> i32 {
-        self.1
     }
 }
 
