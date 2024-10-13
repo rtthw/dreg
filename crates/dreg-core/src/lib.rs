@@ -2,6 +2,7 @@
 
 
 pub mod buffer;
+pub mod context;
 pub mod primitives;
 pub mod style;
 
@@ -10,7 +11,7 @@ pub mod prelude {
         buffer::{Buffer, Cell},
         primitives::Rect,
         style::{Color, ColorMode, Modifier, Style},
-        Context,
+        context::{Context, Input, Scancode},
         Frame,
         Platform,
     };
@@ -23,8 +24,6 @@ pub trait Platform {
 
     fn render(&mut self, render_fn: impl FnMut(&mut Frame));
 }
-
-pub struct Context {}
 
 pub struct Frame<'a> {
     pub buffer: &'a mut Buffer,
