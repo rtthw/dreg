@@ -241,8 +241,8 @@ impl Buffer {
     /// Updates: `0: a, 1: コ` (double width symbol at index 1 - skip index 2)
     /// ```
     pub fn diff<'a>(&self, other: &'a Self) -> Vec<(u16, u16, &'a Cell)> {
-        let previous_buffer = &self.content;
-        let next_buffer = &other.content;
+        let prev_buf = &self.content;
+        let next_buf = &other.content;
 
         let mut updates: Vec<(u16, u16, &Cell)> = vec![];
         // Cells invalidated by drawing/replacing preceding multi-width characters:
@@ -250,15 +250,18 @@ impl Buffer {
         // Cells from the current buffer to skip due to preceding multi-width characters taking
         // their place (the skipped cells should be blank anyway), or due to per-cell-skipping:
         let mut to_skip: usize = 0;
-        for (i, (current, previous)) in next_buffer.iter().zip(previous_buffer.iter()).enumerate() {
+        for (i, (current, previous)) in next_buf.iter().zip(prev_buf.iter()).enumerate() {
             if !current.skip && (current != previous || invalidated > 0) && to_skip == 0 {
                 let (x, y) = self.pos_of(i);
-                updates.push((x, y, &next_buffer[i]));
+                updates.push((x, y, &next_buf[i]));
             }
 
             to_skip = current.symbol().width().saturating_sub(1);
 
-            let affected_width = std::cmp::max(current.symbol().width(), previous.symbol().width());
+            let affected_width = std::cmp::max(
+                current.symbol().width(),
+                previous.symbol().width(),
+            );
             invalidated = std::cmp::max(affected_width, invalidated).saturating_sub(1);
         }
         updates
@@ -432,7 +435,7 @@ impl Cell {
 
     /// Sets the style of the cell.
     ///
-    ///  `style` accepts any type that is convertible to [`Style`] (e.g. [`Style`], [`Color`], or
+    /// `style` accepts any type that is convertible to [`Style`] (e.g. [`Style`], [`Color`], or
     /// your own type that implements [`Into<Style>`]).
     pub fn set_style<S: Into<Style>>(&mut self, style: S) -> &mut Self {
         let style = style.into();

@@ -120,8 +120,6 @@ impl Rect {
     /// or [`height`](Rect::height).
     /// - Positive `x` moves the whole `Rect` to the right, negative to the left.
     /// - Positive `y` moves the whole `Rect` downward, negative upward.
-    ///
-    /// See [`Offset`] for details.
     #[must_use = "method returns the modified value"]
     pub fn offset(self, x: i32, y: i32) -> Self {
         Self {
@@ -187,18 +185,18 @@ impl Rect {
 
     /// Clamp this `Rect` to fit inside the other `Rect`.
     ///
-    /// If the width or height of this `Rect` is larger than the other `Rect`, it will be clamped to
-    /// the other `Rect`'s width or height.
+    /// If the width or height of this `Rect` is larger than the other `Rect`, it will be clamped
+    /// to the other `Rect`'s width or height.
     ///
     /// If the left or top coordinate of this `Rect` is smaller than the other `Rect`, it will be
     /// clamped to the other `Rect`'s left or top coordinate.
     ///
-    /// If the right or bottom coordinate of this `Rect` is larger than the other `Rect`, it will be
-    /// clamped to the other `Rect`'s right or bottom coordinate.
+    /// If the right or bottom coordinate of this `Rect` is larger than the other `Rect`, it will
+    /// be clamped to the other `Rect`'s right or bottom coordinate.
     ///
-    /// This is different from [`Rect::intersection`] because it will move this `Rect` to fit inside
-    /// the other `Rect`, while [`Rect::intersection`] instead would keep this `Rect`'s position and
-    /// truncate its size to only that which is inside the other `Rect`.
+    /// This is different from [`Rect::intersection`] because it will move this `Rect` to fit
+    /// inside the other `Rect`, while [`Rect::intersection`] instead would keep this `Rect`'s
+    /// position and truncate its size to only that which is inside the other `Rect`.
     #[must_use = "method returns the modified value"]
     pub fn clamp(self, other: Self) -> Self {
         let width = self.width.min(other.width);
@@ -207,15 +205,6 @@ impl Rect {
         let y = self.y.clamp(other.y, other.bottom().saturating_sub(height));
         Self::new(x, y, width, height)
     }
-
-    // /// Indents the x value of the `Rect` by a given `offset`.
-    // pub(crate) const fn indent_x(self, offset: u16) -> Self {
-    //     Self {
-    //         x: self.x.saturating_add(offset),
-    //         width: self.width.saturating_sub(offset),
-    //         ..self
-    //     }
-    // }
 }
 
 impl Rect {
@@ -294,11 +283,6 @@ impl Rect {
             Rect::new(self.x, self.y, self.width, self.height - length),
         )
     }
-
-    // pub fn split_h<const N: usize>(&self, portions: [u16; N]) -> [Self; N] {
-    //     if portions.len() > self.width as usize {
-    //     }
-    // }
 
     pub fn inner_centered(&self, width: u16, height: u16) -> Self {
         let x = self.x + (self.width.saturating_sub(width) / 2);
