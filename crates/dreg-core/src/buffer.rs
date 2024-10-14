@@ -10,12 +10,7 @@ use crate::prelude::*;
 
 
 
-// ================================================================================================
-
-
-
 #[derive(Clone, Default, Eq, Hash, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Buffer {
     /// The area represented by this buffer
     pub area: Rect,
@@ -150,10 +145,10 @@ impl Buffer {
         (x, y)
     }
 
-    /// Print a label, starting at the position (x, y)
-    pub fn set_label(&mut self, x: u16, y: u16, label: &Label<'_>, max_width: u16) -> (u16, u16) {
-        self.set_stringn(x, y, &label.content, max_width as usize, label.style)
-    }
+    // /// Print a label, starting at the position (x, y)
+    // pub fn set_label(&mut self, x: u16, y: u16, label: &Label<'_>, max_width: u16) -> (u16, u16) {
+    //     self.set_stringn(x, y, &label.content, max_width as usize, label.style)
+    // }
 
     /// Set the style of all cells in the given area.
     ///
@@ -246,8 +241,8 @@ impl Buffer {
     /// Updates: `0: a, 1: コ` (double width symbol at index 1 - skip index 2)
     /// ```
     pub fn diff<'a>(&self, other: &'a Self) -> Vec<(u16, u16, &'a Cell)> {
-        let previous_buffer = &self.content;
-        let next_buffer = &other.content;
+        let prev_buf = &self.content;
+        let next_buf = &other.content;
 
         let mut updates: Vec<(u16, u16, &Cell)> = vec![];
         // Cells invalidated by drawing/replacing preceding multi-width characters:
@@ -255,15 +250,18 @@ impl Buffer {
         // Cells from the current buffer to skip due to preceding multi-width characters taking
         // their place (the skipped cells should be blank anyway), or due to per-cell-skipping:
         let mut to_skip: usize = 0;
-        for (i, (current, previous)) in next_buffer.iter().zip(previous_buffer.iter()).enumerate() {
+        for (i, (current, previous)) in next_buf.iter().zip(prev_buf.iter()).enumerate() {
             if !current.skip && (current != previous || invalidated > 0) && to_skip == 0 {
                 let (x, y) = self.pos_of(i);
-                updates.push((x, y, &next_buffer[i]));
+                updates.push((x, y, &next_buf[i]));
             }
 
             to_skip = current.symbol().width().saturating_sub(1);
 
-            let affected_width = std::cmp::max(current.symbol().width(), previous.symbol().width());
+            let affected_width = std::cmp::max(
+                current.symbol().width(),
+                previous.symbol().width(),
+            );
             invalidated = std::cmp::max(affected_width, invalidated).saturating_sub(1);
         }
         updates
@@ -343,12 +341,9 @@ impl std::fmt::Debug for Buffer {
 }
 
 
-// ================================================================================================
-
 
 /// A buffer cell
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Cell {
     /// The string to be drawn in the cell.
     ///
@@ -387,7 +382,7 @@ impl Cell {
     /// symbol doesnt fit onto the stack and requires to be placed on the heap. Use
     /// `Self::default().set_symbol()` in that case. See [`CompactString::new_inline`] for more
     /// details on this.
-    pub const fn new(symbol: &str) -> Self {
+    pub const fn new(symbol: &'static str) -> Self {
         Self {
             symbol: CompactString::new_inline(symbol),
             fg: Color::Reset,
@@ -440,7 +435,7 @@ impl Cell {
 
     /// Sets the style of the cell.
     ///
-    ///  `style` accepts any type that is convertible to [`Style`] (e.g. [`Style`], [`Color`], or
+    /// `style` accepts any type that is convertible to [`Style`] (e.g. [`Style`], [`Color`], or
     /// your own type that implements [`Into<Style>`]).
     pub fn set_style<S: Into<Style>>(&mut self, style: S) -> &mut Self {
         let style = style.into();
@@ -476,7 +471,7 @@ impl Cell {
     /// Sets the cell to be skipped when copying (diffing) the buffer to the screen.
     ///
     /// This is helpful when it is necessary to prevent the buffer from overwriting a cell that is
-    /// covered by an image from some terminal graphics protocol (Sixel / iTerm / Kitty ...).
+    /// covered by an image.
     pub fn set_skip(&mut self, skip: bool) -> &mut Self {
         self.skip = skip;
         self
@@ -501,7 +496,3 @@ impl Default for Cell {
         Self::EMPTY
     }
 }
-
-
-
-// ================================================================================================

@@ -2,52 +2,11 @@
 
 
 
-// ================================================================================================
-
-
-
-#[derive(Clone, Copy)]
-pub struct Pos(pub u16, pub u16);
-
-impl Pos {
-    #[inline(always)]
-    pub const fn new(x: u16, y: u16) -> Self {
-        Self(x, y)
-    }
-
-    #[inline(always)]
-    pub const fn x(&self) -> u16 {
-        self.0
-    }
-
-    #[inline(always)]
-    pub const fn y(&self) -> u16 {
-        self.1
-    }
-
-    #[inline(always)]
-    pub const fn col(&self) -> u16 {
-        self.0
-    }
-
-    #[inline(always)]
-    pub const fn row(&self) -> u16 {
-        self.1
-    }
-}
-
-
-
-// ================================================================================================
-
-
-
 /// A rectangular area.
 ///
 /// A simple rectangle used in the computation of the layout and to give widgets a hint about the
 /// area they are supposed to render to.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Rect {
     /// The x coordinate of the top left corner of the `Rect`.
     pub x: u16,
@@ -139,16 +98,16 @@ impl Rect {
     ///
     /// If the margin is larger than the `Rect`, the returned `Rect` will have no area.
     #[must_use = "method returns the modified value"]
-    pub const fn inner(self, margin: Margin) -> Self {
-        let doubled_margin_horizontal = margin.horizontal.saturating_mul(2);
-        let doubled_margin_vertical = margin.vertical.saturating_mul(2);
+    pub const fn inner(self, margin_x: u16, margin_y: u16) -> Self {
+        let doubled_margin_horizontal = margin_x.saturating_mul(2);
+        let doubled_margin_vertical = margin_y.saturating_mul(2);
 
         if self.width < doubled_margin_horizontal || self.height < doubled_margin_vertical {
             Self::ZERO
         } else {
             Self {
-                x: self.x.saturating_add(margin.horizontal),
-                y: self.y.saturating_add(margin.vertical),
+                x: self.x.saturating_add(margin_x),
+                y: self.y.saturating_add(margin_y),
                 width: self.width.saturating_sub(doubled_margin_horizontal),
                 height: self.height.saturating_sub(doubled_margin_vertical),
             }
@@ -161,16 +120,14 @@ impl Rect {
     /// or [`height`](Rect::height).
     /// - Positive `x` moves the whole `Rect` to the right, negative to the left.
     /// - Positive `y` moves the whole `Rect` downward, negative upward.
-    ///
-    /// See [`Offset`] for details.
     #[must_use = "method returns the modified value"]
-    pub fn offset(self, offset: Offset) -> Self {
+    pub fn offset(self, x: i32, y: i32) -> Self {
         Self {
             x: i32::from(self.x)
-                .saturating_add(offset.x())
+                .saturating_add(x)
                 .clamp(0, i32::from(u16::MAX - self.width)) as u16,
             y: i32::from(self.y)
-                .saturating_add(offset.y())
+                .saturating_add(y)
                 .clamp(0, i32::from(u16::MAX - self.height)) as u16,
             ..self
         }
@@ -219,27 +176,27 @@ impl Rect {
     /// Returns true if the given position is inside the `Rect`.
     ///
     /// The position is considered inside the `Rect` if it is on the `Rect`'s border.
-    pub const fn contains(self, position: Pos) -> bool {
-        position.x() >= self.x
-            && position.x() < self.right()
-            && position.y() >= self.y
-            && position.y() < self.bottom()
+    pub const fn contains(self, x: u16, y: u16) -> bool {
+        x >= self.x
+            && x < self.right()
+            && y >= self.y
+            && y < self.bottom()
     }
 
     /// Clamp this `Rect` to fit inside the other `Rect`.
     ///
-    /// If the width or height of this `Rect` is larger than the other `Rect`, it will be clamped to
-    /// the other `Rect`'s width or height.
+    /// If the width or height of this `Rect` is larger than the other `Rect`, it will be clamped
+    /// to the other `Rect`'s width or height.
     ///
     /// If the left or top coordinate of this `Rect` is smaller than the other `Rect`, it will be
     /// clamped to the other `Rect`'s left or top coordinate.
     ///
-    /// If the right or bottom coordinate of this `Rect` is larger than the other `Rect`, it will be
-    /// clamped to the other `Rect`'s right or bottom coordinate.
+    /// If the right or bottom coordinate of this `Rect` is larger than the other `Rect`, it will
+    /// be clamped to the other `Rect`'s right or bottom coordinate.
     ///
-    /// This is different from [`Rect::intersection`] because it will move this `Rect` to fit inside
-    /// the other `Rect`, while [`Rect::intersection`] instead would keep this `Rect`'s position and
-    /// truncate its size to only that which is inside the other `Rect`.
+    /// This is different from [`Rect::intersection`] because it will move this `Rect` to fit
+    /// inside the other `Rect`, while [`Rect::intersection`] instead would keep this `Rect`'s
+    /// position and truncate its size to only that which is inside the other `Rect`.
     #[must_use = "method returns the modified value"]
     pub fn clamp(self, other: Self) -> Self {
         let width = self.width.min(other.width);
@@ -248,15 +205,6 @@ impl Rect {
         let y = self.y.clamp(other.y, other.bottom().saturating_sub(height));
         Self::new(x, y, width, height)
     }
-
-    // /// Indents the x value of the `Rect` by a given `offset`.
-    // pub(crate) const fn indent_x(self, offset: u16) -> Self {
-    //     Self {
-    //         x: self.x.saturating_add(offset),
-    //         width: self.width.saturating_sub(offset),
-    //         ..self
-    //     }
-    // }
 }
 
 impl Rect {
@@ -336,11 +284,6 @@ impl Rect {
         )
     }
 
-    // pub fn split_h<const N: usize>(&self, portions: [u16; N]) -> [Self; N] {
-    //     if portions.len() > self.width as usize {
-    //     }
-    // }
-
     pub fn inner_centered(&self, width: u16, height: u16) -> Self {
         let x = self.x + (self.width.saturating_sub(width) / 2);
         let y = self.y + (self.height.saturating_sub(height) / 2);
@@ -359,91 +302,6 @@ impl Rect {
 
 
 
-// ================================================================================================
-
-
-
-#[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
-pub struct Margin {
-    pub horizontal: u16,
-    pub vertical: u16,
-}
-
-impl Margin {
-    pub const fn new(horizontal: u16, vertical: u16) -> Self {
-        Self {
-            horizontal,
-            vertical,
-        }
-    }
-}
-
-impl std::fmt::Display for Margin {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}x{}", self.horizontal, self.vertical)
-    }
-}
-
-
-
-// ================================================================================================
-
-
-
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-pub struct Padding {
-    pub l: u16,
-    pub r: u16,
-    pub t: u16,
-    pub b: u16,
-}
-
-impl Padding {
-    /// `Padding` with all fields set to `0`.
-    pub const ZERO: Self = Self {
-        l: 0,
-        r: 0,
-        t: 0,
-        b: 0,
-    };
-}
-
-
-
-// ================================================================================================
-
-
-
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-pub struct Offset(i32, i32);
-
-impl Offset {
-    #[inline(always)]
-    pub const fn x(&self) -> i32 {
-        self.0
-    }
-
-    #[inline(always)]
-    pub const fn y(&self) -> i32 {
-        self.1
-    }
-
-    #[inline(always)]
-    pub const fn col(&self) -> i32 {
-        self.0
-    }
-
-    #[inline(always)]
-    pub const fn row(&self) -> i32 {
-        self.1
-    }
-}
-
-
-
-// ================================================================================================
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -458,7 +316,7 @@ mod tests {
         assert_eq!(test_rect.vsplit_len(22), (Rect::new(0, 0, 10, 20), Rect::new(0, 0, 0, 0)));
 
         assert_eq!(
-            test_rect.hsplit_inverse_len(3), 
+            test_rect.hsplit_inverse_len(3),
             (Rect::new(7, 0, 3, 20), Rect::new(0, 0, 7, 20)),
         );
     }

@@ -6,12 +6,7 @@ use std::{fmt, str::FromStr};
 
 
 
-// ================================================================================================
-
-
-
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Style {
     pub color_mode: ColorMode,
     pub fg: Option<Color>,
@@ -34,7 +29,7 @@ impl Style {
             sub_modifier: Modifier::empty(),
         }
     }
-    
+
     pub const fn fg(mut self, color: Color) -> Self {
         self.fg = Some(color);
         self
@@ -55,7 +50,7 @@ impl Style {
         self.add_modifier = self.add_modifier.union(modifier);
         self
     }
-    
+
     pub const fn remove_modifier(mut self, modifier: Modifier) -> Self {
         self.add_modifier = self.add_modifier.difference(modifier);
         self.sub_modifier = self.sub_modifier.union(modifier);
@@ -93,7 +88,7 @@ impl Style {
                     if let Some(self_bg) = self.bg {
                         let other_rgb = other_bg.as_rgb();
                         let self_rgb = self_bg.as_rgb();
-                        
+
                         let r = other_rgb.0.saturating_add(self_rgb.0);
                         let g = other_rgb.1.saturating_add(self_rgb.1);
                         let b = other_rgb.2.saturating_add(self_rgb.2);
@@ -216,14 +211,14 @@ impl Style {
 /// The way in which an [`Element`] is rendered to the screen.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub enum ColorMode {
-    /// Ignore the buffer's current contents and overwrite cells with the colors provided to the 
+    /// Ignore the buffer's current contents and overwrite cells with the colors provided to the
     /// renderer.
     #[default]
     Overwrite,
     /// Add the renderer's colors to the current cells in the buffer.
     Additive,
     Subtractive,
-    /// Blend the renderer's colors with the current cells in the buffer. This is absolutely 
+    /// Blend the renderer's colors with the current cells in the buffer. This is absolutely
     /// necessary for transparent images and overlays.
     Blend,
     Mix,
@@ -252,9 +247,6 @@ impl ColorMode {
 }
 
 
-// ================================================================================================
-
-
 
 bitflags::bitflags! {
     /// Modifier changes the way a piece of text is displayed.
@@ -267,12 +259,11 @@ bitflags::bitflags! {
     /// ## Examples
     ///
     /// ```rust
-    /// use eor::prelude::*;
+    /// use dreg::prelude::*;
     ///
     /// let m = Modifier::BOLD | Modifier::ITALIC;
     /// ```
-    #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-    #[derive(Default, Clone, Copy, Eq, PartialEq, Hash)]
+    #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
     pub struct Modifier: u16 {
         const BOLD              = 0b0000_0000_0001;
         const DIM               = 0b0000_0000_0010;
@@ -299,10 +290,6 @@ impl fmt::Debug for Modifier {
         write!(f, "{}", self.0)
     }
 }
-
-
-
-// ================================================================================================
 
 
 
@@ -448,104 +435,7 @@ impl Color {
     }
 }
 
-#[cfg(feature = "serde")]
-impl serde::Serialize for Color {
-    /// This utilises the [`fmt::Display`] implementation for serialization.
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
 
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for Color {
-    /// This is used to deserialize a value into Color via serde.
-    ///
-    /// This implementation uses the `FromStr` trait to deserialize strings, so named colours, RGB,
-    /// and indexed values are able to be deserialized. In addition, values that were produced by
-    /// the the older serialization implementation of Color are also able to be deserialized.
-    ///
-    /// Prior to v0.26.0, Ratatui would be serialized using a map for indexed and RGB values, for
-    /// examples in json `{"Indexed": 10}` and `{"Rgb": [255, 0, 255]}` respectively. Now they are
-    /// serialized using the string representation of the index and the RGB hex value, for example
-    /// in json it would now be `"10"` and `"#FF00FF"` respectively.
-    ///
-    /// See the [`Color`] documentation for more information on color names.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ratatui::prelude::*;
-    ///
-    /// #[derive(Debug, serde::Deserialize)]
-    /// struct Theme {
-    ///     color: Color,
-    /// }
-    ///
-    /// # fn get_theme() -> Result<(), serde_json::Error> {
-    /// let theme: Theme = serde_json::from_str(r#"{"color": "bright-white"}"#)?;
-    /// assert_eq!(theme.color, Color::White);
-    ///
-    /// let theme: Theme = serde_json::from_str(r##"{"color": "#00FF00"}"##)?;
-    /// assert_eq!(theme.color, Color::Rgb(0, 255, 0));
-    ///
-    /// let theme: Theme = serde_json::from_str(r#"{"color": "42"}"#)?;
-    /// assert_eq!(theme.color, Color::Indexed(42));
-    ///
-    /// let err = serde_json::from_str::<Theme>(r#"{"color": "invalid"}"#).unwrap_err();
-    /// assert!(err.is_data());
-    /// assert_eq!(
-    ///     err.to_string(),
-    ///     "Failed to parse Colors at line 1 column 20"
-    /// );
-    ///
-    /// // Deserializing from the previous serialization implementation
-    /// let theme: Theme = serde_json::from_str(r#"{"color": {"Rgb":[255,0,255]}}"#)?;
-    /// assert_eq!(theme.color, Color::Rgb(255, 0, 255));
-    ///
-    /// let theme: Theme = serde_json::from_str(r#"{"color": {"Indexed":10}}"#)?;
-    /// assert_eq!(theme.color, Color::Indexed(10));
-    /// # Ok(())
-    /// # }
-    /// ```
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        /// Colors are currently serialized with the `Display` implementation, so
-        /// RGB values are serialized via hex, for example "#FFFFFF".
-        ///
-        /// Previously they were serialized using serde derive, which encoded
-        /// RGB values as a map, for example { "rgb": [255, 255, 255] }.
-        ///
-        /// The deserialization implementation utilises a `Helper` struct
-        /// to be able to support both formats for backwards compatibility.
-        #[derive(serde::Deserialize)]
-        enum ColorWrapper {
-            Rgb(u8, u8, u8),
-            Indexed(u8),
-        }
-
-        #[derive(serde::Deserialize)]
-        #[serde(untagged)]
-        enum ColorFormat {
-            V2(String),
-            V1(ColorWrapper),
-        }
-
-        let multi_type = ColorFormat::deserialize(deserializer)
-            .map_err(|err| serde::de::Error::custom(format!("Failed to parse Colors: {err}")))?;
-        match multi_type {
-            ColorFormat::V2(s) => FromStr::from_str(&s).map_err(serde::de::Error::custom),
-            ColorFormat::V1(color_wrapper) => match color_wrapper {
-                ColorWrapper::Rgb(red, green, blue) => Ok(Self::Rgb(red, green, blue)),
-                ColorWrapper::Indexed(index) => Ok(Self::Indexed(index)),
-            },
-        }
-    }
-}
 
 /// Error type indicating a failure to parse a color string.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -759,7 +649,3 @@ fn hue_to_rgb(p: f64, q: f64, t: f64) -> f64 {
         p
     }
 }
-
-
-
-// ================================================================================================

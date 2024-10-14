@@ -1,0 +1,8 @@
+[package]
+name = "dreg-crossterm"
+version.workspace = true
+edition = "2021"
+
+[dependencies]
+dreg-core = { workspace = true }
+crossterm = "0.28"
