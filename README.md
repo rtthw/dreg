@@ -21,7 +21,7 @@
 
 # Dreg
 
-A simple terminal user interface library.
+A simple text-based user interface library that will run on just about anything.
 
 ## Quickstart
 

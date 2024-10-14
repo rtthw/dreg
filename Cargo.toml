@@ -1,9 +1,9 @@
 [package]
 name = "dreg"
-version = "1.0.0"
+version.workspace = true
 authors = ["Matthew Martin"]
 edition = "2021"
-description = "A simple terminal user interface library"
+description = "A simple text-based user interface library"
 readme = "README.md"
 homepage = "https://rtthw.github.io/dreg"
 repository = "https://github.com/rtthw/dreg"
@@ -21,6 +21,9 @@ dreg-crossterm = { path = "crates/dreg-crossterm", optional = true }
 
 [workspace]
 members = ["crates/dreg-core", "crates/dreg-crossterm"]
+
+[workspace.package]
+version = "0.2.0"
 
 [workspace.dependencies]
 dreg-core = { path = "crates/dreg-core" }
