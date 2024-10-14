@@ -23,9 +23,47 @@
 
 A simple text-based user interface library that will run on just about anything.
 
-## Quickstart
+## Examples
+
+### Terminal
 
 ```rust
+use dreg::prelude::*;
+
+fn main() -> Result<()> {
+    let program = MyProgram {
+        should_quit: false,
+    };
+    let platform = CrosstermPlatform::new()?;
+
+    run_program(program, platform)?;
+
+    Ok(())
+}
+
+struct MyProgram {
+    should_quit: bool,
+}
+
+impl Program for MyProgram {
+    fn update(&mut self, frame: Frame) {
+        // When the user pressed `q`, the program safely exits.
+        if frame.context.keys_down().contains(&Scancode::Q) {
+            self.should_quit = true;
+            return; // No need to render anything past this point.
+        }
+        frame.buffer.set_string(
+            1, // Column index.
+            1, // Row index.
+            format!("KEYS DOWN: {:?}", frame.context.keys_down()),
+            Style::new(), // No styling.
+        );
+    }
+
+    fn should_exit(&self) -> bool {
+        self.should_quit
+    }
+}
 ```
 
 ## Overview
