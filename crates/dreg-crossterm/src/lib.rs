@@ -8,7 +8,7 @@ use crossterm::{
     event::{
         DisableMouseCapture, EnableMouseCapture,
         Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, KeyboardEnhancementFlags,
-        ModifierKeyCode, MouseEvent,
+        ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind,
         PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags,
     },
     execute,
@@ -255,7 +255,28 @@ fn handle_crossterm_event(ctx: &mut Context, event: Event) {
             }
         }
         Event::Mouse(MouseEvent { kind, column, row, .. }) => {
-            ctx.handle_input(Input::MouseMove(column, row));
+            match kind {
+                MouseEventKind::Moved | MouseEventKind::Drag(_) => {
+                    ctx.handle_input(Input::MouseMove(column, row));
+                }
+                MouseEventKind::Down(btn) => {
+                    let code = match btn {
+                        MouseButton::Left => Scancode::LMB,
+                        MouseButton::Right => Scancode::RMB,
+                        MouseButton::Middle => Scancode::MMB,
+                    };
+                    ctx.handle_key_down(code);
+                }
+                MouseEventKind::Up(btn) => {
+                    let code = match btn {
+                        MouseButton::Left => Scancode::LMB,
+                        MouseButton::Right => Scancode::RMB,
+                        MouseButton::Middle => Scancode::MMB,
+                    };
+                    ctx.handle_key_up(&code);
+                }
+                _ => {} // TODO: Handle scroll wheel events.
+            }
         }
         Event::FocusGained => {
             ctx.handle_input(Input::FocusChange(true));

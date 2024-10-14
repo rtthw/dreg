@@ -273,4 +273,10 @@ impl Scancode {
     pub const PAGEDOWN: Self = Self(109);
     pub const INSERT: Self = Self(110);
     pub const DELETE: Self = Self(111);
+
+    pub const SCROLLUP: Self = Self(177);
+    pub const SCROLLDOWN: Self = Self(178);
+    pub const LMB: Self = Self(0x110);
+    pub const RMB: Self = Self(0x111);
+    pub const MMB: Self = Self(0x112);
 }
