@@ -2,12 +2,12 @@
 name = "dreg"
 version.workspace = true
 authors = ["Matthew Martin"]
-edition = "2021"
+edition.workspace = true
 description = "A simple text-based user interface library"
 readme = "README.md"
-homepage = "https://rtthw.github.io/dreg"
+homepage.workspace = true
 repository = "https://github.com/rtthw/dreg"
-license-file = "LICENSE"
+license.workspace = true
 # keywords = [""]
 # categories = [""]
 
@@ -17,13 +17,17 @@ crossterm = ["dep:dreg-crossterm"]
 
 [dependencies]
 dreg-core = { workspace = true }
-dreg-crossterm = { path = "crates/dreg-crossterm", optional = true }
+dreg-crossterm = { version = "0.2.0", path = "crates/dreg-crossterm", optional = true }
 
 [workspace]
+resolver = "2"
 members = ["crates/dreg-core", "crates/dreg-crossterm"]
 
 [workspace.package]
 version = "0.2.0"
+edition = "2021"
+homepage = "https://rtthw.github.io/dreg"
+license = "MIT"
 
 [workspace.dependencies]
-dreg-core = { path = "crates/dreg-core" }
+dreg-core = { version = "0.2.0", path = "crates/dreg-core" }

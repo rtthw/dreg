@@ -1,7 +1,11 @@
 [package]
 name = "dreg-core"
 version.workspace = true
-edition = "2021"
+edition.workspace = true
+description = "Core functionality for Dreg"
+homepage.workspace = true
+repository = "https://github.com/rtthw/dreg/tree/master/crates/dreg-core"
+license.workspace = true
 
 [dependencies]
 anyhow = "1"

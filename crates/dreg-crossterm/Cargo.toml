@@ -1,7 +1,11 @@
 [package]
 name = "dreg-crossterm"
 version.workspace = true
-edition = "2021"
+edition.workspace = true
+description = "Crossterm platform for Dreg"
+homepage.workspace = true
+repository = "https://github.com/rtthw/dreg/tree/master/crates/dreg-crossterm"
+license.workspace = true
 
 [dependencies]
 dreg-core = { workspace = true }
