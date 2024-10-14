@@ -41,6 +41,10 @@ impl Context {
     pub fn handle_key_up(&mut self, code: &Scancode) -> bool {
         self.keys_down.remove(&code)
     }
+
+    pub fn keys_down(&self) -> &HashSet<Scancode> {
+        &self.keys_down
+    }
 }
 
 
@@ -71,7 +75,7 @@ pub enum Input {
 /// [   42   ][44][45][46][47][48][49][50][52][52][53][   54   ]
 /// [29][125][56][           57           ][100][0x1d0][139][97]
 /// ```
-#[derive(Copy, Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Scancode(pub u16);
 
 impl From<u16> for Scancode {

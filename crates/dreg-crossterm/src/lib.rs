@@ -7,7 +7,7 @@ use crossterm::{
     cursor::{MoveTo, Show},
     event::{
         DisableMouseCapture, EnableMouseCapture,
-        Event, KeyCode, KeyEvent, KeyEventKind, KeyboardEnhancementFlags,
+        Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, KeyboardEnhancementFlags,
         ModifierKeyCode, MouseEvent,
         PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags,
     },
@@ -25,10 +25,14 @@ use crossterm::{
 };
 use dreg_core::prelude::*;
 
+
+
 pub mod prelude {
     pub extern crate crossterm;
     pub use crate::CrosstermPlatform;
 }
+
+
 
 pub struct CrosstermPlatform {
     ctx: Context,
@@ -190,13 +194,14 @@ impl CrosstermPlatform {
 }
 
 
+
 fn bind_terminal() -> Result<()> {
     let mut writer = stdout();
     enable_raw_mode()?;
     writer.execute(EnableMouseCapture)?;
     writer.execute(EnterAlternateScreen)?;
     writer.execute(PushKeyboardEnhancementFlags(
-        KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES
+        KeyboardEnhancementFlags::REPORT_EVENT_TYPES
     ))?;
     let original_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |panic| {
@@ -223,7 +228,18 @@ fn release_terminal() -> Result<()> {
 fn handle_crossterm_event(ctx: &mut Context, event: Event) {
     match event {
         Event::Key(KeyEvent { code, modifiers, kind, state }) => {
-            let scancodes = translate_keycode(code);
+            let mut scancodes = vec![];
+            if modifiers != KeyModifiers::NONE {
+                for m in modifiers.iter() {
+                    match m {
+                        KeyModifiers::SHIFT => scancodes.push(Scancode::L_SHIFT),
+                        KeyModifiers::ALT => scancodes.push(Scancode::L_ALT),
+                        KeyModifiers::CONTROL => scancodes.push(Scancode::L_CTRL),
+                        _ => {} // TODO: Handle other modifiers.
+                    }
+                }
+            }
+            scancodes.extend(translate_keycode(code));
             match kind {
                 KeyEventKind::Press => {
                     for scancode in scancodes {
@@ -238,8 +254,8 @@ fn handle_crossterm_event(ctx: &mut Context, event: Event) {
                 _ => {} // Do nothing.
             }
         }
-        Event::Mouse(MouseEvent { kind, column, row, modifiers }) => {
-
+        Event::Mouse(MouseEvent { kind, column, row, .. }) => {
+            ctx.handle_input(Input::MouseMove(column, row));
         }
         Event::FocusGained => {
             ctx.handle_input(Input::FocusChange(true));
@@ -319,9 +335,9 @@ fn translate_keycode(code: KeyCode) -> Vec<Scancode> {
 
 
 
-/// The `ModifierDiff` struct is used to calculate the difference between two `Modifier`
-/// values. This is useful when updating the terminal display, as it allows for more
-/// efficient updates by only sending the necessary changes.
+/// The `ModifierDiff` struct is used to calculate the difference between two `Modifier` values.
+/// This is useful when updating the terminal display, as it allows for more efficient updates by
+/// only sending the necessary changes.
 struct ModifierDiff {
     pub from: Modifier,
     pub to: Modifier,
