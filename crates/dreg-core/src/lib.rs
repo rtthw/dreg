@@ -32,7 +32,7 @@ pub fn run_program(program: impl Program, platform: impl Platform) -> Result<()>
 
 
 pub trait Program {
-    fn render(&mut self, render_fn: impl FnMut(&mut Frame));
+    fn update(&mut self, frame: Frame);
     fn should_exit(&self) -> bool;
 }
 
@@ -41,6 +41,7 @@ pub trait Platform {
 }
 
 pub struct Frame<'a> {
+    pub context: &'a mut Context,
     pub area: Rect,
     pub buffer: &'a mut Buffer,
 }
