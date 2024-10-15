@@ -4,7 +4,7 @@
 use std::io::{stdout, Write};
 
 use crossterm::{
-    cursor::{MoveTo, Show},
+    cursor::{Hide, MoveTo, Show},
     event::{
         DisableMouseCapture, EnableMouseCapture,
         Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, KeyboardEnhancementFlags,
@@ -203,6 +203,7 @@ fn bind_terminal() -> Result<()> {
     writer.execute(PushKeyboardEnhancementFlags(
         KeyboardEnhancementFlags::REPORT_EVENT_TYPES
     ))?;
+    writer.execute(Hide)?;
     let original_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |panic| {
         release_terminal().unwrap();
