@@ -45,6 +45,10 @@ impl Context {
     pub fn keys_down(&self) -> &HashSet<Scancode> {
         &self.keys_down
     }
+
+    pub fn last_mouse_pos(&self) -> Option<(u16, u16)> {
+        self.last_mouse_pos
+    }
 }
 
 
