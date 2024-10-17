@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.2.1 - 10/17/2024
+
+**Core**
+
+- Fixed inability to get the last known mouse position.
+
 **Crossterm**
 
 - Fixed cursor display inconsistency.
