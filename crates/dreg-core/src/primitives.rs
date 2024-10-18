@@ -269,7 +269,7 @@ impl Rect {
             return (Rect::ZERO, *self);
         }
         (
-            Rect::new(self.width - length, self.y, length, self.height),
+            Rect::new(self.x + (self.width - length), self.y, length, self.height),
             Rect::new(self.x, self.y, self.width - length, self.height),
         )
     }
@@ -279,7 +279,7 @@ impl Rect {
             return (Rect::ZERO, *self);
         }
         (
-            Rect::new(self.x, self.height - length, self.width, length),
+            Rect::new(self.x, self.y + (self.height - length), self.width, length),
             Rect::new(self.x, self.y, self.width, self.height - length),
         )
     }
@@ -319,5 +319,33 @@ mod tests {
             test_rect.hsplit_inverse_len(3),
             (Rect::new(7, 0, 3, 20), Rect::new(0, 0, 7, 20)),
         );
+    }
+
+    #[test]
+    fn rect_splitting_with_offset() {
+        let test_rect = Rect::new(1, 1, 10, 20);
+
+        assert_eq!(test_rect.hsplit_len(3), (Rect::new(1, 1, 3, 20), Rect::new(4, 1, 7, 20)));
+        assert_eq!(test_rect.hsplit_len(11), (Rect::new(1, 1, 10, 20), Rect::new(0, 0, 0, 0)));
+        assert_eq!(test_rect.vsplit_len(7), (Rect::new(1, 1, 10, 7), Rect::new(1, 8, 10, 13)));
+        assert_eq!(test_rect.vsplit_len(22), (Rect::new(1, 1, 10, 20), Rect::new(0, 0, 0, 0)));
+
+        assert_eq!(
+            test_rect.hsplit_inverse_len(3),
+            (Rect::new(8, 1, 3, 20), Rect::new(1, 1, 7, 20)),
+        );
+    }
+
+    #[test]
+    fn fixed_issue4() {
+        let rect = Rect::new(3, 5, 7, 11);
+
+        assert_eq!(
+            rect.hsplit_inverse_len(2),
+            (
+                Rect::new(8, 5, 2, 11),
+                Rect::new(3, 5, 5, 11),
+            )
+        )
     }
 }
