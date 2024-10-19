@@ -46,7 +46,7 @@ impl Platform for WasmPlatform {
             };
 
             program.update(frame);
-            self.render();
+            self.render(&canvas_ctx);
             self.swap_buffers();
         }
 
@@ -73,7 +73,16 @@ impl WasmPlatform {
         Ok(())
     }
 
-    fn render(&self) {}
+    fn render(&self, canvas_ctx: &CanvasRenderingContext2d) {
+        let previous_buffer = &self.buffers[1 - self.current];
+        let current_buffer = &self.buffers[self.current];
+        let updates = previous_buffer.diff(current_buffer).into_iter();
+
+        for (x, y, cell) in updates {
+            let (real_x, real_y) = (self.dimensions.0 * x, self.dimensions.1 * y);
+            let _res = canvas_ctx.fill_text(cell.symbol(), real_x as f64, real_y as f64);
+        }
+    }
 
     /// Clear the inactive buffer and swap it with the current buffer.
     fn swap_buffers(&mut self) {
