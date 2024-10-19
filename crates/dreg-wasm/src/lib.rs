@@ -12,7 +12,9 @@ pub struct WasmPlatform {
     context: Context,
     buffers: [Buffer; 2],
     current: usize,
-    last_known_size: Rect,
+    font_size: u16,
+    last_known_size: (u32, u32),
+    dimensions: (u16, u16),
 }
 
 impl Platform for WasmPlatform {
@@ -34,9 +36,9 @@ impl Platform for WasmPlatform {
             .map_err(|_| anyhow::anyhow!("canvas 2D should be a rendering context"))?;
 
         while !program.should_exit() {
-            let size = self.size(&canvas);
-            self.autoresize(&canvas_ctx, size)?;
+            self.autoresize(&canvas_ctx, (canvas.width(), canvas.height()))?;
 
+            let size = self.size();
             let frame = Frame {
                 context: &mut self.context,
                 area: size,
@@ -53,14 +55,19 @@ impl Platform for WasmPlatform {
 }
 
 impl WasmPlatform {
-    fn size(&self, canvas: &HtmlCanvasElement) -> Rect {
-        Rect::new(0, 0, canvas.width() as u16, canvas.height() as u16)
+    fn size(&self) -> Rect {
+        Rect::new(0, 0, self.dimensions.0, self.dimensions.1)
     }
 
-    fn autoresize(&mut self, canvas_ctx: &CanvasRenderingContext2d, size: Rect) -> Result<()> {
+    fn autoresize(&mut self, canvas_ctx: &CanvasRenderingContext2d, size: (u32, u32)) -> Result<()> {
         if self.last_known_size != size {
-            let text_metrics = canvas_ctx.measure_text(" ")
+            let text_metrics = canvas_ctx.measure_text("█")
                 .map_err(|_| anyhow::anyhow!("canvas context cannot measure text"))?;
+            let width = size.0 as f64 / text_metrics.width();
+            let height = size.1 as u16 / self.font_size;
+
+            self.dimensions = (width as u16, height);
+            self.last_known_size = size;
         }
 
         Ok(())
