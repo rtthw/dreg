@@ -4,7 +4,7 @@
 
 use dreg_core::prelude::*;
 use wasm_bindgen::JsCast as _;
-use web_sys::{CanvasRenderingContext2d, Element};
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
 
 
@@ -21,8 +21,8 @@ impl Platform for WasmPlatform {
             .ok_or(anyhow::anyhow!("no global window exists"))?;
         let document = window.document()
             .ok_or(anyhow::anyhow!("should have a document on window"))?;
-        let body = document.body()
-            .ok_or(anyhow::anyhow!("document should have a body"))?;
+        // let body = document.body()
+        //     .ok_or(anyhow::anyhow!("document should have a body"))?;
         let canvas = document.get_element_by_id("canvas")
             .ok_or(anyhow::anyhow!("document should have a canvas"))?
             .dyn_into::<web_sys::HtmlCanvasElement>()
@@ -34,7 +34,7 @@ impl Platform for WasmPlatform {
             .map_err(|_| anyhow::anyhow!("canvas 2D should be a rendering context"))?;
 
         while !program.should_exit() {
-            let size = self.size(&body);
+            let size = self.size(&canvas);
             self.autoresize(&canvas_ctx, size)?;
 
             let frame = Frame {
@@ -53,8 +53,8 @@ impl Platform for WasmPlatform {
 }
 
 impl WasmPlatform {
-    fn size(&self, body: &Element) -> Rect {
-        Rect::new(0, 0, body.client_width() as u16, body.client_height() as u16)
+    fn size(&self, canvas: &HtmlCanvasElement) -> Rect {
+        Rect::new(0, 0, canvas.width() as u16, canvas.height() as u16)
     }
 
     fn autoresize(&mut self, canvas_ctx: &CanvasRenderingContext2d, size: Rect) -> Result<()> {
