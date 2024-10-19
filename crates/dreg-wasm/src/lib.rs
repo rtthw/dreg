@@ -23,6 +23,11 @@ impl Platform for WasmPlatform {
             .ok_or(anyhow::anyhow!("document should have a canvas"))?
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .map_err(|_| anyhow::anyhow!("canvas ID should correspond to a canvas element"))?;
+        let canvas_ctx = canvas.get_context("2d")
+            .map_err(|_| anyhow::anyhow!("canvas should support 2D rendering"))?
+            .ok_or(anyhow::anyhow!("canvas 2D rendering context should exist"))?
+            .dyn_into::<web_sys::CanvasRenderingContext2d>()
+            .map_err(|_| anyhow::anyhow!("canvas 2D should be a rendering context"))?;
 
         while !program.should_exit() {
 
