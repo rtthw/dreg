@@ -1,0 +1,11 @@
+[package]
+name = "dreg-wasm"
+version.workspace = true
+edition.workspace = true
+description = "Web Assembly platform for Dreg"
+homepage.workspace = true
+repository = "https://github.com/rtthw/dreg/tree/master/crates/dreg-wasm"
+license.workspace = true
+
+[dependencies]
+dreg-core = { workspace = true }

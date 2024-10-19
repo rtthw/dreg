@@ -14,14 +14,16 @@ license.workspace = true
 [features]
 default = ["crossterm"]
 crossterm = ["dep:dreg-crossterm"]
+wasm = ["dep:dreg-wasm"]
 
 [dependencies]
 dreg-core = { workspace = true }
 dreg-crossterm = { version = "0.2.2", path = "crates/dreg-crossterm", optional = true }
+dreg-wasm = { version = "0.2.2", path = "crates/dreg-wasm", optional = true }
 
 [workspace]
 resolver = "2"
-members = ["crates/dreg-core", "crates/dreg-crossterm"]
+members = ["crates/dreg-core", "crates/dreg-crossterm", "crates/dreg-wasm"]
 
 [workspace.package]
 version = "0.2.2"
