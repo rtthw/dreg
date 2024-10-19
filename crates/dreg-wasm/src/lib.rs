@@ -4,7 +4,7 @@
 
 use dreg_core::prelude::*;
 use wasm_bindgen::JsCast as _;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
+use web_sys::CanvasRenderingContext2d;
 
 
 
@@ -55,6 +55,17 @@ impl Platform for WasmPlatform {
 }
 
 impl WasmPlatform {
+    pub fn new() -> Self {
+        Self {
+            context: Context::default(),
+            buffers: [Buffer::empty(Rect::ZERO), Buffer::empty(Rect::ZERO)],
+            current: 0,
+            font_size: 17,
+            last_known_size: (0, 0),
+            dimensions: (0, 0),
+        }
+    }
+
     fn size(&self) -> Rect {
         Rect::new(0, 0, self.dimensions.0, self.dimensions.1)
     }
@@ -66,11 +77,17 @@ impl WasmPlatform {
             let width = size.0 as f64 / text_metrics.width();
             let height = size.1 as u16 / self.font_size;
 
-            self.dimensions = (width as u16, height);
+            self.resize(Rect::new(0, 0, width as u16, height));
             self.last_known_size = size;
         }
 
         Ok(())
+    }
+
+    fn resize(&mut self, area: Rect) {
+        self.buffers[self.current].resize(area);
+        self.buffers[1 - self.current].resize(area);
+        self.dimensions = (area.width, area.height);
     }
 
     fn render(&self, canvas_ctx: &CanvasRenderingContext2d) {
