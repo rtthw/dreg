@@ -2,9 +2,12 @@
 
 
 
+pub mod util;
+
 use dreg_core::prelude::*;
 use wasm_bindgen::JsCast as _;
 use web_sys::CanvasRenderingContext2d;
+
 
 
 pub mod prelude {
@@ -12,6 +15,7 @@ pub mod prelude {
     pub extern crate web_sys;
     pub use crate::WasmPlatform;
 }
+
 
 
 pub struct WasmPlatform {
@@ -25,12 +29,8 @@ pub struct WasmPlatform {
 
 impl Platform for WasmPlatform {
     fn run(mut self, mut program: impl Program) -> Result<()> {
-        let window = web_sys::window()
-            .ok_or(anyhow::anyhow!("no global window exists"))?;
-        let document = window.document()
-            .ok_or(anyhow::anyhow!("should have a document on window"))?;
-        // let body = document.body()
-        //     .ok_or(anyhow::anyhow!("document should have a body"))?;
+        let window = util::window();
+        let document = util::document(&window);
         let canvas = document.get_element_by_id("canvas")
             .ok_or(anyhow::anyhow!("document should have a canvas"))?
             .dyn_into::<web_sys::HtmlCanvasElement>()
