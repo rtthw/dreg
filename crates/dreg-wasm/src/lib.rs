@@ -2,8 +2,6 @@
 
 
 
-pub mod util;
-
 use std::{cell::RefCell, rc::Rc};
 
 use dreg_core::prelude::*;
@@ -29,8 +27,8 @@ pub struct WasmPlatform {
 
 impl Platform for WasmPlatform {
     fn run(self, program: impl Program) -> Result<()> {
-        let window = util::window();
-        let document = util::document(&window);
+        let window = web_sys::window().unwrap();
+        let document = window.document().unwrap();
         let canvas = document.get_element_by_id("canvas")
             .ok_or(anyhow::anyhow!("document should have a canvas"))?
             .dyn_into::<web_sys::HtmlCanvasElement>()
