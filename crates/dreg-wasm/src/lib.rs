@@ -43,6 +43,8 @@ impl Platform for WasmPlatform {
             // Don't outline the canvas when it has focus:
             runner.canvas().style().set_property("outline", "none")
                 .map_err(|e| anyhow::anyhow!("could not set canvas style: {e:?}"))?;
+            runner.canvas().style().set_property("background-color", "#1e1f22")
+                .map_err(|e| anyhow::anyhow!("could not set canvas style: {e:?}"))?;
         }
         self.runner.replace(Some(runner));
         {
@@ -138,7 +140,7 @@ impl Runner {
             context: Context::default(),
             buffers: [Buffer::empty(Rect::ZERO), Buffer::empty(Rect::ZERO)],
             current: 0,
-            font_size: 37,
+            font_size: 31,
             glyph_width: 19, // text_metrics.width() as u16,
             last_known_size: (0, 0),
             dimensions: (0, 0),
@@ -187,8 +189,9 @@ impl Runner {
         let current_buffer = &self.buffers[self.current];
         let updates = previous_buffer.diff(current_buffer).into_iter();
 
-        self.canvas_context.set_font("37px monospace");
+        self.canvas_context.set_font("31px \"Courier New\", monospace");
         self.canvas_context.set_text_align("center");
+        self.canvas_context.set_fill_style_str("#bcbec4");
         for (x, y, cell) in updates {
             let (real_x, real_y) = (self.glyph_width * (x + 1), self.font_size * (y + 1));
             let _r = self.canvas_context.fill_text(cell.symbol(), real_x as f64, real_y as f64);
