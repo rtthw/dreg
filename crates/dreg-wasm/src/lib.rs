@@ -7,6 +7,12 @@ use wasm_bindgen::JsCast as _;
 use web_sys::CanvasRenderingContext2d;
 
 
+pub mod prelude {
+    pub extern crate wasm_bindgen;
+    pub extern crate web_sys;
+    pub use crate::WasmPlatform;
+}
+
 
 pub struct WasmPlatform {
     context: Context,
