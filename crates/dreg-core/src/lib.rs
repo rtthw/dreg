@@ -31,7 +31,7 @@ pub fn run_program(program: impl Program, platform: impl Platform) -> Result<()>
 
 
 
-pub trait Program {
+pub trait Program: 'static {
     fn update(&mut self, frame: Frame);
     fn should_exit(&self) -> bool;
 }
