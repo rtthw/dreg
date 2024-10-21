@@ -33,7 +33,7 @@ A simple text-based user interface library that will run on just about anything.
 use dreg::prelude::*;
 
 fn main() -> Result<()> {
-    let program = MyProgram { should_quit: false };
+    let program = MyProgram { should_quit: false, latest_input: Input::Null };
     let platform = CrosstermPlatform::new()?;
 
     run_program(program, platform)?;
@@ -43,6 +43,7 @@ fn main() -> Result<()> {
 
 struct MyProgram {
     should_quit: bool,
+    latest_input: Input,
 }
 
 impl Program for MyProgram {
@@ -55,9 +56,13 @@ impl Program for MyProgram {
         frame.buffer.set_string(
             1, // Column index (x-coordinate).
             1, // Row index (y-coordinate).
-            format!("KEYS DOWN: {:?}", frame.context.keys_down()),
+            format!("LATEST INPUT: {:?}", self.latest_input),
             Style::new(), // No styling, cells will default to the user's terminal foreground color.
         );
+    }
+
+    fn on_input(&mut self, input: Input) {
+        self.latest_input = input;
     }
 
     fn on_platform_request(&self, request: &str) -> Option<&str> {
