@@ -25,15 +25,14 @@ A simple text-based user interface library that will run on just about anything.
 
 ## Examples
 
-### Terminal
+<details>
+<summary>Simple Terminal-Only Application</summary>
 
 ```rust
 use dreg::prelude::*;
 
 fn main() -> Result<()> {
-    let program = MyProgram {
-        should_quit: false,
-    };
+    let program = MyProgram { should_quit: false };
     let platform = CrosstermPlatform::new()?;
 
     run_program(program, platform)?;
@@ -47,24 +46,32 @@ struct MyProgram {
 
 impl Program for MyProgram {
     fn update(&mut self, frame: Frame) {
-        // When the user pressed `q`, the program safely exits.
+        // When the user presses `q`, the program safely exits.
         if frame.context.keys_down().contains(&Scancode::Q) {
             self.should_quit = true;
             return; // No need to render anything past this point.
         }
         frame.buffer.set_string(
-            1, // Column index.
-            1, // Row index.
+            1, // Column index (x-coordinate).
+            1, // Row index (y-coordinate).
             format!("KEYS DOWN: {:?}", frame.context.keys_down()),
-            Style::new(), // No styling.
+            Style::new(), // No styling, cells will default to the user's terminal foreground color.
         );
     }
 
+    fn on_platform_request(&self, request: &str) -> Option<&str> {
+        // Terminals do not perform requests.
+        None
+    }
+
     fn should_exit(&self) -> bool {
+        // This function is called every frame.
         self.should_quit
     }
 }
 ```
+
+</details>
 
 ## Overview
 
@@ -74,7 +81,16 @@ The design of Dreg has been radical simplicity from the very start.
 
 ### Features
 
-- Runs on anything[^1].
+<details>
+<summary><strong>Runs on just about anything.</strong></summary>
+
+| Platform | Support |
+| --- | --- |
+| Terminal | ✔ Full support |
+| Web | ✔ Mostly supported |
+| Native | ✖ In progress |
+
+</details>
 
 ### Limitations
 
@@ -95,5 +111,3 @@ The design of Dreg has been radical simplicity from the very start.
 [Docs Badge]: https://img.shields.io/docsrs/dreg?logo=rust&style=flat-square&logoColor=E05D44
 [Docs]: https://docs.rs/dreg
 [License Badge]: https://img.shields.io/crates/l/dreg?style=flat-square&color=1370D3
-
-[^1]: It's not gonna run on your toaster, but it might run on your smart fridge.

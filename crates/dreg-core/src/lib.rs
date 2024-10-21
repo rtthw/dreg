@@ -33,7 +33,15 @@ pub fn run_program(program: impl Program, platform: impl Platform) -> Result<()>
 
 pub trait Program: 'static {
     fn update(&mut self, frame: Frame);
+
+    /// This function is called whenever the running platform needs some information from the
+    /// program.
+    ///
+    /// # Notes
+    /// - Never called by terminals.
+    /// - Called each update pass on web.
     fn on_platform_request(&self, request: &str) -> Option<&str>;
+
     fn should_exit(&self) -> bool;
 }
 
