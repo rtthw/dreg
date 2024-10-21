@@ -2,10 +2,11 @@
 <summary>Table of Contents</summary>
 
 - [Dreg](#dreg)
-  - [Quickstart](#quickstart)
+  - [Examples](#examples)
   - [Overview](#overview)
-    - [Design Philosophy](#design-philosophy)
+    - [Features](#features)
     - [Limitations](#limitations)
+    - [Design Philosophy](#design-philosophy)
   - [Acknowledgments](#acknowledgments)
   - [License](#license)
 
@@ -75,10 +76,6 @@ impl Program for MyProgram {
 
 ## Overview
 
-### Design Philosophy
-
-The design of Dreg has been radical simplicity from the very start.
-
 ### Features
 
 <details>
@@ -95,6 +92,10 @@ The design of Dreg has been radical simplicity from the very start.
 ### Limitations
 
 - No support for variable width fonts; even on platforms that do support them.
+
+### Design Philosophy
+
+The design of Dreg has been radical simplicity from the very start.
 
 ## Acknowledgments
 
