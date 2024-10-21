@@ -6,7 +6,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use dreg_core::prelude::*;
 use wasm_bindgen::{closure::Closure, JsCast as _, JsValue};
-use web_sys::{js_sys, CanvasRenderingContext2d, HtmlCanvasElement};
+use web_sys::{js_sys, CanvasRenderingContext2d, EventTarget, HtmlCanvasElement};
 
 
 
@@ -23,6 +23,7 @@ pub struct WasmPlatform {
     runner: Rc<RefCell<Option<Runner>>>,
     frame: Rc<RefCell<Option<AnimationFrameRequest>>>,
     resize_observer: Rc<RefCell<Option<ResizeObserverContext>>>,
+    event_handles: Rc<RefCell<Vec<EventHandle>>>,
 }
 
 impl Platform for WasmPlatform {
@@ -62,12 +63,45 @@ impl WasmPlatform {
             runner: Rc::new(RefCell::new(None)),
             frame: Default::default(),
             resize_observer: Default::default(),
+            event_handles: Rc::new(RefCell::new(Default::default())),
         }
     }
 
     fn try_lock(&self) -> Option<std::cell::RefMut<'_, Runner>> {
         let lock = self.runner.try_borrow_mut().ok()?;
         std::cell::RefMut::filter_map(lock, |lock| -> Option<&mut Runner> { lock.as_mut() }).ok()
+    }
+
+    pub fn add_event_listener<E: wasm_bindgen::JsCast>(
+        &self,
+        target: &web_sys::EventTarget,
+        event_name: &'static str,
+        mut closure: impl FnMut(E, &mut Runner) + 'static,
+    ) -> Result<(), wasm_bindgen::JsValue> {
+        let runner_ref = self.clone();
+
+        // Create a JS closure based on the FnMut provided.
+        let closure = Closure::wrap(Box::new(move |event: web_sys::Event| {
+            // Only call the wrapped closure if the platform is still available.
+            if let Some(mut runner_lock) = runner_ref.try_lock() {
+                // Cast the event to the expected event type.
+                let event = event.unchecked_into::<E>();
+                closure(event, &mut runner_lock);
+            }
+        }) as Box<dyn FnMut(web_sys::Event)>);
+
+        // Add the event listener to the target.
+        target.add_event_listener_with_callback(event_name, closure.as_ref().unchecked_ref())?;
+
+        // TODO: Remember the event to unsubscribe on poisoning.
+        let handle = EventHandle {
+            target: target.clone(),
+            event_name: event_name.to_owned(),
+            closure,
+        };
+        self.event_handles.borrow_mut().push(handle);
+
+        Ok(())
     }
 
     fn request_animation_frame(&self) -> Result<(), wasm_bindgen::JsValue> {
@@ -151,6 +185,7 @@ impl Runner {
         if let Some(font_size) = self.program.on_platform_request("font_size") {
             if let Ok(font_size) = font_size.parse::<u16>() {
                 self.font_size = font_size;
+                self.glyph_width = font_size / 2;
             }
         }
         if self.last_known_size != size {
@@ -194,14 +229,31 @@ impl Runner {
         let font = self.program.on_platform_request("font")
             .and_then(|s| Some(s.to_string()))
             .unwrap_or(format!("{}px monospace", self.font_size));
-        let text_color = self.program.on_platform_request("web::default_fill_style")
-            .unwrap_or("#bcbec4");
+        // let text_color = self.program.on_platform_request("web::default_fill_style")
+        //     .unwrap_or("#bcbec4");
         self.canvas_context.set_font(&font);
-        self.canvas_context.set_fill_style_str(text_color);
+        // self.canvas_context.set_fill_style_str(text_color);
         self.canvas_context.set_text_align("center");
+        self.canvas_context.set_text_baseline("middle");
         for (x, y, cell) in updates {
-            let (real_x, real_y) = (self.glyph_width * (x + 1), self.font_size * (y + 1));
-            let _r = self.canvas_context.fill_text(cell.symbol(), real_x as f64, real_y as f64);
+            let (cell_w, cell_h) = (self.glyph_width as f64, self.font_size as f64 * 1.1);
+            let (cell_x, cell_y) = (cell_w * (x as f64 + 1.0), cell_h * (y as f64+ 1.0));
+
+            self.canvas_context.clear_rect(
+                cell_x - (cell_w * 0.5),
+                cell_y - (cell_h * 0.5),
+                cell_w,
+                cell_h,
+            );
+            self.canvas_context.set_fill_style_str(&cell.bg.to_string().to_lowercase());
+            self.canvas_context.fill_rect(
+                cell_x - (cell_w * 0.5),
+                cell_y - (cell_h * 0.5),
+                cell_w,
+                cell_h,
+            );
+            self.canvas_context.set_fill_style_str(&cell.fg.to_string().to_lowercase());
+            let _r = self.canvas_context.fill_text(cell.symbol(), cell_x, cell_y);
         }
     }
 
@@ -227,6 +279,11 @@ struct ResizeObserverContext {
     closure: Closure<dyn FnMut(js_sys::Array)>,
 }
 
+struct EventHandle {
+    target: web_sys::EventTarget,
+    event_name: String,
+    closure: Closure<dyn FnMut(web_sys::Event)>,
+}
 
 
 fn update_platform(platform: &WasmPlatform) -> Result<(), wasm_bindgen::JsValue> {
@@ -240,16 +297,30 @@ fn update_platform(platform: &WasmPlatform) -> Result<(), wasm_bindgen::JsValue>
 }
 
 // TODO: Implement the event-handling system.
-fn install_event_handlers(_proxy: &WasmPlatform) -> Result<(), JsValue> {
+fn install_event_handlers(platform: &WasmPlatform) -> Result<(), JsValue> {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let canvas = platform.try_lock().unwrap().canvas().clone();
+
+    install_mousemove(platform, &document)?;
+
     Ok(())
 }
 
-fn install_resize_observer(proxy: &WasmPlatform) -> Result<(), JsValue> {
+fn install_mousemove(platform: &WasmPlatform, target: &EventTarget) -> Result<(), JsValue> {
+    platform.add_event_listener(target, "mousemove", |event: web_sys::MouseEvent, runner| {
+        let (x, y) = pos_from_mouse_event(&event, runner.dimensions);
+        runner.program.on_input(Input::MouseMove(x, y));
+        event.prevent_default();
+    })
+}
+
+fn install_resize_observer(platform: &WasmPlatform) -> Result<(), JsValue> {
     let closure = Closure::wrap(Box::new({
-        let runner_ref = proxy.clone();
+        let platform = platform.clone();
         move |entries: js_sys::Array| {
             // Only call the wrapped closure if the egui code has not panicked
-            if let Some(mut runner_lock) = runner_ref.try_lock() {
+            if let Some(mut runner_lock) = platform.try_lock() {
                 let canvas = runner_lock.canvas();
                 let (width, height) = match get_display_size(&entries) {
                     Ok(v) => v,
@@ -265,7 +336,7 @@ fn install_resize_observer(proxy: &WasmPlatform) -> Result<(), JsValue> {
                 runner_lock.update();
                 drop(runner_lock);
                 // we rely on the resize observer to trigger the first `request_animation_frame`:
-                if let Err(_e) = runner_ref.request_animation_frame() {
+                if let Err(_e) = platform.request_animation_frame() {
                     // TODO: Logging.
                 };
             }
@@ -275,10 +346,10 @@ fn install_resize_observer(proxy: &WasmPlatform) -> Result<(), JsValue> {
     let observer = web_sys::ResizeObserver::new(closure.as_ref().unchecked_ref())?;
     let options = web_sys::ResizeObserverOptions::new();
     options.set_box(web_sys::ResizeObserverBoxOptions::ContentBox);
-    if let Some(runner_lock) = proxy.try_lock() {
+    if let Some(runner_lock) = platform.try_lock() {
         observer.observe_with_options(runner_lock.canvas(), &options);
         drop(runner_lock);
-        proxy.set_resize_observer(observer, closure);
+        platform.set_resize_observer(observer, closure);
     }
 
     Ok(())
@@ -322,4 +393,14 @@ fn get_display_size(resize_observer_entries: &js_sys::Array) -> Result<(u32, u32
     }
 
     Ok(((width.round() * dpr) as u32, (height.round() * dpr) as u32))
+}
+
+fn pos_from_mouse_event(
+    event: &web_sys::MouseEvent,
+    (cols, rows): (u16, u16),
+) -> (u16, u16) {
+    (
+        event.client_x() as u16 / cols,
+        event.client_y() as u16 / rows,
+    )
 }
