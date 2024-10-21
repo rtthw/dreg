@@ -283,4 +283,6 @@ impl Scancode {
     pub const LMB: Self = Self(0x110);
     pub const RMB: Self = Self(0x111);
     pub const MMB: Self = Self(0x112);
+    pub const MOUSE_FORWARD: Self = Self(0x115);
+    pub const MOUSE_BACK: Self = Self(0x116);
 }

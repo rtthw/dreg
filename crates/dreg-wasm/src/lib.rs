@@ -303,6 +303,8 @@ fn install_event_handlers(platform: &WasmPlatform) -> Result<(), JsValue> {
     let canvas = platform.try_lock().unwrap().canvas().clone();
 
     install_mousemove(platform, &document)?;
+    install_pointerdown(platform, &canvas)?;
+    install_pointerup(platform, &document)?;
 
     Ok(())
 }
@@ -312,6 +314,26 @@ fn install_mousemove(platform: &WasmPlatform, target: &EventTarget) -> Result<()
         let (x, y) = pos_from_mouse_event(&event, runner.dimensions);
         runner.program.on_input(Input::MouseMove(x, y));
         event.prevent_default();
+    })
+}
+
+fn install_pointerdown(platform: &WasmPlatform, target: &EventTarget) -> Result<(), JsValue> {
+    platform.add_event_listener(target, "pointerdown", |event: web_sys::PointerEvent, runner| {
+        // let (x, y) = pos_from_mouse_event(&event, runner.dimensions);
+        if let Some(scancode) = scancode_from_mouse_event(&event) {
+            runner.program.on_input(Input::KeyDown(scancode));
+            event.prevent_default();
+        }
+    })
+}
+
+fn install_pointerup(platform: &WasmPlatform, target: &EventTarget) -> Result<(), JsValue> {
+    platform.add_event_listener(target, "pointerup", |event: web_sys::PointerEvent, runner| {
+        // let (x, y) = pos_from_mouse_event(&event, runner.dimensions);
+        if let Some(scancode) = scancode_from_mouse_event(&event) {
+            runner.program.on_input(Input::KeyUp(scancode));
+            event.prevent_default();
+        }
     })
 }
 
@@ -395,12 +417,20 @@ fn get_display_size(resize_observer_entries: &js_sys::Array) -> Result<(u32, u32
     Ok(((width.round() * dpr) as u32, (height.round() * dpr) as u32))
 }
 
-fn pos_from_mouse_event(
-    event: &web_sys::MouseEvent,
-    (cols, rows): (u16, u16),
-) -> (u16, u16) {
+fn pos_from_mouse_event(event: &web_sys::MouseEvent, (cols, rows): (u16, u16)) -> (u16, u16) {
     (
         event.screen_x() as u16 / rows,
         event.screen_y() as u16 / cols,
     )
+}
+
+fn scancode_from_mouse_event(event: &web_sys::MouseEvent) -> Option<Scancode> {
+    match event.button() {
+        0 => Some(Scancode::LMB),
+        1 => Some(Scancode::MMB),
+        2 => Some(Scancode::RMB),
+        3 => Some(Scancode::MOUSE_BACK),
+        4 => Some(Scancode::MOUSE_FORWARD),
+        _ => None,
+    }
 }

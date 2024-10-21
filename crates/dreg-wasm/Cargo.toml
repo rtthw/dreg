@@ -23,6 +23,7 @@ web-sys = { version = "0.3.72", features = [
     "HtmlElement",
     "MouseEvent",
     "Node",
+    "PointerEvent",
     "ResizeObserver",
     "ResizeObserverBoxOptions", # dreg_wasm::install_resize_observer
     "ResizeObserverEntry",      # dreg_wasm::get_display_size
