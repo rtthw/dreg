@@ -400,7 +400,7 @@ fn pos_from_mouse_event(
     (cols, rows): (u16, u16),
 ) -> (u16, u16) {
     (
-        event.client_x() as u16 / cols,
-        event.client_y() as u16 / rows,
+        event.screen_x() as u16 / rows,
+        event.screen_y() as u16 / cols,
     )
 }
