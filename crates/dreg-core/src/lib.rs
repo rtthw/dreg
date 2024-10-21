@@ -34,6 +34,9 @@ pub fn run_program(program: impl Program, platform: impl Platform) -> Result<()>
 pub trait Program: 'static {
     fn update(&mut self, frame: Frame);
 
+    /// This function is called whenever the running platform receives some user [`Input`].
+    fn on_input(&mut self, input: Input);
+
     /// This function is called whenever the running platform needs some information from the
     /// program.
     ///
