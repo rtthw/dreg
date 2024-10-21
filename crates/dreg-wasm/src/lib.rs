@@ -43,8 +43,6 @@ impl Platform for WasmPlatform {
             // Don't outline the canvas when it has focus:
             runner.canvas().style().set_property("outline", "none")
                 .map_err(|e| anyhow::anyhow!("could not set canvas style: {e:?}"))?;
-            runner.canvas().style().set_property("background-color", "#1e1f22")
-                .map_err(|e| anyhow::anyhow!("could not set canvas style: {e:?}"))?;
         }
         self.runner.replace(Some(runner));
         {
@@ -130,8 +128,6 @@ impl Runner {
             .ok_or(anyhow::anyhow!("canvas 2D rendering context should exist"))?
             .dyn_into::<CanvasRenderingContext2d>()
             .map_err(|_| anyhow::anyhow!("canvas 2D should be a rendering context"))?;
-        // let text_metrics = canvas_context.measure_text("█")
-        //     .map_err(|_| anyhow::anyhow!("canvas context cannot measure text"))?;
 
         Ok(Self {
             program,
@@ -141,7 +137,7 @@ impl Runner {
             buffers: [Buffer::empty(Rect::ZERO), Buffer::empty(Rect::ZERO)],
             current: 0,
             font_size: 31,
-            glyph_width: 19, // text_metrics.width() as u16,
+            glyph_width: 19,
             last_known_size: (0, 0),
             dimensions: (0, 0),
         })
@@ -152,6 +148,11 @@ impl Runner {
     }
 
     fn autoresize(&mut self, size: (u32, u32)) {
+        if let Some(font_size) = self.program.on_platform_request("font_size") {
+            if let Ok(font_size) = font_size.parse::<u16>() {
+                self.font_size = font_size;
+            }
+        }
         if self.last_known_size != size {
             let width = size.0 as u16 / self.glyph_width;
             let height = size.1 as u16 / self.font_size;
@@ -189,9 +190,15 @@ impl Runner {
         let current_buffer = &self.buffers[self.current];
         let updates = previous_buffer.diff(current_buffer).into_iter();
 
-        self.canvas_context.set_font("31px \"Courier New\", monospace");
+        // HACK: This is so convoluted because `format!` returns a String.
+        let font = self.program.on_platform_request("font")
+            .and_then(|s| Some(s.to_string()))
+            .unwrap_or(format!("{}px monospace", self.font_size));
+        let text_color = self.program.on_platform_request("web::default_fill_style")
+            .unwrap_or("#bcbec4");
+        self.canvas_context.set_font(&font);
+        self.canvas_context.set_fill_style_str(text_color);
         self.canvas_context.set_text_align("center");
-        self.canvas_context.set_fill_style_str("#bcbec4");
         for (x, y, cell) in updates {
             let (real_x, real_y) = (self.glyph_width * (x + 1), self.font_size * (y + 1));
             let _r = self.canvas_context.fill_text(cell.symbol(), real_x as f64, real_y as f64);

@@ -33,6 +33,7 @@ pub fn run_program(program: impl Program, platform: impl Platform) -> Result<()>
 
 pub trait Program: 'static {
     fn update(&mut self, frame: Frame);
+    fn on_platform_request(&self, request: &str) -> Option<&str>;
     fn should_exit(&self) -> bool;
 }
 
