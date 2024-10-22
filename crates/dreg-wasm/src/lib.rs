@@ -149,8 +149,8 @@ pub struct Runner {
     context: Context,
     buffers: [Buffer; 2],
     current: usize,
-    font_size: u16,
-    glyph_width: u16,
+    font_height: f64,
+    glyph_width: f64,
     last_known_size: (u32, u32),
     dimensions: (u16, u16),
 }
@@ -170,8 +170,8 @@ impl Runner {
             context: Context::default(),
             buffers: [Buffer::empty(Rect::ZERO), Buffer::empty(Rect::ZERO)],
             current: 0,
-            font_size: 31,
-            glyph_width: 19,
+            font_height: 0.0,
+            glyph_width: 0.0,
             last_known_size: (0, 0),
             dimensions: (0, 0),
         })
@@ -182,17 +182,18 @@ impl Runner {
     }
 
     fn autoresize(&mut self, size: (u32, u32)) {
-        if let Some(font_size) = self.program.on_platform_request("font_size") {
-            if let Ok(font_size) = font_size.parse::<u16>() {
-                self.font_size = font_size;
-                self.glyph_width = font_size / 2;
-            }
-        }
         if self.last_known_size != size {
-            let width = size.0 as u16 / self.glyph_width;
-            let height = size.1 as u16 / self.font_size;
+            let font = self.program.on_platform_request("font").unwrap();
+            self.canvas_context.set_font(&font);
+            let text_metrics = self.canvas_context.measure_text("█").unwrap();
+            self.font_height = text_metrics.actual_bounding_box_ascent().abs()
+                + text_metrics.actual_bounding_box_descent().abs();
+            self.glyph_width = text_metrics.actual_bounding_box_left().abs()
+                + text_metrics.actual_bounding_box_right().abs();
+            let width = size.0 as f64 / self.glyph_width;
+            let height = size.1 as f64 / self.font_height;
 
-            self.resize(Rect::new(0, 0, width, height));
+            self.resize(Rect::new(0, 0, width.floor() as u16, height.floor() as u16));
             self.last_known_size = size;
         }
     }
@@ -201,6 +202,7 @@ impl Runner {
         self.buffers[self.current].resize(area);
         self.buffers[1 - self.current].resize(area);
         self.dimensions = (area.width, area.height);
+        self.buffers[1 - self.current].reset();
     }
 
     fn canvas(&self) -> &HtmlCanvasElement {
@@ -225,19 +227,14 @@ impl Runner {
         let current_buffer = &self.buffers[self.current];
         let updates = previous_buffer.diff(current_buffer).into_iter();
 
-        // HACK: This is so convoluted because `format!` returns a String.
-        let font = self.program.on_platform_request("font")
-            .and_then(|s| Some(s.to_string()))
-            .unwrap_or(format!("{}px monospace", self.font_size));
         // let text_color = self.program.on_platform_request("web::default_fill_style")
         //     .unwrap_or("#bcbec4");
-        self.canvas_context.set_font(&font);
         // self.canvas_context.set_fill_style_str(text_color);
         self.canvas_context.set_text_align("center");
         self.canvas_context.set_text_baseline("middle");
         for (x, y, cell) in updates {
-            let (cell_w, cell_h) = (self.glyph_width as f64, self.font_size as f64 * 1.1);
-            let (cell_x, cell_y) = (cell_w * (x as f64 + 1.0), cell_h * (y as f64+ 1.0));
+            let (cell_w, cell_h) = (self.glyph_width, self.font_height);
+            let (cell_x, cell_y) = (cell_w * x as f64, cell_h * y as f64);
 
             self.canvas_context.clear_rect(
                 cell_x - (cell_w * 0.5),
@@ -245,13 +242,13 @@ impl Runner {
                 cell_w,
                 cell_h,
             );
-            self.canvas_context.set_fill_style_str(&cell.bg.to_string().to_lowercase());
-            self.canvas_context.fill_rect(
-                cell_x - (cell_w * 0.5),
-                cell_y - (cell_h * 0.5),
-                cell_w,
-                cell_h,
-            );
+            // self.canvas_context.set_fill_style_str(&cell.bg.to_string().to_lowercase());
+            // self.canvas_context.fill_rect(
+            //     cell_x - (cell_w * 0.5),
+            //     cell_y - (cell_h * 0.5),
+            //     cell_w,
+            //     cell_h,
+            // );
             self.canvas_context.set_fill_style_str(&cell.fg.to_string().to_lowercase());
             let _r = self.canvas_context.fill_text(cell.symbol(), cell_x, cell_y);
         }
