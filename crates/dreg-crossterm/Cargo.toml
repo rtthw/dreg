@@ -8,7 +8,7 @@ repository = "https://github.com/rtthw/dreg/tree/master/crates/dreg-crossterm"
 license.workspace = true
 
 [features]
-underline-color = []
+underline-color = ["dreg-core/underline-color"]
 
 [dependencies]
 dreg-core = { workspace = true }

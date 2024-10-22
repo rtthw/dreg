@@ -7,6 +7,9 @@ homepage.workspace = true
 repository = "https://github.com/rtthw/dreg/tree/master/crates/dreg-core"
 license.workspace = true
 
+[features]
+underline-color = []
+
 [dependencies]
 anyhow = "1"
 bitflags = "2.6.0"

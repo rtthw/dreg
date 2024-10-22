@@ -128,9 +128,9 @@ impl CrosstermPlatform {
         let previous_buffer = &self.buffers[1 - self.current];
         let current_buffer = &self.buffers[self.current];
         let updates = previous_buffer.diff(current_buffer);
-        if let Some((col, row, _)) = updates.last() {
-            // self.last_known_cursor_pos = (*col, *row);
-        }
+        // if let Some((col, row, _)) = updates.last() {
+        //     self.last_known_cursor_pos = (*col, *row);
+        // }
         let content = updates.into_iter();
 
         let mut writer = stdout();
@@ -228,7 +228,7 @@ fn release_terminal() -> Result<()> {
 
 fn handle_crossterm_event(ctx: &mut Context, event: Event) {
     match event {
-        Event::Key(KeyEvent { code, modifiers, kind, state }) => {
+        Event::Key(KeyEvent { code, modifiers, kind, .. }) => {
             let mut scancodes = vec![];
             if modifiers != KeyModifiers::NONE {
                 for m in modifiers.iter() {
@@ -424,6 +424,7 @@ impl ModifierDiff {
     }
 }
 
+#[allow(unused)]
 fn translate_attribute(value: CtAttribute) -> Modifier {
     // `Attribute*s*` (note the *s*) contains multiple `Attribute`
     // We convert `Attribute` to `Attribute*s*` (containing only 1 value) to avoid implementing
@@ -431,6 +432,7 @@ fn translate_attribute(value: CtAttribute) -> Modifier {
     translate_attributes(CtAttributes::from(value))
 }
 
+#[allow(unused)]
 fn translate_attributes(value: CtAttributes) -> Modifier {
     let mut res = Modifier::empty();
 
@@ -496,6 +498,7 @@ fn dreg_color_to_crossterm_color(color: Color) -> CColor {
     }
 }
 
+#[allow(unused)]
 fn crossterm_color_to_dreg_color(value: CColor) -> Color {
     match value {
         CColor::Reset => Color::Reset,

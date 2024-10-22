@@ -267,6 +267,7 @@ impl Runner {
 
 
 // https://rustwasm.github.io/wasm-bindgen/api/wasm_bindgen/closure/struct.Closure.html#using-fnonce-and-closureonce-with-requestanimationframe
+#[allow(unused)]
 struct AnimationFrameRequest {
     id: i32,
     /// The callback given to `request_animation_frame`, stored here both to prevent it
@@ -274,11 +275,13 @@ struct AnimationFrameRequest {
     _closure: Closure<dyn FnMut() -> Result<(), wasm_bindgen::JsValue>>,
 }
 
+#[allow(unused)]
 struct ResizeObserverContext {
     resize_observer: web_sys::ResizeObserver,
     closure: Closure<dyn FnMut(js_sys::Array)>,
 }
 
+#[allow(unused)]
 struct EventHandle {
     target: web_sys::EventTarget,
     event_name: String,

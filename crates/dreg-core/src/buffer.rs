@@ -384,7 +384,7 @@ impl Cell {
     /// details on this.
     pub const fn new(symbol: &'static str) -> Self {
         Self {
-            symbol: CompactString::new_inline(symbol),
+            symbol: CompactString::const_new(symbol),
             fg: Color::Reset,
             bg: Color::Reset,
             #[cfg(feature = "underline-color")]
@@ -406,13 +406,13 @@ impl Cell {
         self
     }
 
-    /// Appends a symbol to the cell.
-    ///
-    /// This is particularly useful for adding zero-width characters to the cell.
-    pub(crate) fn append_symbol(&mut self, symbol: &str) -> &mut Self {
-        self.symbol.push_str(symbol);
-        self
-    }
+    // /// Appends a symbol to the cell.
+    // ///
+    // /// This is particularly useful for adding zero-width characters to the cell.
+    // pub(crate) fn append_symbol(&mut self, symbol: &str) -> &mut Self {
+    //     self.symbol.push_str(symbol);
+    //     self
+    // }
 
     /// Sets the symbol of the cell to a single character.
     pub fn set_char(&mut self, ch: char) -> &mut Self {
@@ -479,7 +479,7 @@ impl Cell {
 
     /// Resets the cell to the empty state.
     pub fn reset(&mut self) {
-        self.symbol = CompactString::new_inline(" ");
+        self.symbol = CompactString::const_new(" ");
         self.fg = Color::Reset;
         self.bg = Color::Reset;
         #[cfg(feature = "underline-color")]
