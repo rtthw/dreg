@@ -230,18 +230,14 @@ impl Runner {
         // let text_color = self.program.on_platform_request("web::default_fill_style")
         //     .unwrap_or("#bcbec4");
         // self.canvas_context.set_fill_style_str(text_color);
-        self.canvas_context.set_text_align("center");
-        self.canvas_context.set_text_baseline("middle");
+        self.canvas_context.set_text_align("left");
+        self.canvas_context.set_text_baseline("top");
         for (x, y, cell) in updates {
             let (cell_w, cell_h) = (self.glyph_width, self.font_height);
             let (cell_x, cell_y) = (cell_w * x as f64, cell_h * y as f64);
+            let (real_x, real_y) = (cell_x - (cell_w * 0.5), cell_y - (cell_h * 0.5));
 
-            self.canvas_context.clear_rect(
-                cell_x - (cell_w * 0.5),
-                cell_y - (cell_h * 0.5),
-                cell_w,
-                cell_h,
-            );
+            self.canvas_context.clear_rect(cell_x, cell_y, cell_w, cell_h);
             // self.canvas_context.set_fill_style_str(&cell.bg.to_string().to_lowercase());
             // self.canvas_context.fill_rect(
             //     cell_x - (cell_w * 0.5),
