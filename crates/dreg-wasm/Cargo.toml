@@ -21,6 +21,7 @@ web-sys = { version = "0.3.72", features = [
     "EventTarget",
     "HtmlCanvasElement",
     "HtmlElement",
+    "KeyboardEvent",
     "MouseEvent",
     "Node",
     "PointerEvent",

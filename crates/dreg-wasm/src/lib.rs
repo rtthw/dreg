@@ -305,11 +305,32 @@ fn install_event_handlers(platform: &WasmPlatform) -> Result<(), JsValue> {
     let document = window.document().unwrap();
     let canvas = platform.try_lock().unwrap().canvas().clone();
 
+    install_keydown(platform, &canvas)?;
+    install_keyup(platform, &canvas)?;
+
     install_mousemove(platform, &document)?;
     install_pointerdown(platform, &canvas)?;
     install_pointerup(platform, &document)?;
 
     Ok(())
+}
+
+fn install_keydown(platform: &WasmPlatform, target: &EventTarget) -> Result<(), JsValue> {
+    platform.add_event_listener(target, "keydown", |event: web_sys::KeyboardEvent, runner| {
+        if let Some(scancode) = scancode_from_keyboard_event(&event) {
+            runner.program.on_input(Input::KeyDown(scancode));
+            event.prevent_default();
+        }
+    })
+}
+
+fn install_keyup(platform: &WasmPlatform, target: &EventTarget) -> Result<(), JsValue> {
+    platform.add_event_listener(target, "keyup", |event: web_sys::KeyboardEvent, runner| {
+        if let Some(scancode) = scancode_from_keyboard_event(&event) {
+            runner.program.on_input(Input::KeyUp(scancode));
+            event.prevent_default();
+        }
+    })
 }
 
 fn install_mousemove(platform: &WasmPlatform, target: &EventTarget) -> Result<(), JsValue> {
@@ -425,6 +446,57 @@ fn pos_from_mouse_event(event: &web_sys::MouseEvent, (cols, rows): (u16, u16)) -
         event.screen_x() as u16 / rows,
         event.screen_y() as u16 / cols,
     )
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
+fn scancode_from_keyboard_event(event: &web_sys::KeyboardEvent) -> Option<Scancode> {
+    match event.key().as_ref() {
+        "Alt" => Some(Scancode::L_ALT),
+        "CapsLock" => Some(Scancode::CAPSLOCK),
+        "Control" => Some(Scancode::L_CTRL),
+        // "Fn" => Some(Scancode::),
+        "Shift" => Some(Scancode::L_SHIFT),
+        // "Super" => Some(Scancode::SUPER),
+        "Enter" => Some(Scancode::ENTER),
+        "Tab" => Some(Scancode::TAB),
+        " " => Some(Scancode::SPACE),
+        "ArrowDown" => Some(Scancode::DOWN),
+        "ArrowLeft" => Some(Scancode::LEFT),
+        "ArrowRight" => Some(Scancode::RIGHT),
+        "ArrowUp" => Some(Scancode::UP),
+        "End" => Some(Scancode::END),
+        "Home" => Some(Scancode::HOME),
+        "PageDown" => Some(Scancode::PAGEDOWN),
+        "PageUp" => Some(Scancode::PAGEUP),
+        "Backspace" => Some(Scancode::BACKSPACE),
+        "Delete" => Some(Scancode::DELETE),
+        "Insert" => Some(Scancode::INSERT),
+        // "ContextMenu" => Some(Scancode::MENU), // The one next to R_CTRL.
+        "Escape" => Some(Scancode::ESC),
+        "F1" => Some(Scancode::F1),
+        "F2" => Some(Scancode::F2),
+        "F3" => Some(Scancode::F3),
+        "F4" => Some(Scancode::F4),
+        "F5" => Some(Scancode::F5),
+        "F6" => Some(Scancode::F6),
+        "F7" => Some(Scancode::F7),
+        "F8" => Some(Scancode::F8),
+        "F9" => Some(Scancode::F9),
+        "F10" => Some(Scancode::F10),
+        // "F11" => Some(Scancode::F11),
+        // "F12" => Some(Scancode::F12),
+
+        key => {
+            if key.len() != 1 {
+                return None;
+            }
+            if let Some(c) = key.chars().last() {
+                Some(Scancode::from_char(c).1)
+            } else {
+                None
+            }
+        }
+    }
 }
 
 fn scancode_from_mouse_event(event: &web_sys::MouseEvent) -> Option<Scancode> {
