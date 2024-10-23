@@ -53,7 +53,7 @@ impl Platform for CrosstermPlatform {
         while !program.should_exit() {
             if crossterm::event::poll(std::time::Duration::from_millis(31))? {
                 let event = crossterm::event::read()?;
-                handle_crossterm_event(&mut self.ctx, event);
+                handle_crossterm_event(&mut program, event);
             }
 
             self.autoresize()?;
@@ -226,7 +226,7 @@ fn release_terminal() -> Result<()> {
 
 
 
-fn handle_crossterm_event(ctx: &mut Context, event: Event) {
+fn handle_crossterm_event(program: &mut impl Program, event: Event) {
     match event {
         Event::Key(KeyEvent { code, modifiers, kind, .. }) => {
             let mut scancodes = vec![];
@@ -244,12 +244,12 @@ fn handle_crossterm_event(ctx: &mut Context, event: Event) {
             match kind {
                 KeyEventKind::Press => {
                     for scancode in scancodes {
-                        ctx.handle_key_down(scancode);
+                        program.on_input(Input::KeyDown(scancode));
                     }
                 }
                 KeyEventKind::Release => {
                     for scancode in scancodes {
-                        ctx.handle_key_up(&scancode);
+                        program.on_input(Input::KeyUp(scancode));
                     }
                 }
                 _ => {} // Do nothing.
@@ -258,7 +258,7 @@ fn handle_crossterm_event(ctx: &mut Context, event: Event) {
         Event::Mouse(MouseEvent { kind, column, row, .. }) => {
             match kind {
                 MouseEventKind::Moved | MouseEventKind::Drag(_) => {
-                    ctx.handle_input(Input::MouseMove(column, row));
+                    program.on_input(Input::MouseMove(column, row));
                 }
                 MouseEventKind::Down(btn) => {
                     let code = match btn {
@@ -266,7 +266,7 @@ fn handle_crossterm_event(ctx: &mut Context, event: Event) {
                         MouseButton::Right => Scancode::RMB,
                         MouseButton::Middle => Scancode::MMB,
                     };
-                    ctx.handle_key_down(code);
+                    program.on_input(Input::KeyDown(code));
                 }
                 MouseEventKind::Up(btn) => {
                     let code = match btn {
@@ -274,19 +274,19 @@ fn handle_crossterm_event(ctx: &mut Context, event: Event) {
                         MouseButton::Right => Scancode::RMB,
                         MouseButton::Middle => Scancode::MMB,
                     };
-                    ctx.handle_key_up(&code);
+                    program.on_input(Input::KeyUp(code));
                 }
                 _ => {} // TODO: Handle scroll wheel events.
             }
         }
         Event::FocusGained => {
-            ctx.handle_input(Input::FocusChange(true));
+            program.on_input(Input::FocusChange(true));
         }
         Event::FocusLost => {
-            ctx.handle_input(Input::FocusChange(false));
+            program.on_input(Input::FocusChange(false));
         }
         Event::Resize(new_cols, new_rows) => {
-            ctx.handle_input(Input::Resize(new_cols, new_rows));
+            program.on_input(Input::Resize(new_cols, new_rows));
         }
         _ => {}
     }
