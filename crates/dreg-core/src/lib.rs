@@ -2,7 +2,7 @@
 
 
 pub mod buffer;
-pub mod context;
+pub mod input;
 pub mod primitives;
 pub mod style;
 
@@ -12,7 +12,7 @@ pub mod prelude {
         buffer::{Buffer, Cell},
         primitives::Rect,
         style::{Color, ColorMode, Modifier, Style},
-        context::{InputContext, Input, Scancode},
+        input::{InputContext, Input, Scancode},
         Frame,
         Platform,
         Program,
