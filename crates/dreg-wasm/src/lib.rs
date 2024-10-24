@@ -146,7 +146,6 @@ pub struct Runner {
     program: Box<dyn Program>,
     canvas: HtmlCanvasElement,
     canvas_context: CanvasRenderingContext2d,
-    context: Context,
     buffers: [Buffer; 2],
     current: usize,
     font_height: f64,
@@ -167,7 +166,6 @@ impl Runner {
             program,
             canvas,
             canvas_context,
-            context: Context::default(),
             buffers: [Buffer::empty(Rect::ZERO), Buffer::empty(Rect::ZERO)],
             current: 0,
             font_height: 0.0,
@@ -213,7 +211,6 @@ impl Runner {
         self.autoresize((self.canvas.width(), self.canvas.height()));
         let size = self.size();
         let frame = Frame {
-            context: &mut self.context,
             area: size,
             buffer: &mut self.buffers[self.current],
         };

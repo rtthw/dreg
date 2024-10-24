@@ -35,8 +35,6 @@ pub mod prelude {
 
 
 pub struct CrosstermPlatform {
-    ctx: Context,
-
     /// Holds the results of the current and previous draw calls. The two are compared at the end
     /// of each draw pass to output the necessary updates to the terminal
     buffers: [Buffer; 2],
@@ -60,7 +58,6 @@ impl Platform for CrosstermPlatform {
 
             let size = self.size()?;
             let frame = Frame {
-                context: &mut self.ctx,
                 area: size,
                 buffer: &mut self.buffers[self.current],
             };
@@ -82,7 +79,6 @@ impl CrosstermPlatform {
         let size = Rect::new(0, 0, width, height);
 
         Ok(Self {
-            ctx: Context::default(),
             buffers: [Buffer::empty(size), Buffer::empty(size)],
             current: 0,
             viewport_area: size,

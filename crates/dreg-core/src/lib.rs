@@ -53,7 +53,6 @@ pub trait Platform {
 }
 
 pub struct Frame<'a> {
-    pub context: &'a mut Context,
     pub area: Rect,
     pub buffer: &'a mut Buffer,
 }
