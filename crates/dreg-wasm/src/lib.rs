@@ -222,15 +222,17 @@ impl Runner {
         self.swap_buffers();
     }
 
-    fn render(&self) {
+    fn render(&mut self) {
         let previous_buffer = &self.buffers[1 - self.current];
         let current_buffer = &self.buffers[self.current];
         let updates = previous_buffer.diff(current_buffer).into_iter();
 
         let fg_color = self.program.on_platform_request("web::default_fg_style")
-            .unwrap_or("#bcbec4");
+            .unwrap_or("#bcbec4")
+            .to_string();
         let bg_color = self.program.on_platform_request("web::default_bg_style")
-            .unwrap_or("#1e1f22");
+            .unwrap_or("#1e1f22")
+            .to_string();
 
         self.canvas_context.set_text_align("left");
         self.canvas_context.set_text_baseline("top");
@@ -245,14 +247,14 @@ impl Runner {
             self.canvas_context.clear_rect(cell_x, cell_y, cell_w, cell_h);
 
             let mut fg_style = if cell.fg == Color::Reset {
-                fg_color
+                fg_color.clone()
             } else {
-                &cell.fg.to_string().to_lowercase()
+                cell.fg.to_string().to_lowercase()
             };
             let mut bg_style = if cell.fg == Color::Reset {
-                bg_color
+                bg_color.clone()
             } else {
-                &cell.fg.to_string().to_lowercase()
+                cell.fg.to_string().to_lowercase()
             };
             let mut draw_line_at: Option<f64> = None;
             for m in cell.modifier.iter() {
@@ -279,13 +281,13 @@ impl Runner {
                 }
             }
             self.canvas_context.set_font(&font);
-            self.canvas_context.set_fill_style_str(bg_style);
+            self.canvas_context.set_fill_style_str(&bg_style);
             self.canvas_context.fill_rect(cell_x, cell_y, cell_w, cell_h);
-            self.canvas_context.set_fill_style_str(fg_style);
+            self.canvas_context.set_fill_style_str(&fg_style);
             let _r = self.canvas_context.fill_text(cell.symbol(), cell_x, cell_y);
             if let Some(line_y_pos) = draw_line_at {
                 self.canvas_context.begin_path();
-                self.canvas_context.set_stroke_style_str(fg_style);
+                self.canvas_context.set_stroke_style_str(&fg_style);
                 self.canvas_context.set_line_width(2.0); // TODO
                 self.canvas_context.move_to(cell_x, line_y_pos);
                 self.canvas_context.line_to(cell_x + cell_w, line_y_pos);

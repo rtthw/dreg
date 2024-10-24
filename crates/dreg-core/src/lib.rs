@@ -43,7 +43,7 @@ pub trait Program: 'static {
     /// # Notes
     /// - Never called by terminals.
     /// - Called each update pass on web.
-    fn on_platform_request(&self, request: &str) -> Option<&str>;
+    fn on_platform_request(&mut self, request: &str) -> Option<&str>;
 
     fn should_exit(&self) -> bool;
 }
