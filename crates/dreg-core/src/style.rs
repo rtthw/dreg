@@ -263,6 +263,10 @@ bitflags::bitflags! {
     ///
     /// let m = Modifier::BOLD | Modifier::ITALIC;
     /// ```
+    ///
+    /// ## Notes
+    ///
+    /// - Due to platform limitations, some modifiers may not work on some platforms.
     #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
     pub struct Modifier: u16 {
         const BOLD              = 0b0000_0000_0001;

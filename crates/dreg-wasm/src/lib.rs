@@ -183,7 +183,7 @@ impl Runner {
 
     fn autoresize(&mut self, size: (u32, u32)) {
         if self.last_known_size != size {
-            let font = self.program.on_platform_request("font").unwrap();
+            let font = self.program.on_platform_request("font").unwrap_or("30px monospace");
             self.canvas_context.set_font(&font);
             let text_metrics = self.canvas_context.measure_text("█").unwrap();
             self.font_height = text_metrics.actual_bounding_box_ascent().abs()
@@ -227,27 +227,70 @@ impl Runner {
         let current_buffer = &self.buffers[self.current];
         let updates = previous_buffer.diff(current_buffer).into_iter();
 
-        let text_color = self.program.on_platform_request("web::default_fill_style")
+        let fg_color = self.program.on_platform_request("web::default_fg_style")
             .unwrap_or("#bcbec4");
-        // self.canvas_context.set_fill_style_str(text_color);
+        let bg_color = self.program.on_platform_request("web::default_bg_style")
+            .unwrap_or("#1e1f22");
+
         self.canvas_context.set_text_align("left");
         self.canvas_context.set_text_baseline("top");
-        for (x, y, cell) in updates {
+
+        'update_loop: for (x, y, cell) in updates {
             let (cell_w, cell_h) = (self.glyph_width, self.font_height);
             let (cell_x, cell_y) = (cell_w * x as f64, cell_h * y as f64);
 
+            let mut font = self.program.on_platform_request("font")
+                .unwrap_or("30px monospace")
+                .to_string();
             self.canvas_context.clear_rect(cell_x, cell_y, cell_w, cell_h);
 
-            // self.canvas_context.set_fill_style_str(&cell.bg.to_string().to_lowercase());
-            // self.canvas_context.fill_rect(cell_x, cell_y, cell_w, cell_h);
-
-            let style = if cell.fg == Color::Reset {
-                text_color
+            let mut fg_style = if cell.fg == Color::Reset {
+                fg_color
             } else {
                 &cell.fg.to_string().to_lowercase()
             };
-            self.canvas_context.set_fill_style_str(style);
+            let mut bg_style = if cell.fg == Color::Reset {
+                bg_color
+            } else {
+                &cell.fg.to_string().to_lowercase()
+            };
+            let mut draw_line_at: Option<f64> = None;
+            for m in cell.modifier.iter() {
+                match m {
+                    Modifier::HIDDEN => {
+                        continue 'update_loop;
+                    }
+                    Modifier::CROSSED_OUT => {
+                        draw_line_at = Some(cell_y + (cell_h * 0.5));
+                    }
+                    Modifier::UNDERLINED => {
+                        draw_line_at = Some(cell_y + cell_h);
+                    }
+                    Modifier::REVERSED => {
+                        std::mem::swap(&mut fg_style, &mut bg_style);
+                    }
+                    Modifier::BOLD => {
+                        font = format!("bold {font}");
+                    }
+                    Modifier::ITALIC => {
+                        font = format!("italic {font}");
+                    }
+                    _ => {}
+                }
+            }
+            self.canvas_context.set_font(&font);
+            self.canvas_context.set_fill_style_str(bg_style);
+            self.canvas_context.fill_rect(cell_x, cell_y, cell_w, cell_h);
+            self.canvas_context.set_fill_style_str(fg_style);
             let _r = self.canvas_context.fill_text(cell.symbol(), cell_x, cell_y);
+            if let Some(line_y_pos) = draw_line_at {
+                self.canvas_context.begin_path();
+                self.canvas_context.set_stroke_style_str(fg_style);
+                self.canvas_context.set_line_width(2.0); // TODO
+                self.canvas_context.move_to(cell_x, line_y_pos);
+                self.canvas_context.line_to(cell_x + cell_w, line_y_pos);
+                self.canvas_context.stroke();
+            }
         }
     }
 
