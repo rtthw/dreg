@@ -344,6 +344,8 @@ fn install_event_handlers(platform: &WasmPlatform) -> Result<(), JsValue> {
     let document = window.document().unwrap();
     let canvas = platform.try_lock().unwrap().canvas().clone();
 
+    install_hashchange(platform, &window)?;
+
     install_keydown(platform, &canvas)?;
     install_keyup(platform, &canvas)?;
 
@@ -352,6 +354,16 @@ fn install_event_handlers(platform: &WasmPlatform) -> Result<(), JsValue> {
     install_pointerup(platform, &document)?;
 
     Ok(())
+}
+
+fn install_hashchange(platform: &WasmPlatform, target: &EventTarget) -> Result<(), JsValue> {
+    platform.add_event_listener(target, "hashchange", |event: web_sys::HashChangeEvent, runner| {
+        let req = format!("web::hashchange::{}", event.new_url());
+        if let Some(_new_hash) = runner.program.on_platform_request(&req) {
+
+        }
+        event.prevent_default();
+    })
 }
 
 fn install_keydown(platform: &WasmPlatform, target: &EventTarget) -> Result<(), JsValue> {
