@@ -4,21 +4,34 @@ use std::collections::HashSet;
 
 
 
-pub struct Context {
+pub struct InputContext {
     keys_down: HashSet<Scancode>,
     last_mouse_pos: Option<(u16, u16)>,
+    resized: Option<(u16, u16)>,
+    newly_focused: bool,
+    newly_unfocused: bool,
 }
 
-impl Default for Context {
+impl Default for InputContext {
     fn default() -> Self {
         Self {
             keys_down: HashSet::new(),
             last_mouse_pos: None,
+            resized: None,
+            newly_focused: false,
+            newly_unfocused: false,
         }
     }
 }
 
-impl Context {
+impl InputContext {
+    /// **IMPORTANT**: This function must be called at the end of *every* update pass.
+    pub fn end_frame(&mut self) {
+        self.resized = None;
+        self.newly_focused = false;
+        self.newly_unfocused = false;
+    }
+
     pub fn handle_input(&mut self, input: Input) {
         match input {
             Input::KeyDown(code) => {
@@ -29,6 +42,13 @@ impl Context {
             }
             Input::MouseMove(x, y) => {
                 self.last_mouse_pos = Some((x, y));
+            }
+            Input::Resize(x, y) => {
+                self.resized = Some((x, y));
+            }
+            Input::FocusChange(has_focus) => {
+                self.newly_focused = has_focus;
+                self.newly_unfocused = !has_focus;
             }
             _ => {}
         }

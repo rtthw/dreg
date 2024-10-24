@@ -12,7 +12,7 @@ pub mod prelude {
         buffer::{Buffer, Cell},
         primitives::Rect,
         style::{Color, ColorMode, Modifier, Style},
-        context::{Context, Input, Scancode},
+        context::{InputContext, Input, Scancode},
         Frame,
         Platform,
         Program,
