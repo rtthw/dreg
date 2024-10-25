@@ -140,11 +140,19 @@ pub enum Input {
 }
 
 
-/// A button's scancode. Maps directly to the `evdev` scancodes.
+/// A keyboard/mouse button's scancode.
+///
+/// There are constants for just about every button, and you can still use the extremely uncommon
+/// ones with this system. If there isn't explicit support in dreg, then just follow the `evdev`
+/// standard (see below).
 ///
 /// A value of `0` is "reserved" (always invalid).
 ///
+/// These values map directly to the `evdev` scancodes for Linux.
 /// See https://github.com/emberian/evdev/blob/main/src/scancodes.rs#L26-L572 for reference.
+///
+/// The keyboard mapping:
+///
 /// ```
 /// [1]   [59][60][61][62]   [63][64][65][66]   [67][68][87][88]
 /// [41][ 2][ 3][ 4][ 5][ 6][ 7][ 8][ 9][10][11][12][13][  14  ]
@@ -153,7 +161,7 @@ pub enum Input {
 /// [   42   ][44][45][46][47][48][49][50][52][52][53][   54   ]
 /// [29][125][56][           57           ][100][0x1d0][139][97]
 /// ```
-#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Scancode(pub u16);
 
 impl From<u16> for Scancode {
@@ -162,7 +170,13 @@ impl From<u16> for Scancode {
     }
 }
 
+// Utilities.
 impl Scancode {
+    /// Create two [`Scancode`]s from the given character.
+    ///
+    /// If the character represents something that would normally require the shift key to be
+    /// pressed, then the [`Scancode::L_SHIFT`] key is emitted as the first element in the
+    /// resulting tuple.
     pub fn from_char(c: char) -> (Option<Self>, Self) {
         match c {
             'a' => (None, Self::A),
@@ -266,67 +280,129 @@ impl Scancode {
     }
 }
 
+// Constants.
 impl Scancode {
+    /// A placeholder scancode for when a null code is needed.
+    ///
+    /// This should always be ignored, as it is always an invalid scancode.
     pub const NULL: Self = Self(0);
 
+    /// The `Escape` key.
     pub const ESC: Self = Self(1);
+    /// The `1`/`!` key.
     pub const K_1: Self = Self(2);
+    /// The `2`/`@` key.
     pub const K_2: Self = Self(3);
+    /// The `3`/`#` key.
     pub const K_3: Self = Self(4);
+    /// The `4`/`$` key.
     pub const K_4: Self = Self(5);
+    /// The `5`/`%` key.
     pub const K_5: Self = Self(6);
+    /// The `6`/`^` key.
     pub const K_6: Self = Self(7);
+    /// The `7`/`&` key.
     pub const K_7: Self = Self(8);
+    /// The `8`/`*` key.
     pub const K_8: Self = Self(9);
+    /// The `9`/`(` key.
     pub const K_9: Self = Self(10);
+    /// The `0`/`)` key.
     pub const K_0: Self = Self(11);
+    /// The `-`/`_` key.
     pub const MINUS: Self = Self(12);
+    /// The `=`/`+` key.
     pub const EQUAL: Self = Self(13);
+    /// The `Backspace` key.
     pub const BACKSPACE: Self = Self(14);
+    /// The `Tab` key.
     pub const TAB: Self = Self(15);
+    /// The `q` key.
     pub const Q: Self = Self(16);
+    /// The `w` key.
     pub const W: Self = Self(17);
+    /// The `e` key.
     pub const E: Self = Self(18);
+    /// The `r` key.
     pub const R: Self = Self(19);
+    /// The `t` key.
     pub const T: Self = Self(20);
+    /// The `y` key.
     pub const Y: Self = Self(21);
+    /// The `u` key.
     pub const U: Self = Self(22);
+    /// The `i` key.
     pub const I: Self = Self(23);
+    /// The `o` key.
     pub const O: Self = Self(24);
+    /// The `p` key.
     pub const P: Self = Self(25);
+    /// The `[`/`{` key.
     pub const L_BRACE: Self = Self(26);
+    /// The `]`/`}` key.
     pub const R_BRACE: Self = Self(27);
+    /// The `Enter`/`Return` key.
     pub const ENTER: Self = Self(28);
+    /// The left `Control`/`Command` key.
     pub const L_CTRL: Self = Self(29);
+    /// The `a` key.
     pub const A: Self = Self(30);
+    /// The `s` key.
     pub const S: Self = Self(31);
+    /// The `d` key.
     pub const D: Self = Self(32);
+    /// The `f` key.
     pub const F: Self = Self(33);
+    /// The `g` key.
     pub const G: Self = Self(34);
+    /// The `h` key.
     pub const H: Self = Self(35);
+    /// The `i` key.
     pub const J: Self = Self(36);
+    /// The `k` key.
     pub const K: Self = Self(37);
+    /// The `l` key.
     pub const L: Self = Self(38);
+    /// The `;`/`:` key.
     pub const SEMICOLON: Self = Self(39);
+    /// The `'`/`"` key.
     pub const APOSTROPHE: Self = Self(40);
+    /// The ```/`~` key.
     pub const GRAVE: Self = Self(41);
+    /// The left `Shift` key.
     pub const L_SHIFT: Self = Self(42);
+    /// The `\`/`|` key.
     pub const BACKSLASH: Self = Self(43);
+    /// The `z` key.
     pub const Z: Self = Self(44);
+    /// The `x` key.
     pub const X: Self = Self(45);
+    /// The `c` key.
     pub const C: Self = Self(46);
+    /// The `v` key.
     pub const V: Self = Self(47);
+    /// The `b` key.
     pub const B: Self = Self(48);
+    /// The `n` key.
     pub const N: Self = Self(49);
+    /// The `m` key.
     pub const M: Self = Self(50);
+    /// The `,`/`<` key.
     pub const COMMA: Self = Self(51);
+    /// The `.`/`>` key.
     pub const DOT: Self = Self(52);
+    /// The `/`/`?` key.
     pub const SLASH: Self = Self(53);
+    /// The right `Shift` key.
     pub const R_SHIFT: Self = Self(54);
     pub const KP_ASTERISK: Self = Self(55);
+    /// The left `Alt`/`Option` key.
     pub const L_ALT: Self = Self(56);
+    /// The `Space` bar key.
     pub const SPACE: Self = Self(57);
+    /// The `Capslock` key.
     pub const CAPSLOCK: Self = Self(58);
+
     pub const F1: Self = Self(59);
     pub const F2: Self = Self(60);
     pub const F3: Self = Self(61);
@@ -338,25 +414,44 @@ impl Scancode {
     pub const F9: Self = Self(67);
     pub const F10: Self = Self(68);
 
+    /// The right `Control`/`Command` key.
     pub const R_CTRL: Self = Self(97);
+    /// The right `Alt`/`Option` key.
     pub const R_ALT: Self = Self(100);
 
+    /// The `Home` key.
     pub const HOME: Self = Self(102);
+    /// The `Arrow Up` key.
     pub const UP: Self = Self(103);
+    /// The `Page Up` key.
     pub const PAGEUP: Self = Self(104);
+    /// The `Arrow Left` key.
     pub const LEFT: Self = Self(105);
+    /// The `Arrow Right` key.
     pub const RIGHT: Self = Self(106);
+    /// The `End` key.
     pub const END: Self = Self(107);
+    /// The `Arrow Down` key.
     pub const DOWN: Self = Self(108);
+    /// The `Page Down` key.
     pub const PAGEDOWN: Self = Self(109);
+    /// The `Insert` key.
     pub const INSERT: Self = Self(110);
+    /// The `Delete` key.
     pub const DELETE: Self = Self(111);
 
+    /// The `Wheel Up` mouse button.
     pub const SCROLLUP: Self = Self(177);
+    /// The `Wheel Down` mouse button.
     pub const SCROLLDOWN: Self = Self(178);
+    /// The `Left` mouse button.
     pub const LMB: Self = Self(0x110);
+    /// The `Right` mouse button.
     pub const RMB: Self = Self(0x111);
+    /// The `Middle` mouse button (middle click).
     pub const MMB: Self = Self(0x112);
+    /// The `Forward` mouse button.
     pub const MOUSE_FORWARD: Self = Self(0x115);
+    /// The `Back` mouse button.
     pub const MOUSE_BACK: Self = Self(0x116);
 }
