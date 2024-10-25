@@ -22,6 +22,7 @@ pub mod prelude {
 
 
 
+/// The platform for running dreg programs on web targets.
 #[derive(Clone)]
 pub struct WasmPlatform {
     runner: Rc<RefCell<Option<Runner>>>,
@@ -62,6 +63,7 @@ impl Platform for WasmPlatform {
 }
 
 impl WasmPlatform {
+    /// Create a new instance of the wasm platform.
     pub fn new() -> Self {
         Self {
             runner: Rc::new(RefCell::new(None)),
@@ -146,6 +148,10 @@ impl WasmPlatform {
     }
 }
 
+/// Internal object used as a proxy between the wasm platform and the dreg program.
+///
+/// Unfortunately, this added complexity is necessary because of the absolute horror that is
+/// contemporary web development.
 struct Runner {
     program: Box<dyn Program>,
     canvas: HtmlCanvasElement,

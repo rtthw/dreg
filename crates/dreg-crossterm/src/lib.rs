@@ -34,11 +34,12 @@ pub mod prelude {
 
 
 
+/// The platform for running dreg programs through the terminal.
 pub struct CrosstermPlatform {
-    /// Holds the results of the current and previous draw calls. The two are compared at the end
-    /// of each draw pass to output the necessary updates to the terminal
+    /// Holds the results of the current and previous render calls. The two are compared at the end
+    /// of each render pass to output the necessary updates to the terminal.
     buffers: [Buffer; 2],
-    /// Index of the current buffer in the previous array
+    /// The index of the current buffer in the previous array.
     current: usize,
 
     viewport_area: Rect,
@@ -74,6 +75,7 @@ impl Platform for CrosstermPlatform {
 }
 
 impl CrosstermPlatform {
+    /// Create a new instance of the crossterm platform.
     pub fn new() -> Result<Self> {
         let (width, height) = crossterm::terminal::size()?;
         let size = Rect::new(0, 0, width, height);
@@ -470,6 +472,7 @@ fn translate_attributes(value: CtAttributes) -> Modifier {
 
 
 
+/// Convert a dreg [`Color`] to a crossterm-compatible color.
 fn dreg_color_to_crossterm_color(color: Color) -> CColor {
     match color {
         Color::Reset => CColor::Reset,
@@ -495,6 +498,7 @@ fn dreg_color_to_crossterm_color(color: Color) -> CColor {
 }
 
 #[allow(unused)]
+/// Convert a crossterm-compatible color to a dreg [`Color`].
 fn crossterm_color_to_dreg_color(value: CColor) -> Color {
     match value {
         CColor::Reset => Color::Reset,
