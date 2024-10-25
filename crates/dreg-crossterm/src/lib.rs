@@ -281,7 +281,18 @@ fn handle_crossterm_event(program: &mut impl Program, event: Event) {
                     };
                     program.on_input(Input::KeyUp(code));
                 }
-                _ => {} // TODO: Handle scroll wheel events.
+                // FIXME: Crossterm reports mouse wheel events singularly (not as 2 down/up
+                //        events, just one), so we can't correctly report mouse inputs here.
+                // SEE: https://github.com/rtthw/dreg/issues/7
+                MouseEventKind::ScrollUp => {
+                    program.on_input(Input::KeyDown(Scancode::SCROLLUP));
+                    program.on_input(Input::KeyUp(Scancode::SCROLLUP));
+                }
+                MouseEventKind::ScrollDown => {
+                    program.on_input(Input::KeyDown(Scancode::SCROLLDOWN));
+                    program.on_input(Input::KeyUp(Scancode::SCROLLDOWN));
+                }
+                _ => {} // TODO: ScrollRight and ScrollLeft handling.
             }
         }
         Event::FocusGained => {
