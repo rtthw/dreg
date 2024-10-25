@@ -1,12 +1,47 @@
+//! Input Handling
+
 
 
 use std::collections::HashSet;
 
 
 
+/// A utility object for managing your program's input state.
+///
+/// ## Example
+///
+/// ```rust
+/// struct MyProgram {
+///     should_exit: bool,
+///     input_context: InputContext,
+/// }
+///
+/// impl Program for MyProgram {
+///     fn update(&mut self, frame: Frame) {
+///         if self.input_context.keys_down().contains(Scancode::Q) {
+///             self.should_quit = true;
+///         }
+///
+///         // IMPORTANT: Don't forget to call `end_frame` when using an input context.
+///         self.input_context.end_frame();
+///     }
+///
+///     fn on_input(&mut self, input: Input) {
+///         self.input_context.handle_input(input);
+///     }
+///
+///     fn on_platform_request(&mut self, _: &str) -> Option<&str> {
+///         None
+///     }
+///
+///     fn should_exit(&self) -> bool {
+///         self.should_exit
+///     }
+/// }
+/// ```
 pub struct InputContext {
     keys_down: HashSet<Scancode>,
-    last_mouse_pos: Option<(u16, u16)>,
+    mouse_pos: Option<(u16, u16)>,
     resized: Option<(u16, u16)>,
     newly_focused: bool,
     newly_unfocused: bool,
@@ -16,7 +51,7 @@ impl Default for InputContext {
     fn default() -> Self {
         Self {
             keys_down: HashSet::new(),
-            last_mouse_pos: None,
+            mouse_pos: None,
             resized: None,
             newly_focused: false,
             newly_unfocused: false,
@@ -32,6 +67,7 @@ impl InputContext {
         self.newly_unfocused = false;
     }
 
+    /// Handle some user [`Input`].
     pub fn handle_input(&mut self, input: Input) {
         match input {
             Input::KeyDown(code) => {
@@ -41,7 +77,7 @@ impl InputContext {
                 let _valid_keypress = self.handle_key_up(&code);
             }
             Input::MouseMove(x, y) => {
-                self.last_mouse_pos = Some((x, y));
+                self.mouse_pos = Some((x, y));
             }
             Input::Resize(x, y) => {
                 self.resized = Some((x, y));
@@ -54,20 +90,38 @@ impl InputContext {
         }
     }
 
+    /// Shortcut for [`InputContext::handle_input`] with [`Input::KeyDown`],
+    /// and the given [`Scancode`].
     pub fn handle_key_down(&mut self, code: Scancode) -> bool {
         self.keys_down.insert(code)
     }
 
+    /// Shortcut for [`InputContext::handle_input`] with [`Input::KeyUp`],
+    /// and the given [`Scancode`].
     pub fn handle_key_up(&mut self, code: &Scancode) -> bool {
         self.keys_down.remove(&code)
     }
 
+    /// Get the currently pressed keys.
+    ///
+    /// Note that this includes *all* [`Scancode`]s, including mouse buttons.
     pub fn keys_down(&self) -> &HashSet<Scancode> {
         &self.keys_down
     }
 
-    pub fn last_mouse_pos(&self) -> Option<(u16, u16)> {
-        self.last_mouse_pos
+    /// Get the current mouse position.
+    pub fn mouse_pos(&self) -> Option<(u16, u16)> {
+        self.mouse_pos
+    }
+
+    /// Get the new size for the program's buffer if it was resized this frame.
+    pub fn newly_resized_size(&self) -> Option<(u16, u16)> {
+        self.resized
+    }
+
+    /// Get whether the program's display size has changed this frame.
+    pub fn was_resized_this_frame(&self) -> bool {
+        self.resized.is_some()
     }
 }
 
