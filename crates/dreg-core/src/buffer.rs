@@ -10,23 +10,23 @@ use crate::prelude::*;
 
 
 
+/// A set of [`Cell`]s that represent a single rendered frame of your program.
 #[derive(Clone, Default, Eq, Hash, PartialEq)]
 pub struct Buffer {
-    /// The area represented by this buffer
+    /// The area represented by this buffer.
     pub area: Rect,
-    /// The content of the buffer. The length of this Vec should always be equal to area.width *
-    /// area.height
+    /// The content of this buffer.
     pub content: Vec<Cell>,
 }
 
 impl Buffer {
-    /// Returns a Buffer with all cells set to the default one
+    /// Get a Buffer with all cells set to [`Cell::EMPTY`].
     #[must_use]
     pub fn empty(area: Rect) -> Self {
         Self::filled(area, Cell::EMPTY)
     }
 
-    /// Returns a Buffer with all cells initialized with the attributes of the given Cell
+    /// Get a [`Buffer`] with all cells initialized as clones of the given [`Cell`].
     #[must_use]
     pub fn filled(area: Rect, cell: Cell) -> Self {
         let size = area.area() as usize;
@@ -34,31 +34,32 @@ impl Buffer {
         Self { area, content }
     }
 
-    /// Returns the content of the buffer as a slice
+    /// Get the content of this buffer as a slice.
     pub fn content(&self) -> &[Cell] {
         &self.content
     }
 
-    /// Returns the area covered by this buffer
+    /// Get the [`Rect`] covered by this buffer.
     pub const fn area(&self) -> &Rect {
         &self.area
     }
 
-    /// Returns a reference to Cell at the given coordinates
+    /// Get a reference to [`Cell`] at the given coordinates.
     #[track_caller]
     pub fn get(&self, x: u16, y: u16) -> &Cell {
         let i = self.index_of(x, y);
         &self.content[i]
     }
 
-    /// Returns a mutable reference to Cell at the given coordinates
+    /// Get a mutable reference to the [`Cell`] at the given coordinates.
     #[track_caller]
     pub fn get_mut(&mut self, x: u16, y: u16) -> &mut Cell {
         let i = self.index_of(x, y);
         &mut self.content[i]
     }
 
-    /// Returns the index in the `Vec<Cell>` for the given global (x, y) coordinates.
+    /// Get the index of the [`Cell`] in this [`Buffer`]'s contents for the given global (x, y)
+    /// coordinates.
     ///
     /// Global coordinates are offset by the Buffer's area offset (`x`/`y`).
     ///
@@ -78,7 +79,7 @@ impl Buffer {
         ((y - self.area.y) * self.area.width + (x - self.area.x)) as usize
     }
 
-    /// Returns the (global) coordinates of a cell given its index
+    /// Get the (global) coordinates of a [`Cell`] from its index.
     ///
     /// Global coordinates are offset by the Buffer's area offset (`x`/`y`).
     ///
@@ -97,7 +98,7 @@ impl Buffer {
         )
     }
 
-    /// Print a string, starting at the position (x, y)
+    /// Write a string to this [`Buffer`], starting at the position (x, y).
     pub fn set_string<T, S>(&mut self, x: u16, y: u16, string: T, style: S)
     where
         T: AsRef<str>,
@@ -106,8 +107,8 @@ impl Buffer {
         self.set_stringn(x, y, string, usize::MAX, style);
     }
 
-    /// Print at most the first n characters of a string if enough space is available
-    /// until the end of the line.
+    /// Write at most the first `n` characters of a string to this [`Buffer`], if enough space is
+    /// available until the end of the line.
     ///
     /// Use [`Buffer::set_string`] when the maximum amount of characters can be printed.
     pub fn set_stringn<T, S>(
@@ -145,15 +146,10 @@ impl Buffer {
         (x, y)
     }
 
-    // /// Print a label, starting at the position (x, y)
-    // pub fn set_label(&mut self, x: u16, y: u16, label: &Label<'_>, max_width: u16) -> (u16, u16) {
-    //     self.set_stringn(x, y, &label.content, max_width as usize, label.style)
-    // }
-
-    /// Set the style of all cells in the given area.
+    /// Set the style for all [`Cell`]s in the given `area`.
     ///
-    /// `style` accepts any type that is convertible to [`Style`] (e.g. [`Style`], [`Color`], or
-    /// your own type that implements [`Into<Style>`]).
+    /// `style` accepts any type that is convertible to a [`Style`] object
+    ///     (e.g. [`Style`], [`Color`], or your own type that implements [`Into<Style>`]).
     pub fn set_style<S: Into<Style>>(&mut self, area: Rect, style: S) {
         let style = style.into();
         let area = self.area.intersection(area);
@@ -164,8 +160,8 @@ impl Buffer {
         }
     }
 
-    /// Resize the buffer so that the mapped area matches the given area and that the buffer
-    /// length is equal to area.width * area.height
+    /// Resize this [`Buffer`] so that the mapped area matches the given `area` and that the buffer
+    /// length is equal to area.width * area.height.
     pub fn resize(&mut self, area: Rect) {
         let length = area.area() as usize;
         if self.content.len() > length {
@@ -176,14 +172,19 @@ impl Buffer {
         self.area = area;
     }
 
-    /// Reset all cells in the buffer
+    /// Reset all [`Cell`]s in this [`Buffer`].
+    ///
+    /// Internally, this just calls [`Cell::reset`] for all cells in this buffer.
     pub fn reset(&mut self) {
         for cell in &mut self.content {
             cell.reset();
         }
     }
 
-    /// Merge an other buffer into this one
+    /// Merge another [`Buffer`] into this one.
+    ///
+    /// This will overwrite this buffer's contents with the `other` buffer's contents, if
+    /// necessary.
     pub fn merge(&mut self, other: &Self) {
         let area = self.area.union(other.area);
         self.content.resize(area.area() as usize, Cell::EMPTY);
@@ -212,11 +213,11 @@ impl Buffer {
         self.area = area;
     }
 
-    /// Builds a minimal sequence of coordinates and Cells necessary to update the UI from
-    /// self to other.
+    /// Build a minimal sequence of coordinates and Cells necessary to update the buffer from
+    /// `self` to `other`.
     ///
-    /// We're assuming that buffers are well-formed, that is no double-width cell is followed by
-    /// a non-blank cell.
+    /// This assumes that both buffers are well-formed, no double-width cell is followed by a
+    /// non-blank cell.
     ///
     /// # Multi-width characters handling:
     ///
@@ -342,46 +343,47 @@ impl std::fmt::Debug for Buffer {
 
 
 
-/// A buffer cell
+/// A buffer cell.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Cell {
     /// The string to be drawn in the cell.
     ///
     /// This accepts unicode grapheme clusters which might take up more than one cell.
     ///
-    /// This is a [`CompactString`] which is a wrapper around [`String`] that uses a small inline
+    /// This is a [`CompactString`], which is a wrapper around [`String`] that uses a small inline
     /// buffer for short strings.
     ///
     /// See <https://github.com/ratatui-org/ratatui/pull/601> for more information.
     symbol: CompactString,
 
-    /// The foreground color of the cell.
+    /// The foreground color for the cell.
     pub fg: Color,
 
-    /// The background color of the cell.
+    /// The background color for the cell.
     pub bg: Color,
 
-    /// The underline color of the cell.
+    /// The underline color for the cell.
     #[cfg(feature = "underline-color")]
     pub underline_color: Color,
 
-    /// The modifier of the cell.
+    /// The modifier for the cell.
     pub modifier: Modifier,
 
-    /// Whether the cell should be skipped when copying (diffing) the buffer to the screen.
+    /// Whether the cell should be skipped when copying (diffing) the [`Buffer`] to the screen.
     pub skip: bool,
 }
 
 impl Cell {
-    /// An empty `Cell`
+    /// An empty `Cell` (no character).
     pub const EMPTY: Self = Self::new(" ");
 
-    /// Creates a new `Cell` with the given symbol.
+    /// Create a new `Cell` with the given symbol.
     ///
-    /// This works at compile time and puts the symbol onto the stack. Fails to build when the
-    /// symbol doesnt fit onto the stack and requires to be placed on the heap. Use
-    /// `Self::default().set_symbol()` in that case. See [`CompactString::new_inline`] for more
-    /// details on this.
+    /// This works at compile time and puts the symbol onto the stack. It will fail to build when
+    /// the symbol doesn't fit onto the stack and needs to be placed on the heap.
+    ///
+    /// Use `Self::default().set_symbol()` in that case. See [`CompactString::const_new`] for more
+    /// details.
     pub const fn new(symbol: &'static str) -> Self {
         Self {
             symbol: CompactString::const_new(symbol),
@@ -394,49 +396,41 @@ impl Cell {
         }
     }
 
-    /// Gets the symbol of the cell.
+    /// Get the symbol for this cell.
     #[must_use]
     pub fn symbol(&self) -> &str {
         self.symbol.as_str()
     }
 
-    /// Sets the symbol of the cell.
+    /// Set the symbol of the cell.
     pub fn set_symbol(&mut self, symbol: &str) -> &mut Self {
         self.symbol = CompactString::new(symbol);
         self
     }
 
-    // /// Appends a symbol to the cell.
-    // ///
-    // /// This is particularly useful for adding zero-width characters to the cell.
-    // pub(crate) fn append_symbol(&mut self, symbol: &str) -> &mut Self {
-    //     self.symbol.push_str(symbol);
-    //     self
-    // }
-
-    /// Sets the symbol of the cell to a single character.
+    /// Set the symbol for this cell to a single character.
     pub fn set_char(&mut self, ch: char) -> &mut Self {
         let mut buf = [0; 4];
         self.symbol = CompactString::new(ch.encode_utf8(&mut buf));
         self
     }
 
-    /// Sets the foreground color of the cell.
+    /// Set the foreground color for this cell.
     pub fn set_fg(&mut self, color: Color) -> &mut Self {
         self.fg = color;
         self
     }
 
-    /// Sets the background color of the cell.
+    /// Set the background color for this cell.
     pub fn set_bg(&mut self, color: Color) -> &mut Self {
         self.bg = color;
         self
     }
 
-    /// Sets the style of the cell.
+    /// Set the style for this cell.
     ///
-    /// `style` accepts any type that is convertible to [`Style`] (e.g. [`Style`], [`Color`], or
-    /// your own type that implements [`Into<Style>`]).
+    /// `style` accepts any type that is convertible to a [`Style`] object
+    ///     (e.g. [`Style`], [`Color`], or your own type that implements [`Into<Style>`]).
     pub fn set_style<S: Into<Style>>(&mut self, style: S) -> &mut Self {
         let style = style.into();
         if let Some(c) = style.fg {
@@ -454,7 +448,7 @@ impl Cell {
         self
     }
 
-    /// Returns the style of the cell.
+    /// Get the style for this cell.
     #[must_use]
     pub const fn style(&self) -> Style {
         Style {
@@ -468,16 +462,16 @@ impl Cell {
         }
     }
 
-    /// Sets the cell to be skipped when copying (diffing) the buffer to the screen.
+    /// Set this cell to be skipped when copying (diffing) the buffer to the screen.
     ///
-    /// This is helpful when it is necessary to prevent the buffer from overwriting a cell that is
-    /// covered by an image.
+    /// This is helpful when you need to stop the buffer from overwriting a cell that is covered
+    /// by an image.
     pub fn set_skip(&mut self, skip: bool) -> &mut Self {
         self.skip = skip;
         self
     }
 
-    /// Resets the cell to the empty state.
+    /// Reset this cell to the [`Cell::EMPTY`] state.
     pub fn reset(&mut self) {
         self.symbol = CompactString::const_new(" ");
         self.fg = Color::Reset;
