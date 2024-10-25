@@ -6,6 +6,7 @@ use std::{fmt, str::FromStr};
 
 
 
+/// The way in which [cells](crate::Cell) are rendered to the screen.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub struct Style {
     pub color_mode: ColorMode,
@@ -18,6 +19,7 @@ pub struct Style {
 }
 
 impl Style {
+    /// Create a new style with default values.
     pub const fn new() -> Self {
         Self {
             color_mode: ColorMode::overwrite(),
@@ -30,30 +32,77 @@ impl Style {
         }
     }
 
+    /// Set the foreground [`Color`] for this style.
     pub const fn fg(mut self, color: Color) -> Self {
         self.fg = Some(color);
         self
     }
 
+    /// Set the background [`Color`] for this style.
     pub const fn bg(mut self, color: Color) -> Self {
         self.bg = Some(color);
         self
     }
 
+    /// Set the [`ColorMode`] for this style.
     pub const fn color_mode(mut self, color_mode: ColorMode) -> Self {
         self.color_mode = color_mode;
         self
     }
 
+    /// Add a [`Modifier`] to this style.
     pub const fn add_modifier(mut self, modifier: Modifier) -> Self {
         self.sub_modifier = self.sub_modifier.difference(modifier);
         self.add_modifier = self.add_modifier.union(modifier);
         self
     }
 
+    /// Remove a [`Modifier`] from this style.
     pub const fn remove_modifier(mut self, modifier: Modifier) -> Self {
         self.add_modifier = self.add_modifier.difference(modifier);
         self.sub_modifier = self.sub_modifier.union(modifier);
+        self
+    }
+
+    /// Add [`Modifier::BOLD`] to this style.
+    pub const fn bold(self) -> Self {
+        self.add_modifier(Modifier::BOLD);
+        self
+    }
+
+    /// Add [`Modifier::DIM`] to this style.
+    pub const fn dim(self) -> Self {
+        self.add_modifier(Modifier::DIM);
+        self
+    }
+
+    /// Add [`Modifier::ITALIC`] to this style.
+    pub const fn italic(self) -> Self {
+        self.add_modifier(Modifier::ITALIC);
+        self
+    }
+
+    /// Add [`Modifier::UNDERLINED`] to this style.
+    pub const fn underlined(self) -> Self {
+        self.add_modifier(Modifier::UNDERLINED);
+        self
+    }
+
+    /// Add [`Modifier::REVERSED`] to this style.
+    pub const fn reversed(self) -> Self {
+        self.add_modifier(Modifier::REVERSED);
+        self
+    }
+
+    /// Add [`Modifier::HIDDEN`] to this style.
+    pub const fn hidden(self) -> Self {
+        self.add_modifier(Modifier::HIDDEN);
+        self
+    }
+
+    /// Add [`Modifier::CROSSED_OUT`] to this style.
+    pub const fn crossed_out(self) -> Self {
+        self.add_modifier(Modifier::CROSSED_OUT);
         self
     }
 }
@@ -208,7 +257,7 @@ impl Style {
 
 
 
-/// The way in which an [`Element`] is rendered to the screen.
+/// The way in which [colors](Color) are applied to [cells](crate::Cell).
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub enum ColorMode {
     /// Ignore the buffer's current contents and overwrite cells with the colors provided to the
@@ -249,7 +298,7 @@ impl ColorMode {
 
 
 bitflags::bitflags! {
-    /// Modifier changes the way a piece of text is displayed.
+    /// A change in the way a [cell](crate::Cell) is displayed.
     ///
     /// They are bitflags so they can easily be composed.
     ///
@@ -266,7 +315,7 @@ bitflags::bitflags! {
     ///
     /// ## Notes
     ///
-    /// - Due to platform limitations, some modifiers may not work on some platforms.
+    /// - Some modifiers may not work on some platforms.
     #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
     pub struct Modifier: u16 {
         const BOLD              = 0b0000_0000_0001;
@@ -283,7 +332,7 @@ bitflags::bitflags! {
 
 /// Implement the `Debug` trait for `Modifier` manually.
 ///
-/// This will avoid printing the empty modifier as 'Borders(0x0)' and instead print it as 'NONE'.
+/// This will avoid printing the empty modifier, and instead print it as 'NONE'.
 impl fmt::Debug for Modifier {
     /// Format the modifier as `NONE` if the modifier is empty or as a list of flags separated by
     /// `|` otherwise.
@@ -546,7 +595,7 @@ impl fmt::Display for Color {
 }
 
 impl Color {
-    /// Converts a HSL representation to a `Color::Rgb` instance.
+    /// Converts an HSL representation to a `Color::Rgb` instance.
     ///
     /// The `from_hsl` function converts the Hue, Saturation and Lightness values to a
     /// corresponding `Color` RGB equivalent.
