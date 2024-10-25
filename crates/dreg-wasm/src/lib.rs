@@ -76,7 +76,7 @@ impl WasmPlatform {
         std::cell::RefMut::filter_map(lock, |lock| -> Option<&mut Runner> { lock.as_mut() }).ok()
     }
 
-    pub fn add_event_listener<E: wasm_bindgen::JsCast>(
+    fn add_event_listener<E: wasm_bindgen::JsCast>(
         &self,
         target: &web_sys::EventTarget,
         event_name: &'static str,
@@ -146,7 +146,7 @@ impl WasmPlatform {
     }
 }
 
-pub struct Runner {
+struct Runner {
     program: Box<dyn Program>,
     canvas: HtmlCanvasElement,
     canvas_context: CanvasRenderingContext2d,
