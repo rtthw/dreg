@@ -29,7 +29,14 @@ use dreg_core::prelude::*;
 
 pub mod prelude {
     pub extern crate crossterm;
-    pub use crate::CrosstermPlatform;
+    pub use crate::{
+        CrosstermPlatform,
+        crossterm_attribute_to_dreg_modifier,
+        crossterm_attributes_to_dreg_modifier,
+        crossterm_color_to_dreg_color,
+        crossterm_keycode_to_dreg_scancode,
+        dreg_color_to_crossterm_color,
+    };
 }
 
 
@@ -238,7 +245,7 @@ fn handle_crossterm_event(program: &mut impl Program, event: Event) {
                     }
                 }
             }
-            scancodes.extend(translate_keycode(code));
+            scancodes.extend(crossterm_keycode_to_dreg_scancode(code));
             match kind {
                 KeyEventKind::Press => {
                     for scancode in scancodes {
@@ -290,7 +297,7 @@ fn handle_crossterm_event(program: &mut impl Program, event: Event) {
     }
 }
 
-fn translate_keycode(code: KeyCode) -> Vec<Scancode> {
+pub fn crossterm_keycode_to_dreg_scancode(code: KeyCode) -> Vec<Scancode> {
     // All of `crossterm`'s keycodes translate to 2 or less scancodes.
     let mut scancodes = Vec::with_capacity(2);
     match code {
@@ -422,16 +429,14 @@ impl ModifierDiff {
     }
 }
 
-#[allow(unused)]
-fn translate_attribute(value: CtAttribute) -> Modifier {
+pub fn crossterm_attribute_to_dreg_modifier(value: CtAttribute) -> Modifier {
     // `Attribute*s*` (note the *s*) contains multiple `Attribute`
     // We convert `Attribute` to `Attribute*s*` (containing only 1 value) to avoid implementing
     // the conversion again
-    translate_attributes(CtAttributes::from(value))
+    crossterm_attributes_to_dreg_modifier(CtAttributes::from(value))
 }
 
-#[allow(unused)]
-fn translate_attributes(value: CtAttributes) -> Modifier {
+pub fn crossterm_attributes_to_dreg_modifier(value: CtAttributes) -> Modifier {
     let mut res = Modifier::empty();
 
     if value.has(CtAttribute::Bold) {
@@ -473,7 +478,7 @@ fn translate_attributes(value: CtAttributes) -> Modifier {
 
 
 /// Convert a dreg [`Color`] to a crossterm-compatible color.
-fn dreg_color_to_crossterm_color(color: Color) -> CColor {
+pub fn dreg_color_to_crossterm_color(color: Color) -> CColor {
     match color {
         Color::Reset => CColor::Reset,
         Color::Black => CColor::Black,
@@ -497,9 +502,8 @@ fn dreg_color_to_crossterm_color(color: Color) -> CColor {
     }
 }
 
-#[allow(unused)]
 /// Convert a crossterm-compatible color to a dreg [`Color`].
-fn crossterm_color_to_dreg_color(value: CColor) -> Color {
+pub fn crossterm_color_to_dreg_color(value: CColor) -> Color {
     match value {
         CColor::Reset => Color::Reset,
         CColor::Black => Color::Black,
