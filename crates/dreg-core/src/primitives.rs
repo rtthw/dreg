@@ -3,18 +3,15 @@
 
 
 /// A rectangular area.
-///
-/// A simple rectangle used in the computation of the layout and to give widgets a hint about the
-/// area they are supposed to render to.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub struct Rect {
-    /// The x coordinate of the top left corner of the `Rect`.
+    /// The x coordinate of the top left corner of this rect.
     pub x: u16,
-    /// The y coordinate of the top left corner of the `Rect`.
+    /// The y coordinate of the top left corner of this rect.
     pub y: u16,
-    /// The width of the `Rect`.
+    /// The width of this rect.
     pub width: u16,
-    /// The height of the `Rect`.
+    /// The height of this rect.
     pub height: u16,
 }
 
@@ -25,7 +22,7 @@ impl std::fmt::Display for Rect {
 }
 
 impl Rect {
-    /// A zero sized Rect at position 0,0
+    /// A zero-sized rect at position (0,0).
     pub const ZERO: Self = Self {
         x: 0,
         y: 0,
@@ -33,8 +30,8 @@ impl Rect {
         height: 0,
     };
 
-    /// Creates a new `Rect`, with width and height limited to keep the area under max `u16`. If
-    /// clipped, aspect ratio will be preserved.
+    /// Create a new rect, with width and height limited to keep the area under max `u16`. If
+    /// clipped, its aspect ratio will be preserved.
     pub fn new(x: u16, y: u16, width: u16, height: u16) -> Self {
         let max_area = u16::MAX;
         let (clipped_width, clipped_height) =
@@ -47,6 +44,7 @@ impl Rect {
             } else {
                 (width, height)
             };
+
         Self {
             x,
             y,
@@ -55,24 +53,23 @@ impl Rect {
         }
     }
 
-    /// The area of the `Rect`. If the area is larger than the maximum value of `u16`, it will be
+    /// The area of this rect. If the area is larger than the maximum value of `u16`, it will be
     /// clamped to `u16::MAX`.
     pub const fn area(self) -> u16 {
         self.width.saturating_mul(self.height)
     }
 
-    /// Returns true if the `Rect` has no area.
+    /// Whether this rect has no area.
     pub const fn is_empty(self) -> bool {
         self.width == 0 || self.height == 0
     }
 
-    /// Returns the left coordinate of the `Rect`.
+    /// Get the left coordinate of this rect.
     pub const fn left(self) -> u16 {
         self.x
     }
 
-    /// Returns the right coordinate of the `Rect`. This is the first coordinate outside of the
-    /// `Rect`.
+    /// Get the right coordinate of this rect. This is the first column outside the rect's area.
     ///
     /// If the right coordinate is larger than the maximum value of u16, it will be clamped to
     /// `u16::MAX`.
@@ -80,13 +77,12 @@ impl Rect {
         self.x.saturating_add(self.width)
     }
 
-    /// Returns the top coordinate of the `Rect`.
+    /// Get the top coordinate of this rect.
     pub const fn top(self) -> u16 {
         self.y
     }
 
-    /// Returns the bottom coordinate of the `Rect`. This is the first coordinate outside of the
-    /// `Rect`.
+    /// Get the bottom coordinate of this rect. This is the first row outside the rect's area.
     ///
     /// If the bottom coordinate is larger than the maximum value of u16, it will be clamped to
     /// `u16::MAX`.
@@ -94,7 +90,7 @@ impl Rect {
         self.y.saturating_add(self.height)
     }
 
-    /// Returns a new `Rect` inside the current one, with the given margin on each side.
+    /// Get a new rect inside the current one, with the given margin on each side.
     ///
     /// If the margin is larger than the `Rect`, the returned `Rect` will have no area.
     #[must_use = "method returns the modified value"]
@@ -114,7 +110,7 @@ impl Rect {
         }
     }
 
-    /// Moves the `Rect` without modifying its size.
+    /// Move this rect without modifying its size.
     ///
     /// Moves the `Rect` according to the given offset without modifying its [`width`](Rect::width)
     /// or [`height`](Rect::height).
@@ -133,7 +129,7 @@ impl Rect {
         }
     }
 
-    /// Returns a new `Rect` that contains both the current one and the given one.
+    /// Get a new rect that contains both the current one and the given one.
     #[must_use = "method returns the modified value"]
     pub fn union(self, other: Self) -> Self {
         let x1 = std::cmp::min(self.x, other.x);
@@ -148,9 +144,9 @@ impl Rect {
         }
     }
 
-    /// Returns a new `Rect` that is the intersection of the current one and the given one.
+    /// Get a new rect that is the intersection of the current one and the given one.
     ///
-    /// If the two `Rect`s do not intersect, the returned `Rect` will have no area.
+    /// If the two rects do not intersect, the returned rect will have no area.
     #[must_use = "method returns the modified value"]
     pub fn intersection(self, other: Self) -> Self {
         let x1 = std::cmp::max(self.x, other.x);
@@ -165,7 +161,7 @@ impl Rect {
         }
     }
 
-    /// Returns true if the two `Rect`s intersect.
+    /// Whether this rect and the given `other` one intersect one another.
     pub const fn intersects(self, other: Self) -> bool {
         self.x < other.right()
             && self.right() > other.x
@@ -173,9 +169,9 @@ impl Rect {
             && self.bottom() > other.y
     }
 
-    /// Returns true if the given position is inside the `Rect`.
+    /// Whether the given position is inside this rect.
     ///
-    /// The position is considered inside the `Rect` if it is on the `Rect`'s border.
+    /// The position is considered inside this rect if it is on the border.
     pub const fn contains(self, x: u16, y: u16) -> bool {
         x >= self.x
             && x < self.right()
@@ -183,20 +179,20 @@ impl Rect {
             && y < self.bottom()
     }
 
-    /// Clamp this `Rect` to fit inside the other `Rect`.
+    /// Clamp this rect to fit inside `other`.
     ///
-    /// If the width or height of this `Rect` is larger than the other `Rect`, it will be clamped
-    /// to the other `Rect`'s width or height.
+    /// If the width or height of this rect is larger than the other one, it will be clamped to
+    /// the other rect's width or height.
     ///
-    /// If the left or top coordinate of this `Rect` is smaller than the other `Rect`, it will be
-    /// clamped to the other `Rect`'s left or top coordinate.
+    /// If the left or top coordinate of this rect is smaller than the other one, it will be
+    /// clamped to the other rect's left or top coordinate.
     ///
-    /// If the right or bottom coordinate of this `Rect` is larger than the other `Rect`, it will
-    /// be clamped to the other `Rect`'s right or bottom coordinate.
+    /// If the right or bottom coordinate of this rect is larger than the other one, it will be
+    /// clamped to the other rect's right or bottom coordinate.
     ///
-    /// This is different from [`Rect::intersection`] because it will move this `Rect` to fit
-    /// inside the other `Rect`, while [`Rect::intersection`] instead would keep this `Rect`'s
-    /// position and truncate its size to only that which is inside the other `Rect`.
+    /// This is different from [`Rect::intersection`] because it will move this rect to fit
+    /// inside the other rect, while [`Rect::intersection`] instead would keep this rect's
+    /// position and truncate its size to only that which is inside the other rect.
     #[must_use = "method returns the modified value"]
     pub fn clamp(self, other: Self) -> Self {
         let width = self.width.min(other.width);
