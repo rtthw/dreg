@@ -64,10 +64,13 @@ impl Platform for CrosstermPlatform {
 
             self.autoresize()?;
 
+            let mut commands = vec![];
+
             let size = self.size()?;
             let frame = Frame {
                 area: size,
                 buffer: &mut self.buffers[self.current],
+                commands: &mut commands,
             };
 
             program.update(frame);
