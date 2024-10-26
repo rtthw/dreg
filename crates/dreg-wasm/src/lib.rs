@@ -219,12 +219,10 @@ impl Runner {
 
     fn update(&mut self) {
         self.autoresize((self.canvas.width(), self.canvas.height()));
-        let mut commands = vec![];
         let size = self.size();
         let frame = Frame {
             area: size,
             buffer: &mut self.buffers[self.current],
-            commands: &mut commands,
         };
         self.program.update(frame);
         self.render();

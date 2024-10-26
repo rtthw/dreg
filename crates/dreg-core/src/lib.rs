@@ -58,8 +58,6 @@ pub trait Platform {
 pub struct Frame<'a> {
     pub area: Rect,
     pub buffer: &'a mut Buffer,
-    /// A set of commands that will be processed by the platform at the end of this frame.
-    pub commands: &'a mut Vec<&'a str>,
 }
 
 impl<'a> Frame<'a> {
@@ -71,15 +69,5 @@ impl<'a> Frame<'a> {
     /// Get the size of this frame.
     pub fn size(&self) -> (u16, u16) {
         (self.area.width, self.area.height)
-    }
-
-    /// Queue a new command to be processed by the platform at the end of this frame.
-    pub fn queue(&mut self, command: &'a str) {
-        self.commands.push(command)
-    }
-
-    /// Queue an iterator of commands to be processed by the platform at the end of this frame.
-    pub fn queue_many(&mut self, command_iter: impl Iterator<Item = &'a str>) {
-        self.commands.extend(command_iter)
     }
 }
