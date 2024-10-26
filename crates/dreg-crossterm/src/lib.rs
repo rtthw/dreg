@@ -4,7 +4,7 @@
 use std::io::{stdout, Write};
 
 use crossterm::{
-    cursor::{Hide, MoveTo, Show},
+    cursor::{Hide, MoveTo, SetCursorStyle, Show},
     event::{
         DisableMouseCapture, EnableMouseCapture,
         Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, KeyboardEnhancementFlags,
@@ -76,6 +76,24 @@ impl Platform for CrosstermPlatform {
             program.update(frame);
             self.flush()?;
             self.swap_buffers();
+
+            let mut writer = stdout();
+            for command in commands.into_iter() {
+                match command {
+                    Command::HideCursor => queue!(writer, Hide),
+                    Command::ShowCursor => queue!(writer, Show),
+                    Command::SetTitle(s) => queue!(writer, crossterm::terminal::SetTitle(s)),
+                    Command::SetCursorPos(x, y) => queue!(writer, MoveTo(x, y)),
+                    Command::EnableCursorBlink => queue!(writer, crossterm::cursor::EnableBlinking),
+                    Command::DisableCursorBlink => queue!(writer, crossterm::cursor::DisableBlinking),
+                    Command::SetCursorStyle(cursor_style) => queue!(writer, match cursor_style {
+                        CursorStyle::Bar => SetCursorStyle::SteadyBar,
+                        CursorStyle::Block => SetCursorStyle::SteadyBlock,
+                        CursorStyle::Underline => SetCursorStyle::SteadyUnderScore,
+                    })
+                }?
+            }
+
             stdout().flush()?;
         }
         release_terminal()?;
