@@ -6,9 +6,10 @@ use std::io::{stdout, Write};
 use crossterm::{
     cursor::{Hide, MoveTo, SetCursorStyle, Show},
     event::{
-        DisableMouseCapture, EnableMouseCapture,
-        Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, KeyboardEnhancementFlags,
-        ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind,
+        DisableFocusChange, DisableMouseCapture, EnableFocusChange, EnableMouseCapture,
+        Event,
+        KeyCode, KeyEvent, KeyEventKind, KeyModifiers, KeyboardEnhancementFlags, ModifierKeyCode,
+        MouseButton, MouseEvent, MouseEventKind,
         PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags,
     },
     execute,
@@ -16,7 +17,8 @@ use crossterm::{
     style::{
         Attribute as CtAttribute,
         Attributes as CtAttributes,
-        Color as CColor, Colors, Print, SetAttribute, SetBackgroundColor, SetColors, SetForegroundColor
+        Color as CColor, Colors, Print,
+        SetAttribute, SetBackgroundColor, SetColors, SetForegroundColor,
     },
     terminal::{
         disable_raw_mode, enable_raw_mode, Clear, EnterAlternateScreen, LeaveAlternateScreen
@@ -225,6 +227,7 @@ fn bind_terminal() -> Result<()> {
     let mut writer = stdout();
     enable_raw_mode()?;
     writer.execute(EnableMouseCapture)?;
+    writer.execute(EnableFocusChange)?;
     writer.execute(EnterAlternateScreen)?;
     writer.execute(PushKeyboardEnhancementFlags(
         KeyboardEnhancementFlags::REPORT_EVENT_TYPES
@@ -243,6 +246,7 @@ fn release_terminal() -> Result<()> {
     let mut writer = stdout();
     disable_raw_mode()?;
     writer.execute(DisableMouseCapture)?;
+    writer.execute(DisableFocusChange)?;
     writer.execute(LeaveAlternateScreen)?;
     writer.execute(PopKeyboardEnhancementFlags)?;
     writer.execute(Show)?;
