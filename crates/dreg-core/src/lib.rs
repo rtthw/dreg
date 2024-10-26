@@ -58,6 +58,7 @@ pub trait Platform {
 pub struct Frame<'a> {
     pub area: Rect,
     pub buffer: &'a mut Buffer,
+    pub commands: &'a mut Vec<&'a str>,
 }
 
 impl<'a> Frame<'a> {
@@ -69,5 +70,9 @@ impl<'a> Frame<'a> {
     /// Get the size of this frame.
     pub fn size(&self) -> (u16, u16) {
         (self.area.width, self.area.height)
+    }
+
+    pub fn queue(&mut self, command: &'a str) {
+        self.commands.push(command)
     }
 }
