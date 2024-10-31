@@ -66,44 +66,37 @@ impl Style {
 
     /// Add [`Modifier::BOLD`] to this style.
     pub const fn bold(self) -> Self {
-        self.add_modifier(Modifier::BOLD);
-        self
+        self.add_modifier(Modifier::BOLD)
     }
 
     /// Add [`Modifier::DIM`] to this style.
     pub const fn dim(self) -> Self {
-        self.add_modifier(Modifier::DIM);
-        self
+        self.add_modifier(Modifier::DIM)
     }
 
     /// Add [`Modifier::ITALIC`] to this style.
     pub const fn italic(self) -> Self {
-        self.add_modifier(Modifier::ITALIC);
-        self
+        self.add_modifier(Modifier::ITALIC)
     }
 
     /// Add [`Modifier::UNDERLINED`] to this style.
     pub const fn underlined(self) -> Self {
-        self.add_modifier(Modifier::UNDERLINED);
-        self
+        self.add_modifier(Modifier::UNDERLINED)
     }
 
     /// Add [`Modifier::REVERSED`] to this style.
     pub const fn reversed(self) -> Self {
-        self.add_modifier(Modifier::REVERSED);
-        self
+        self.add_modifier(Modifier::REVERSED)
     }
 
     /// Add [`Modifier::HIDDEN`] to this style.
     pub const fn hidden(self) -> Self {
-        self.add_modifier(Modifier::HIDDEN);
-        self
+        self.add_modifier(Modifier::HIDDEN)
     }
 
     /// Add [`Modifier::CROSSED_OUT`] to this style.
     pub const fn crossed_out(self) -> Self {
-        self.add_modifier(Modifier::CROSSED_OUT);
-        self
+        self.add_modifier(Modifier::CROSSED_OUT)
     }
 }
 
