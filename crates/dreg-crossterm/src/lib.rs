@@ -156,9 +156,6 @@ impl CrosstermPlatform {
         let previous_buffer = &self.buffers[1 - self.current];
         let current_buffer = &self.buffers[self.current];
         let updates = previous_buffer.diff(current_buffer);
-        // if let Some((col, row, _)) = updates.last() {
-        //     self.last_known_cursor_pos = (*col, *row);
-        // }
         let content = updates.into_iter();
 
         let mut writer = stdout();
@@ -387,8 +384,8 @@ pub fn crossterm_keycode_to_dreg_scancode(code: KeyCode) -> Vec<Scancode> {
 
         KeyCode::Home => { scancodes.push(Scancode::HOME); },
         KeyCode::End => { scancodes.push(Scancode::END); },
-        KeyCode::PageUp => { scancodes.push(Scancode::PAGEDOWN); },
-        KeyCode::PageDown => { scancodes.push(Scancode::PAGEUP); },
+        KeyCode::PageUp => { scancodes.push(Scancode::PAGEUP); },
+        KeyCode::PageDown => { scancodes.push(Scancode::PAGEDOWN); },
 
         _ => {}
     }
