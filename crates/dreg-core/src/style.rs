@@ -301,7 +301,7 @@ bitflags::bitflags! {
     /// ## Examples
     ///
     /// ```rust
-    /// use dreg::prelude::*;
+    /// use dreg_core::prelude::*;
     ///
     /// let m = Modifier::BOLD | Modifier::ITALIC;
     /// ```
@@ -379,7 +379,7 @@ impl fmt::Debug for Modifier {
 /// ```
 /// use std::str::FromStr;
 ///
-/// use ratatui::prelude::*;
+/// use dreg_core::prelude::*;
 ///
 /// assert_eq!(Color::from_str("red"), Ok(Color::Red));
 /// assert_eq!("red".parse(), Ok(Color::Red));
@@ -600,7 +600,7 @@ impl Color {
     /// # Examples
     ///
     /// ```
-    /// use ratatui::prelude::*;
+    /// use dreg_core::prelude::*;
     ///
     /// let color: Color = Color::from_hsl(360.0, 100.0, 100.0);
     /// assert_eq!(color, Color::Rgb(255, 255, 255));

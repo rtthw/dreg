@@ -7,38 +7,6 @@ use std::collections::HashSet;
 
 
 /// A utility object for managing your program's input state.
-///
-/// ## Example
-///
-/// ```rust
-/// struct MyProgram {
-///     should_exit: bool,
-///     input_context: InputContext,
-/// }
-///
-/// impl Program for MyProgram {
-///     fn update(&mut self, frame: Frame) {
-///         if self.input_context.keys_down().contains(Scancode::Q) {
-///             self.should_quit = true;
-///         }
-///
-///         // IMPORTANT: Don't forget to call `end_frame` when using an input context.
-///         self.input_context.end_frame();
-///     }
-///
-///     fn on_input(&mut self, input: Input) {
-///         self.input_context.handle_input(input);
-///     }
-///
-///     fn on_platform_request(&mut self, _: &str) -> Option<&str> {
-///         None
-///     }
-///
-///     fn should_exit(&self) -> bool {
-///         self.should_exit
-///     }
-/// }
-/// ```
 pub struct InputContext {
     keys_down: HashSet<Scancode>,
     mouse_pos: Option<(u16, u16)>,
@@ -153,7 +121,7 @@ pub enum Input {
 ///
 /// The keyboard mapping:
 ///
-/// ```
+/// ```text
 /// [1]   [59][60][61][62]   [63][64][65][66]   [67][68][87][88]
 /// [41][ 2][ 3][ 4][ 5][ 6][ 7][ 8][ 9][10][11][12][13][  14  ]
 /// [ 15 ][16][17][18][19][20][21][22][23][24][25][26][27][ 43 ]
