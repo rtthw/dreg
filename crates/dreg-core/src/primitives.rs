@@ -294,6 +294,40 @@ impl Rect {
             })
             .collect()
     }
+
+    /// Split this rect evenly into 3 rows.
+    pub fn vsplit_even3(&self) -> (Self, Self, Self) {
+        if self.height < 3 {
+            return (Rect::ZERO, Rect::ZERO, *self);
+        }
+
+        let main_height = self.height / 3;
+        let first_2_rows_height = main_height * 2;
+        let alt_height = self.height - first_2_rows_height;
+
+        (
+            Rect::new(self.x, self.y, self.width, main_height),
+            Rect::new(self.x, self.y + main_height, self.width, main_height),
+            Rect::new(self.x, self.y + first_2_rows_height, self.width, alt_height),
+        )
+    }
+
+    /// Split this rect evenly into 3 columns.
+    pub fn hsplit_even3(&self) -> (Self, Self, Self) {
+        if self.width < 3 {
+            return (Rect::ZERO, Rect::ZERO, *self);
+        }
+
+        let main_width = self.width / 3;
+        let first_2_cols_width = main_width * 2;
+        let alt_width = self.width - first_2_cols_width;
+
+        (
+            Rect::new(self.x, self.y, main_width, self.height),
+            Rect::new(self.x + main_width, self.y, main_width, self.height),
+            Rect::new(self.x + first_2_cols_width, self.y, alt_width, self.height),
+        )
+    }
 }
 
 
@@ -343,5 +377,44 @@ mod tests {
                 Rect::new(3, 5, 5, 11),
             )
         )
+    }
+
+    #[test]
+    fn rects_split_evenly() {
+        let rect = Rect::new(0, 0, 5, 7);
+        assert_eq!(
+            rect.vsplit_even3(),
+            (
+                Rect::new(0, 0, 5, 2),
+                Rect::new(0, 2, 5, 2),
+                Rect::new(0, 4, 5, 3),
+            ),
+        );
+        assert_eq!(
+            rect.hsplit_even3(),
+            (
+                Rect::new(0, 0, 1, 7),
+                Rect::new(1, 0, 1, 7),
+                Rect::new(2, 0, 3, 7),
+            ),
+        );
+
+        let rect = Rect::new(0, 0, 6, 9);
+        assert_eq!(
+            rect.vsplit_even3(),
+            (
+                Rect::new(0, 0, 6, 3),
+                Rect::new(0, 3, 6, 3),
+                Rect::new(0, 6, 6, 3),
+            ),
+        );
+        assert_eq!(
+            rect.hsplit_even3(),
+            (
+                Rect::new(0, 0, 2, 9),
+                Rect::new(2, 0, 2, 9),
+                Rect::new(4, 0, 2, 9),
+            ),
+        );
     }
 }
