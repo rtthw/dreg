@@ -12,7 +12,7 @@ use web_sys::{js_sys, CanvasRenderingContext2d, HtmlCanvasElement};
 
 use event_handlers::*;
 
-
+
 
 pub mod prelude {
     pub extern crate wasm_bindgen;
@@ -20,7 +20,7 @@ pub mod prelude {
     pub use crate::WasmPlatform;
 }
 
-
+
 
 /// The platform for running dreg programs on web targets.
 #[derive(Clone)]
@@ -242,6 +242,10 @@ impl Runner {
         let bg_color = self.program.on_platform_request("web::default_bg_style")
             .unwrap_or("#1e1f22")
             .to_string();
+        let line_width = self.program.on_platform_request("web::default_line_width")
+            .unwrap_or("2.0")
+            .parse::<f64>()
+            .unwrap_or(2.0);
 
         self.canvas_context.set_text_align("left");
         self.canvas_context.set_text_baseline("top");
@@ -297,7 +301,7 @@ impl Runner {
             if let Some(line_y_pos) = draw_line_at {
                 self.canvas_context.begin_path();
                 self.canvas_context.set_stroke_style_str(&fg_style);
-                self.canvas_context.set_line_width(2.0); // TODO
+                self.canvas_context.set_line_width(line_width);
                 self.canvas_context.move_to(cell_x, line_y_pos);
                 self.canvas_context.line_to(cell_x + cell_w, line_y_pos);
                 self.canvas_context.stroke();
@@ -312,7 +316,7 @@ impl Runner {
     }
 }
 
-
+
 
 fn update_platform(platform: &WasmPlatform) -> Result<(), wasm_bindgen::JsValue> {
     // Only paint and schedule if there has been no panic
