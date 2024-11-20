@@ -228,6 +228,7 @@ fn bind_terminal() -> Result<()> {
     writer.execute(EnterAlternateScreen)?;
     writer.execute(PushKeyboardEnhancementFlags(
         KeyboardEnhancementFlags::REPORT_EVENT_TYPES
+        | KeyboardEnhancementFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES
     ))?;
     writer.execute(Hide)?;
     let original_hook = std::panic::take_hook();
