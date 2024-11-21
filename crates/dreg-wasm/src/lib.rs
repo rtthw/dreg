@@ -264,10 +264,10 @@ impl Runner {
             } else {
                 cell.fg.to_string().to_lowercase()
             };
-            let mut bg_style = if cell.fg == Color::Reset {
+            let mut bg_style = if cell.bg == Color::Reset {
                 bg_color.clone()
             } else {
-                cell.fg.to_string().to_lowercase()
+                cell.bg.to_string().to_lowercase()
             };
             let mut draw_line_at: Option<f64> = None;
             for m in cell.modifier.iter() {
