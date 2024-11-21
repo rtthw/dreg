@@ -270,7 +270,7 @@ fn handle_crossterm_event(program: &mut impl Program, event: Event) {
             }
             scancodes.extend(crossterm_keycode_to_dreg_scancode(code));
             match kind {
-                KeyEventKind::Press => {
+                KeyEventKind::Press | KeyEventKind::Repeat => {
                     for scancode in scancodes {
                         program.on_input(Input::KeyDown(scancode));
                     }
@@ -280,7 +280,6 @@ fn handle_crossterm_event(program: &mut impl Program, event: Event) {
                         program.on_input(Input::KeyUp(scancode));
                     }
                 }
-                _ => {} // Do nothing.
             }
         }
         Event::Mouse(MouseEvent { kind, column, row, .. }) => {
