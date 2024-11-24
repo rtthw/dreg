@@ -441,7 +441,6 @@ impl Scancode {
     pub const SLASH: Self = Self(53);
     /// The right `Shift` key.
     pub const R_SHIFT: Self = Self(54);
-    pub const KP_ASTERISK: Self = Self(55);
     /// The left `Alt`/`Option` key.
     pub const L_ALT: Self = Self(56);
     /// The `Space` bar key.
@@ -459,6 +458,24 @@ impl Scancode {
     pub const F8: Self = Self(66);
     pub const F9: Self = Self(67);
     pub const F10: Self = Self(68);
+
+    pub const NUMLOCK: Self = Self(69);
+    pub const SCROLLLOCK: Self = Self(70);
+
+    pub const KP_ASTERISK: Self = Self(55);
+    pub const KP_7: Self = Self(71);
+    pub const KP_8: Self = Self(72);
+    pub const KP_9: Self = Self(73);
+    pub const KP_MINUS: Self = Self(74);
+    pub const KP_4: Self = Self(75);
+    pub const KP_5: Self = Self(76);
+    pub const KP_6: Self = Self(77);
+    pub const KP_PLUS: Self = Self(78);
+    pub const KP_1: Self = Self(79);
+    pub const KP_2: Self = Self(80);
+    pub const KP_3: Self = Self(81);
+    pub const KP_0: Self = Self(82);
+    pub const KP_DOT: Self = Self(83);
 
     /// The right `Control`/`Command` key.
     pub const R_CTRL: Self = Self(97);
