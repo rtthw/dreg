@@ -1,10 +1,10 @@
 [package]
-name = "dreg-crossterm"
+name = "dreg-term"
 version.workspace = true
 edition.workspace = true
-description = "Crossterm platform for Dreg"
+description = "Terminal platform for Dreg"
 homepage.workspace = true
-repository = "https://github.com/rtthw/dreg/tree/master/crates/dreg-crossterm"
+repository = "https://github.com/rtthw/dreg/tree/master/crates/dreg-term"
 license.workspace = true
 
 [features]

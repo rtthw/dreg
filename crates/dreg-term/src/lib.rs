@@ -1,4 +1,5 @@
-//! Crossterm Platform
+//! Terminal Platform
+
 
 
 use std::io::{stdout, Write};
@@ -32,7 +33,7 @@ use dreg_core::prelude::*;
 pub mod prelude {
     pub extern crate crossterm;
     pub use crate::{
-        CrosstermPlatform,
+        TerminalPlatform,
         crossterm_attribute_to_dreg_modifier,
         crossterm_attributes_to_dreg_modifier,
         crossterm_color_to_dreg_color,
@@ -44,7 +45,7 @@ pub mod prelude {
 
 
 /// The platform for running dreg programs through the terminal.
-pub struct CrosstermPlatform {
+pub struct TerminalPlatform {
     /// Holds the results of the current and previous render calls. The two are compared at the end
     /// of each render pass to output the necessary updates to the terminal.
     buffers: [Buffer; 2],
@@ -55,7 +56,7 @@ pub struct CrosstermPlatform {
     last_known_size: Rect,
 }
 
-impl Platform for CrosstermPlatform {
+impl Platform for TerminalPlatform {
     fn run(mut self, mut program: impl Program) -> Result<()> {
         bind_terminal()?;
         while !program.should_exit() {
@@ -104,7 +105,7 @@ impl Platform for CrosstermPlatform {
     }
 }
 
-impl CrosstermPlatform {
+impl TerminalPlatform {
     /// Create a new instance of the crossterm platform.
     pub fn new() -> Result<Self> {
         let (width, height) = crossterm::terminal::size()?;
