@@ -12,7 +12,7 @@ use web_sys::{js_sys, CanvasRenderingContext2d, HtmlCanvasElement};
 
 use event_handlers::*;
 
-
+
 
 pub mod prelude {
     pub extern crate wasm_bindgen;
@@ -20,7 +20,7 @@ pub mod prelude {
     pub use crate::WasmPlatform;
 }
 
-
+
 
 /// The platform for running dreg programs on web targets.
 #[derive(Clone)]
@@ -191,7 +191,7 @@ impl Runner {
 
     fn autoresize(&mut self, size: (u32, u32)) {
         if self.last_known_size != size {
-            let font = self.program.on_platform_request("font").unwrap_or("30px monospace");
+            let font = self.program.on_platform_request("font").unwrap_or("16px monospace");
             self.canvas_context.set_font(&font);
             let text_metrics = self.canvas_context.measure_text("█").unwrap();
             self.font_height = text_metrics.actual_bounding_box_ascent().abs()
@@ -255,7 +255,7 @@ impl Runner {
             let (cell_x, cell_y) = (cell_w * x as f64, cell_h * y as f64);
 
             let mut font = self.program.on_platform_request("font")
-                .unwrap_or("30px monospace")
+                .unwrap_or("16px monospace")
                 .to_string();
             self.canvas_context.clear_rect(cell_x, cell_y, cell_w, cell_h);
 
@@ -316,7 +316,7 @@ impl Runner {
     }
 }
 
-
+
 
 fn update_platform(platform: &WasmPlatform) -> Result<(), wasm_bindgen::JsValue> {
     // Only paint and schedule if there has been no panic
