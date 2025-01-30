@@ -4,7 +4,11 @@ resolver = "2"
 
 [workspace.package]
 version = "0.3.0"
+authors = ["Matthew Norman"]
 edition = "2021"
+# readme = "README.md"
+homepage = "https://github.com/rtthw/dreg"
+license = "MIT"
 
 [workspace.dependencies]
 dreg-core = { version = "0.3", path = "dreg-core" }

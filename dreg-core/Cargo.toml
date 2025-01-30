@@ -1,6 +1,10 @@
 [package]
 name = "dreg-core"
 version.workspace = true
+authors.workspace = true
 edition.workspace = true
+homepage.workspace = true
+repository = "https://github.com/rtthw/dreg/dreg-core"
+license.workspace = true
 
 [dependencies]
