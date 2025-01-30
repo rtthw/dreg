@@ -6,7 +6,8 @@ resolver = "2"
 version = "0.3.0"
 authors = ["Matthew Norman"]
 edition = "2021"
-# readme = "README.md"
+description = "A simple text-based user interface library"
+readme = "README.md"
 homepage = "https://github.com/rtthw/dreg"
 license = "MIT"
 
