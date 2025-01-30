@@ -1,0 +1,10 @@
+[workspace]
+members = ["dreg", "dreg-core", "dreg-term", "dreg-wasm"]
+resolver = "2"
+
+[workspace.package]
+version = "0.3.0"
+edition = "2021"
+
+[workspace.dependencies]
+dreg-core = { version = "0.3", path = "dreg-core" }

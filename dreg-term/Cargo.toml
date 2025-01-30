@@ -1,0 +1,6 @@
+[package]
+name = "dreg-term"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
