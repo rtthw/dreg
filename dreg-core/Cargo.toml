@@ -8,3 +8,4 @@ repository = "https://github.com/rtthw/dreg/dreg-core"
 license.workspace = true
 
 [dependencies]
+compact_str = "0.8"
