@@ -3,9 +3,11 @@
 
 
 pub mod color;
+pub mod input;
 pub mod text_modifier;
 
 pub use color::*;
+pub use input::*;
 pub use text_modifier::*;
 
 use compact_str::CompactString;
