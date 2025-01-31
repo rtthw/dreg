@@ -3,6 +3,7 @@ name = "dreg-wasm"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
+readme.workspace = true
 homepage.workspace = true
 repository = "https://github.com/rtthw/dreg/dreg-wasm"
 license.workspace = true

@@ -42,7 +42,6 @@ name = "dreg"
 version = "0.3.0"
 dependencies = [
  "dreg-core",
- "dreg-term",
  "dreg-wasm",
 ]
 
@@ -53,10 +52,6 @@ dependencies = [
  "bitflags",
  "compact_str",
 ]
-
-[[package]]
-name = "dreg-term"
-version = "0.3.0"
 
 [[package]]
 name = "dreg-wasm"

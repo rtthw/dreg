@@ -10,11 +10,9 @@ repository = "https://github.com/rtthw/dreg/dreg"
 license.workspace = true
 
 [features]
-default = ["term"]
-term = ["dep:dreg-term"]
+default = []
 wasm = ["dep:dreg-wasm"]
 
 [dependencies]
 dreg-core = { workspace = true }
-dreg-term = { version = "0.3.0", path = "../dreg-term", optional = true }
 dreg-wasm = { version = "0.3.0", path = "../dreg-wasm", optional = true }
