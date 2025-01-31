@@ -11,8 +11,8 @@ license.workspace = true
 
 [features]
 default = []
-wasm = ["dep:dreg-wasm"]
+web = ["dep:dreg-web"]
 
 [dependencies]
 dreg-core = { workspace = true }
-dreg-wasm = { version = "0.3.0", path = "../dreg-wasm", optional = true }
+dreg-web = { version = "0.3.0", path = "../dreg-web", optional = true }

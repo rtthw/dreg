@@ -42,7 +42,7 @@ name = "dreg"
 version = "0.3.0"
 dependencies = [
  "dreg-core",
- "dreg-wasm",
+ "dreg-web",
 ]
 
 [[package]]
@@ -54,7 +54,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dreg-wasm"
+name = "dreg-web"
 version = "0.3.0"
 
 [[package]]

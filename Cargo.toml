@@ -1,5 +1,5 @@
 [workspace]
-members = ["dreg", "dreg-core", "dreg-wasm"]
+members = ["dreg", "dreg-core", "dreg-web"]
 resolver = "2"
 
 [workspace.package]

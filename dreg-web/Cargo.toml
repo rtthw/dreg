@@ -1,11 +1,11 @@
 [package]
-name = "dreg-wasm"
+name = "dreg-web"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
 readme.workspace = true
 homepage.workspace = true
-repository = "https://github.com/rtthw/dreg/dreg-wasm"
+repository = "https://github.com/rtthw/dreg/dreg-web"
 license.workspace = true
 
 [dependencies]
