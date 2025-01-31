@@ -8,4 +8,5 @@ pub use dreg_core::{
     Frame,
     Program,
     Text,
+    TextModifier,
 };
