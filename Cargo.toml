@@ -1,15 +1,19 @@
-[workspace]
-members = ["dreg"]
-resolver = "2"
-
-[workspace.package]
+[package]
+name = "dreg"
 version = "0.3.0"
 authors = ["Matthew Norman"]
 edition = "2021"
 description = "A simple text-based user interface library"
 readme = "README.md"
 homepage = "https://github.com/rtthw/dreg"
+repository = "https://github.com/rtthw/dreg"
 license = "MIT"
 
-[workspace.dependencies]
-dreg-core = { version = "0.3", path = "dreg-core" }
+[features]
+default = ["native"]
+native = []
+web = []
+
+[dependencies]
+bitflags = "2"
+compact_str = "0.8"
