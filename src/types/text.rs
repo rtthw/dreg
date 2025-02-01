@@ -9,7 +9,7 @@ use crate::{Color, TextModifier};
 
 
 pub struct Text {
-    content: CompactString,
+    pub(crate) content: CompactString,
     pub x: u16,
     pub y: u16,
     /// The foreground color for the text.
@@ -51,26 +51,26 @@ impl Text {
     }
 
     /// Set the text's content.
-    pub fn with_content(&mut self, content: &str) -> &mut Self {
+    pub fn with_content(mut self, content: &str) -> Self {
         self.content = CompactString::new(content);
         self
     }
 
     /// Set the text's position.
-    pub fn with_position(&mut self, x: u16, y: u16) -> &mut Self {
+    pub fn with_position(mut self, x: u16, y: u16) -> Self {
         self.x = x;
         self.y = y;
         self
     }
 
     /// Set the text's x position.
-    pub fn with_x(&mut self, x: u16) -> &mut Self {
+    pub fn with_x(mut self, x: u16) -> Self {
         self.x = x;
         self
     }
 
     /// Set the text's x position.
-    pub fn with_y(&mut self, y: u16) -> &mut Self {
+    pub fn with_y(mut self, y: u16) -> Self {
         self.y = y;
         self
     }

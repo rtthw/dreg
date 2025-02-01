@@ -4,11 +4,13 @@
 
 
 
-use std::rc::Rc;
+use std::{num::NonZeroU32, rc::Rc};
 
+use ab_glyph::Font;
+use epaint_default_fonts::HACK_REGULAR;
 use winit::{event::{KeyEvent, WindowEvent}, event_loop::EventLoop, keyboard::{KeyCode, PhysicalKey}, window::WindowBuilder};
 
-use crate::{Input, Program, Scancode};
+use crate::{Buffer, Frame, Input, Program, Scancode};
 
 
 
@@ -22,6 +24,12 @@ impl super::Platform for NativePlatform {
 
         let context = softbuffer::Context::new(window.clone())?;
         let mut surface = softbuffer::Surface::new(&context, window.clone())?;
+
+        let font = ab_glyph::FontRef::try_from_slice(HACK_REGULAR)?;
+
+        let mut width = 1.0;
+        let mut height = 1.0;
+        let mut buffer = Buffer { content: vec![] };
 
         event_loop.run(|event, target| {
             target.set_control_flow(winit::event_loop::ControlFlow::Poll);
@@ -47,8 +55,62 @@ impl super::Platform for NativePlatform {
                             }
                         }
                     }
+                    WindowEvent::Resized(size) => {
+                        width = size.width as f32;
+                        height = size.height as f32;
+                        let (new_width, new_height) = (
+                            NonZeroU32::new(size.width),
+                            NonZeroU32::new(size.height),
+                        );
+                        surface.resize(new_width.unwrap(), new_height.unwrap()).unwrap();
+                    }
                     WindowEvent::RedrawRequested => {
-                        // TODO: Actually draw the program buffer.
+                        let size = window.inner_size();
+                        width = size.width as f32;
+                        height = size.height as f32;
+                        let (new_width, new_height) = (
+                            NonZeroU32::new(size.width),
+                            NonZeroU32::new(size.height),
+                        );
+                        surface.resize(new_width.unwrap(), new_height.unwrap()).unwrap();
+                        let mut surface_buffer = surface.buffer_mut().unwrap();
+
+                        let mut frame = Frame {
+                            width,
+                            height,
+                            buffer: &mut buffer,
+                        };
+
+                        program.update(&mut frame);
+
+                        // TODO: This needs optimization.
+                        for text in &buffer.content {
+                            let mut x_cursor = text.x as f32;
+                            let mut y_cursor = text.y as f32; // TODO: v_advance
+                            for ch in text.content.chars() {
+                                let glyph_id = font.glyph_id(ch);
+                                let glyph = glyph_id.with_scale_and_position(
+                                    17.0,
+                                    ab_glyph::point(x_cursor, y_cursor),
+                                );
+                                x_cursor += font.h_advance_unscaled(glyph_id);
+                                if let Some(outline) = font.outline_glyph(glyph) {
+                                    outline.draw(|x, y, c| {
+                                        if c >= 0.5 {
+                                            surface_buffer[(
+                                                (y as f32 + y_cursor) * width
+                                                + (x as f32 + x_cursor)
+                                            ) as usize] = 0xb7b7c0;
+                                        }
+                                    });
+                                }
+                            }
+                        }
+
+                        surface_buffer.present().unwrap();
+                    }
+                    WindowEvent::CloseRequested => {
+                        target.exit();
                     }
                     _ => {} // Ignore all other window events.
                 }

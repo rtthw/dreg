@@ -380,8 +380,10 @@ checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
 name = "dreg"
 version = "0.3.0"
 dependencies = [
+ "ab_glyph",
  "bitflags 2.8.0",
  "compact_str",
+ "epaint_default_fonts",
  "softbuffer",
  "winit",
 ]
@@ -424,6 +426,12 @@ dependencies = [
  "libc",
  "linux-raw-sys 0.6.5",
 ]
+
+[[package]]
+name = "epaint_default_fonts"
+version = "0.30.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "66f6ddac3e6ac6fd4c3d48bb8b1943472f8da0f43a4303bcd8a18aa594401c80"
 
 [[package]]
 name = "equivalent"
