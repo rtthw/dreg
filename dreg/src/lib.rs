@@ -2,6 +2,8 @@
 
 
 
+pub mod platform;
+
 pub use dreg_core::{
     Buffer,
     Color,
@@ -13,3 +15,4 @@ pub use dreg_core::{
     Text,
     TextModifier,
 };
+pub use platform::*;
