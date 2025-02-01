@@ -3,16 +3,9 @@
 
 
 pub mod platform;
+pub mod program;
+pub mod types;
 
-pub use dreg_core::{
-    Buffer,
-    Color,
-    Frame,
-    Input,
-    InputContext,
-    Program,
-    Scancode,
-    Text,
-    TextModifier,
-};
 pub use platform::*;
+pub use program::*;
+pub use types::*;

@@ -8,7 +8,7 @@ pub mod web;
 pub use native::*;
 pub use web::*;
 
-use dreg_core::Program;
+use crate::Program;
 
 
 

@@ -41,13 +41,6 @@ dependencies = [
 name = "dreg"
 version = "0.3.0"
 dependencies = [
- "dreg-core",
-]
-
-[[package]]
-name = "dreg-core"
-version = "0.3.0"
-dependencies = [
  "bitflags",
  "compact_str",
 ]

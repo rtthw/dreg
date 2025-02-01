@@ -15,4 +15,5 @@ native = []
 web = []
 
 [dependencies]
-dreg-core = { workspace = true }
+bitflags = "2"
+compact_str = "0.8"
