@@ -29,7 +29,6 @@ impl super::Platform for NativePlatform {
 
         let mut width = 1.0;
         let mut height = 1.0;
-        let mut buffer = Buffer { content: vec![] };
 
         event_loop.run(|event, target| {
             target.set_control_flow(winit::event_loop::ControlFlow::Poll);
@@ -43,17 +42,21 @@ impl super::Platform for NativePlatform {
                                 PhysicalKey::Code(keycode) => {
                                     keycode_to_scancode(keycode)
                                 }
-                                PhysicalKey::Unidentified(_) => {
-                                    None
-                                }
+                                PhysicalKey::Unidentified(_) => None,
                             }
                         } {
                             if state.is_pressed() {
-                                program.on_input(Input::KeyDown(scancode))
+                                program.on_input(Input::KeyDown(scancode));
+                                window.request_redraw();
                             } else {
-                                program.on_input(Input::KeyUp(scancode))
+                                program.on_input(Input::KeyUp(scancode));
+                                window.request_redraw();
                             }
                         }
+                    }
+                    WindowEvent::CursorMoved { position, .. } => {
+                        program.on_input(Input::MouseMove(position.x as u32, position.y as u32));
+                        window.request_redraw();
                     }
                     WindowEvent::Resized(size) => {
                         width = size.width as f32;
@@ -77,6 +80,7 @@ impl super::Platform for NativePlatform {
                         let mut surface_buffer = surface.buffer_mut().unwrap();
                         surface_buffer.fill(program.clear_color().as_rgb_u32());
 
+                        let mut buffer = Buffer { content: vec![] };
                         let mut frame = Frame {
                             width,
                             height,
@@ -102,7 +106,7 @@ impl super::Platform for NativePlatform {
                                     outline.draw(|x, y, c| {
                                         if c > 0.1 {
                                             surface_buffer[(
-                                                (y as f32 + y_cursor + y_advance) * width
+                                                (y as f32 + y_advance) * width
                                                 + (x as f32 + x_cursor)
                                             ) as usize] = text.fg.gamma_multiply(c).as_rgb_u32();
                                         }

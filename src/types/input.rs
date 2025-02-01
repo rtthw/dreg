@@ -9,7 +9,7 @@ use std::collections::HashSet;
 /// A utility object for managing your program's input state.
 pub struct InputContext {
     keys_down: HashSet<Scancode>,
-    mouse_pos: Option<(u16, u16)>,
+    mouse_pos: Option<(u32, u32)>,
     resized: Option<(u16, u16)>,
     newly_focused: bool,
     newly_unfocused: bool,
@@ -78,7 +78,7 @@ impl InputContext {
     }
 
     /// Get the current mouse position.
-    pub fn mouse_pos(&self) -> Option<(u16, u16)> {
+    pub fn mouse_pos(&self) -> Option<(u32, u32)> {
         self.mouse_pos
     }
 
@@ -99,7 +99,7 @@ impl InputContext {
 pub enum Input {
     KeyDown(Scancode),
     KeyUp(Scancode),
-    MouseMove(u16, u16),
+    MouseMove(u32, u32),
 
     FocusChange(bool),
     Resize(u16, u16),
