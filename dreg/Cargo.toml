@@ -10,9 +10,11 @@ repository = "https://github.com/rtthw/dreg/dreg"
 license.workspace = true
 
 [features]
-default = []
+default = ["native"]
+native = ["dep:dreg-native"]
 web = ["dep:dreg-web"]
 
 [dependencies]
 dreg-core = { workspace = true }
+dreg-native = { version = "0.3.0", path = "../dreg-native", optional = true }
 dreg-web = { version = "0.3.0", path = "../dreg-web", optional = true }

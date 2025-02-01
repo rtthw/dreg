@@ -42,6 +42,7 @@ name = "dreg"
 version = "0.3.0"
 dependencies = [
  "dreg-core",
+ "dreg-native",
  "dreg-web",
 ]
 
@@ -52,6 +53,10 @@ dependencies = [
  "bitflags",
  "compact_str",
 ]
+
+[[package]]
+name = "dreg-native"
+version = "0.3.0"
 
 [[package]]
 name = "dreg-web"
