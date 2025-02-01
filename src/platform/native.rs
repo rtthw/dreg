@@ -146,8 +146,15 @@ impl super::Platform for NativePlatform {
 // TODO: Finish this.
 fn keycode_to_scancode(keycode: KeyCode) -> Option<Scancode> {
     Some( match keycode {
+        KeyCode::ArrowLeft => Scancode::LEFT,
+        KeyCode::ArrowRight => Scancode::RIGHT,
+        KeyCode::ArrowUp => Scancode::UP,
+        KeyCode::ArrowDown => Scancode::DOWN,
+
+        KeyCode::Minus => Scancode::MINUS,
         KeyCode::Equal => Scancode::EQUAL,
         KeyCode::Enter => Scancode::ENTER,
+        KeyCode::Home => Scancode::HOME,
         KeyCode::End => Scancode::END,
         KeyCode::Escape => Scancode::ESC,
 
@@ -156,6 +163,38 @@ fn keycode_to_scancode(keycode: KeyCode) -> Option<Scancode> {
         KeyCode::KeyC => Scancode::C,
         KeyCode::KeyD => Scancode::D,
         KeyCode::KeyE => Scancode::E,
+        KeyCode::KeyF => Scancode::F,
+        KeyCode::KeyG => Scancode::G,
+        KeyCode::KeyH => Scancode::H,
+        KeyCode::KeyI => Scancode::I,
+        KeyCode::KeyJ => Scancode::J,
+        KeyCode::KeyK => Scancode::K,
+        KeyCode::KeyL => Scancode::L,
+        KeyCode::KeyM => Scancode::M,
+        KeyCode::KeyN => Scancode::N,
+        KeyCode::KeyO => Scancode::O,
+        KeyCode::KeyP => Scancode::P,
+        KeyCode::KeyQ => Scancode::Q,
+        KeyCode::KeyR => Scancode::R,
+        KeyCode::KeyS => Scancode::S,
+        KeyCode::KeyT => Scancode::T,
+        KeyCode::KeyU => Scancode::U,
+        KeyCode::KeyV => Scancode::V,
+        KeyCode::KeyW => Scancode::W,
+        KeyCode::KeyX => Scancode::X,
+        KeyCode::KeyY => Scancode::Y,
+        KeyCode::KeyZ => Scancode::Z,
+
+        KeyCode::F1 => Scancode::F1,
+        KeyCode::F2 => Scancode::F2,
+        KeyCode::F3 => Scancode::F3,
+        KeyCode::F4 => Scancode::F4,
+        KeyCode::F5 => Scancode::F5,
+        KeyCode::F6 => Scancode::F6,
+        KeyCode::F7 => Scancode::F7,
+        KeyCode::F8 => Scancode::F8,
+        KeyCode::F9 => Scancode::F9,
+        KeyCode::F10 => Scancode::F10,
 
         _ => { return None; }
     })
@@ -166,6 +205,8 @@ fn mouse_button_to_scancode(button: MouseButton) -> Option<Scancode> {
         MouseButton::Left => Scancode::LMB,
         MouseButton::Right => Scancode::RMB,
         MouseButton::Middle => Scancode::MMB,
+        MouseButton::Back => Scancode::MOUSE_BACK,
+        MouseButton::Forward => Scancode::MOUSE_FORWARD,
         _ => { return None; }
     })
 }
