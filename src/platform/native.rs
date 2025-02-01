@@ -8,7 +8,7 @@ use std::{num::NonZeroU32, rc::Rc};
 
 use ab_glyph::{Font, ScaleFont};
 use epaint_default_fonts::HACK_REGULAR;
-use winit::{event::{KeyEvent, WindowEvent}, event_loop::EventLoop, keyboard::{KeyCode, PhysicalKey}, window::WindowBuilder};
+use winit::{event::{KeyEvent, MouseButton, WindowEvent}, event_loop::EventLoop, keyboard::{KeyCode, PhysicalKey}, window::WindowBuilder};
 
 use crate::{Buffer, Frame, Input, Program, Scancode};
 
@@ -45,6 +45,17 @@ impl super::Platform for NativePlatform {
                                 PhysicalKey::Unidentified(_) => None,
                             }
                         } {
+                            if state.is_pressed() {
+                                program.on_input(Input::KeyDown(scancode));
+                                window.request_redraw();
+                            } else {
+                                program.on_input(Input::KeyUp(scancode));
+                                window.request_redraw();
+                            }
+                        }
+                    }
+                    WindowEvent::MouseInput { state, button, .. } => {
+                        if let Some(scancode) = mouse_button_to_scancode(button) {
                             if state.is_pressed() {
                                 program.on_input(Input::KeyDown(scancode));
                                 window.request_redraw();
@@ -100,7 +111,6 @@ impl super::Platform for NativePlatform {
                                     text.scale,
                                     ab_glyph::point(x_cursor, y_cursor),
                                 );
-                                x_cursor += font.h_advance(glyph_id);
                                 if let Some(outline) = font.outline_glyph(glyph) {
                                     let y_advance = outline.px_bounds().min.y;
                                     outline.draw(|x, y, c| {
@@ -112,6 +122,7 @@ impl super::Platform for NativePlatform {
                                         }
                                     });
                                 }
+                                x_cursor += font.h_advance(glyph_id);
                             }
                         }
 
@@ -146,6 +157,15 @@ fn keycode_to_scancode(keycode: KeyCode) -> Option<Scancode> {
         KeyCode::KeyD => Scancode::D,
         KeyCode::KeyE => Scancode::E,
 
+        _ => { return None; }
+    })
+}
+
+fn mouse_button_to_scancode(button: MouseButton) -> Option<Scancode> {
+    Some(match button {
+        MouseButton::Left => Scancode::LMB,
+        MouseButton::Right => Scancode::RMB,
+        MouseButton::Middle => Scancode::MMB,
         _ => { return None; }
     })
 }
