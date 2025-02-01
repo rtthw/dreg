@@ -86,7 +86,7 @@ impl super::Platform for NativePlatform {
                         // TODO: This needs optimization.
                         for text in &buffer.content {
                             let mut x_cursor = text.x as f32;
-                            let mut y_cursor = text.y as f32; // TODO: v_advance
+                            let y_cursor = text.y as f32; // TODO: v_advance
                             for ch in text.content.chars() {
                                 let glyph_id = font.glyph_id(ch);
                                 let glyph = glyph_id.with_scale_and_position(

@@ -5,86 +5,53 @@ use std::{fmt, str::FromStr};
 
 
 
-/// All colors from the ANSI color table are supported.
-#[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
-pub enum Color {
-    /// Resets the foreground or background color
-    #[default]
-    Reset,
-    /// ANSI Color: Black. Foreground: 30, Background: 40
-    Black,
-    /// ANSI Color: Red. Foreground: 31, Background: 41
-    Red,
-    /// ANSI Color: Green. Foreground: 32, Background: 42
-    Green,
-    /// ANSI Color: Yellow. Foreground: 33, Background: 43
-    Yellow,
-    /// ANSI Color: Blue. Foreground: 34, Background: 44
-    Blue,
-    /// ANSI Color: Magenta. Foreground: 35, Background: 45
-    Magenta,
-    /// ANSI Color: Cyan. Foreground: 36, Background: 46
-    Cyan,
-    /// ANSI Color: White. Foreground: 37, Background: 47
-    ///
-    /// Note that this is sometimes called `silver` or `white` but we use `white` for bright white
-    Gray,
-    /// ANSI Color: Bright Black. Foreground: 90, Background: 100
-    ///
-    /// Note that this is sometimes called `light black` or `bright black` but we use `dark gray`
-    DarkGray,
-    /// ANSI Color: Bright Red. Foreground: 91, Background: 101
-    LightRed,
-    /// ANSI Color: Bright Green. Foreground: 92, Background: 102
-    LightGreen,
-    /// ANSI Color: Bright Yellow. Foreground: 93, Background: 103
-    LightYellow,
-    /// ANSI Color: Bright Blue. Foreground: 94, Background: 104
-    LightBlue,
-    /// ANSI Color: Bright Magenta. Foreground: 95, Background: 105
-    LightMagenta,
-    /// ANSI Color: Bright Cyan. Foreground: 96, Background: 106
-    LightCyan,
-    /// ANSI Color: Bright White. Foreground: 97, Background: 107
-    /// Sometimes called `bright white` or `light white` in some terminals
-    White,
-    /// An RGB color.
-    ///
-    /// Note that only terminals that support 24-bit true color will display this correctly.
-    /// Notably versions of Windows Terminal prior to Windows 10 and macOS Terminal.app do not
-    /// support this.
-    ///
-    /// If the terminal does not support true color, code using the  [`TermwizBackend`] will
-    /// fallback to the default text color. Crossterm and Termion do not have this capability and
-    /// the display will be unpredictable (e.g. Terminal.app may display glitched blinking text).
-    /// See <https://github.com/ratatui-org/ratatui/issues/475> for an example of this problem.
-    ///
-    /// See also: <https://en.wikipedia.org/wiki/ANSI_escape_code#24-bit>
-    ///
-    /// [`TermwizBackend`]: crate::backend::TermwizBackend
-    Rgb(u8, u8, u8),
-    /// An 8-bit 256 color.
-    ///
-    /// See also <https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit>
-    Indexed(u8),
-}
+/// A 32-bit RGBA color.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
+pub struct Color([u8; 4]);
 
 impl Color {
-    /// Convert a u32 to a Color
+    /// Convert a u32 to a color.
     ///
-    /// The u32 should be in the format 0x00RRGGBB.
+    /// The u32 should be in the format 0xRRGGBBAA.
     pub const fn from_u32(u: u32) -> Self {
-        let r = (u >> 16) as u8;
-        let g = (u >> 8) as u8;
-        let b = u as u8;
-        Self::Rgb(r, g, b)
+        let r = (u >> 24) as u8;
+        let g = (u >> 16) as u8;
+        let b = (u >> 8) as u8;
+        let a = u as u8;
+        Self([r, g, b, a])
+    }
+
+    /// Create a new "empty" color (#00000000).
+    pub const fn none() -> Self {
+        Self([0, 0, 0, 0])
     }
 
     pub fn as_rgb(&self) -> (u8, u8, u8) {
-        match self {
-            Self::Rgb(r, g, b) => (*r, *g, *b),
-            _ => (0, 0, 0),
-        }
+        (self.0[0], self.0[1], self.0[2])
+    }
+
+    /// The red channel value.
+    #[inline]
+    pub fn r(&self) -> u8 {
+        self.0[0]
+    }
+
+    /// The green channel value.
+    #[inline]
+    pub fn g(&self) -> u8 {
+        self.0[1]
+    }
+
+    /// The blue channel value.
+    #[inline]
+    pub fn b(&self) -> u8 {
+        self.0[2]
+    }
+
+    /// The alpha channel value.
+    #[inline]
+    pub fn a(&self) -> u8 {
+        self.0[3]
     }
 }
 
@@ -96,104 +63,50 @@ pub struct ParseColorError;
 
 impl fmt::Display for ParseColorError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Failed to parse Colors")
+        write!(f, "failed to parse color")
     }
 }
 
 impl std::error::Error for ParseColorError {}
 
 /// Converts a string representation to a `Color` instance.
-///
-/// The `from_str` function attempts to parse the given string and convert it to the corresponding
-/// `Color` variant. It supports named colors, RGB values, and indexed colors. If the string cannot
-/// be parsed, a `ParseColorError` is returned.
 impl FromStr for Color {
     type Err = ParseColorError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(
-            // There is a mix of different color names and formats in the wild.
-            // This is an attempt to support as many as possible.
-            match s
-                .to_lowercase()
-                .replace([' ', '-', '_'], "")
-                .replace("bright", "light")
-                .replace("grey", "gray")
-                .replace("silver", "gray")
-                .replace("lightblack", "darkgray")
-                .replace("lightwhite", "white")
-                .replace("lightgray", "white")
-                .as_ref()
-            {
-                "reset" => Self::Reset,
-                "black" => Self::Black,
-                "red" => Self::Red,
-                "green" => Self::Green,
-                "yellow" => Self::Yellow,
-                "blue" => Self::Blue,
-                "magenta" => Self::Magenta,
-                "cyan" => Self::Cyan,
-                "gray" => Self::Gray,
-                "darkgray" => Self::DarkGray,
-                "lightred" => Self::LightRed,
-                "lightgreen" => Self::LightGreen,
-                "lightyellow" => Self::LightYellow,
-                "lightblue" => Self::LightBlue,
-                "lightmagenta" => Self::LightMagenta,
-                "lightcyan" => Self::LightCyan,
-                "white" => Self::White,
-                _ => {
-                    if let Ok(index) = s.parse::<u8>() {
-                        Self::Indexed(index)
-                    } else if let Some((r, g, b)) = parse_hex_color(s) {
-                        Self::Rgb(r, g, b)
-                    } else {
-                        return Err(ParseColorError);
-                    }
-                }
-            },
-        )
-    }
-}
-
-fn parse_hex_color(input: &str) -> Option<(u8, u8, u8)> {
-    if !input.starts_with('#') || input.len() != 7 {
-        return None;
-    }
-    let r = u8::from_str_radix(input.get(1..3)?, 16).ok()?;
-    let g = u8::from_str_radix(input.get(3..5)?, 16).ok()?;
-    let b = u8::from_str_radix(input.get(5..7)?, 16).ok()?;
-    Some((r, g, b))
-}
-
-impl fmt::Display for Color {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Reset => write!(f, "Reset"),
-            Self::Black => write!(f, "Black"),
-            Self::Red => write!(f, "Red"),
-            Self::Green => write!(f, "Green"),
-            Self::Yellow => write!(f, "Yellow"),
-            Self::Blue => write!(f, "Blue"),
-            Self::Magenta => write!(f, "Magenta"),
-            Self::Cyan => write!(f, "Cyan"),
-            Self::Gray => write!(f, "Gray"),
-            Self::DarkGray => write!(f, "DarkGray"),
-            Self::LightRed => write!(f, "LightRed"),
-            Self::LightGreen => write!(f, "LightGreen"),
-            Self::LightYellow => write!(f, "LightYellow"),
-            Self::LightBlue => write!(f, "LightBlue"),
-            Self::LightMagenta => write!(f, "LightMagenta"),
-            Self::LightCyan => write!(f, "LightCyan"),
-            Self::White => write!(f, "White"),
-            Self::Rgb(r, g, b) => write!(f, "#{r:02X}{g:02X}{b:02X}"),
-            Self::Indexed(i) => write!(f, "{i}"),
+        if let Some(rgba) = parse_hex_color(s) {
+            Ok(Self(rgba))
+        } else {
+            return Err(ParseColorError);
         }
     }
 }
 
+fn parse_hex_color(input: &str) -> Option<[u8; 4]> {
+    if !input.starts_with('#') {
+        return None;
+    }
+    match input.len() {
+        7 => {
+            let r = u8::from_str_radix(input.get(1..3)?, 16).ok()?;
+            let g = u8::from_str_radix(input.get(3..5)?, 16).ok()?;
+            let b = u8::from_str_radix(input.get(5..7)?, 16).ok()?;
+
+            Some([r, g, b, 255])
+        }
+        _ => None,
+    }
+}
+
+impl fmt::Display for Color {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Color([r, g, b, a]) = self;
+        write!(f, "#{r:02X}{g:02X}{b:02X}{a:02X}")
+    }
+}
+
 impl Color {
-    /// Converts an HSL representation to a `Color::Rgb` instance.
+    /// Converts an HSL representation to a color.
     ///
     /// The `from_hsl` function converts the Hue, Saturation and Lightness values to a
     /// corresponding `Color` RGB equivalent.
@@ -205,13 +118,13 @@ impl Color {
     /// # Examples
     ///
     /// ```
-    /// use dreg_core::prelude::*;
+    /// use dreg::Color;
     ///
     /// let color: Color = Color::from_hsl(360.0, 100.0, 100.0);
-    /// assert_eq!(color, Color::Rgb(255, 255, 255));
+    /// assert_eq!(color, Color([255, 255, 255, 255]));
     ///
     /// let color: Color = Color::from_hsl(0.0, 0.0, 0.0);
-    /// assert_eq!(color, Color::Rgb(0, 0, 0));
+    /// assert_eq!(color, Color([0, 0, 0, 255]));
     /// ```
     pub fn from_hsl(h: f64, s: f64, l: f64) -> Self {
         // Clamp input values to valid ranges
@@ -244,7 +157,7 @@ fn normalized_hsl_to_rgb(hue: f64, saturation: f64, lightness: f64) -> Color {
     // We would also need to remove the use of `.round()` in this function, i.e.:
     //
     // ```rust
-    // Color::Rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
+    // Color([(r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8, 255])
     // ```
 
     // Initialize RGB components
@@ -271,11 +184,12 @@ fn normalized_hsl_to_rgb(hue: f64, saturation: f64, lightness: f64) -> Color {
     }
 
     // Scale RGB components to the range [0, 255] and create a Color::Rgb instance
-    Color::Rgb(
+    Color([
         (red * 255.0).round() as u8,
         (green * 255.0).round() as u8,
         (blue * 255.0).round() as u8,
-    )
+        255,
+    ])
 }
 
 /// Helper function to calculate RGB component for a specific hue value.
