@@ -6,7 +6,7 @@
 
 use std::{num::NonZeroU32, rc::Rc};
 
-use ab_glyph::Font;
+use ab_glyph::{Font, ScaleFont};
 use epaint_default_fonts::HACK_REGULAR;
 use winit::{event::{KeyEvent, WindowEvent}, event_loop::EventLoop, keyboard::{KeyCode, PhysicalKey}, window::WindowBuilder};
 
@@ -73,7 +73,9 @@ impl super::Platform for NativePlatform {
                             NonZeroU32::new(size.height),
                         );
                         surface.resize(new_width.unwrap(), new_height.unwrap()).unwrap();
+
                         let mut surface_buffer = surface.buffer_mut().unwrap();
+                        surface_buffer.fill(program.clear_color().as_rgb_u32());
 
                         let mut frame = Frame {
                             width,
@@ -85,22 +87,24 @@ impl super::Platform for NativePlatform {
 
                         // TODO: This needs optimization.
                         for text in &buffer.content {
+                            let font = font.as_scaled(text.scale);
                             let mut x_cursor = text.x as f32;
-                            let y_cursor = text.y as f32; // TODO: v_advance
+                            let y_cursor = text.y as f32;
                             for ch in text.content.chars() {
                                 let glyph_id = font.glyph_id(ch);
                                 let glyph = glyph_id.with_scale_and_position(
-                                    17.0,
+                                    text.scale,
                                     ab_glyph::point(x_cursor, y_cursor),
                                 );
-                                x_cursor += font.h_advance_unscaled(glyph_id);
+                                x_cursor += font.h_advance(glyph_id);
                                 if let Some(outline) = font.outline_glyph(glyph) {
+                                    let y_advance = outline.px_bounds().min.y;
                                     outline.draw(|x, y, c| {
-                                        if c >= 0.5 {
+                                        if c > 0.1 {
                                             surface_buffer[(
-                                                (y as f32 + y_cursor) * width
+                                                (y as f32 + y_cursor + y_advance) * width
                                                 + (x as f32 + x_cursor)
-                                            ) as usize] = 0xb7b7c0;
+                                            ) as usize] = text.fg.gamma_multiply(c).as_rgb_u32();
                                         }
                                     });
                                 }

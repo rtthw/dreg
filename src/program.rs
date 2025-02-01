@@ -2,7 +2,7 @@
 
 
 
-use crate::{Frame, Input};
+use crate::{Color, Frame, Input};
 
 
 
@@ -15,6 +15,5 @@ pub trait Program: 'static {
     /// This function is called whenever the running platform receives some user [`Input`].
     fn on_input(&mut self, input: Input);
 
-    /// This function is called every frame to determine whether the program should exit.
-    fn should_exit(&self) -> bool;
+    fn clear_color(&self) -> Color;
 }

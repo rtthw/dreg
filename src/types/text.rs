@@ -12,6 +12,7 @@ pub struct Text {
     pub(crate) content: CompactString,
     pub x: u16,
     pub y: u16,
+    pub scale: f32,
     /// The foreground color for the text.
     pub fg: Color,
 
@@ -44,6 +45,7 @@ impl Text {
             content: CompactString::const_new(content),
             x: 0,
             y: 0,
+            scale: 16.0,
             fg: Color::none(),
             bg: Color::none(),
             modifier: TextModifier::empty(),
@@ -53,6 +55,12 @@ impl Text {
     /// Set the text's content.
     pub fn with_content(mut self, content: &str) -> Self {
         self.content = CompactString::new(content);
+        self
+    }
+
+    /// Set the text's scale.
+    pub fn with_scale(mut self, scale: f32) -> Self {
+        self.scale = scale;
         self
     }
 
@@ -72,6 +80,18 @@ impl Text {
     /// Set the text's x position.
     pub fn with_y(mut self, y: u16) -> Self {
         self.y = y;
+        self
+    }
+
+    /// Set the text's foreground color.
+    pub fn with_fg(mut self, color: Color) -> Self {
+        self.fg = color;
+        self
+    }
+
+    /// Set the text's background color.
+    pub fn with_bg(mut self, color: Color) -> Self {
+        self.bg = color;
         self
     }
 }

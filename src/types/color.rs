@@ -10,6 +10,10 @@ use std::{fmt, str::FromStr};
 pub struct Color([u8; 4]);
 
 impl Color {
+    pub const fn from_rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
+        Self([r, g, b, a])
+    }
+
     /// Convert a u32 to a color.
     ///
     /// The u32 should be in the format 0xRRGGBBAA.
@@ -21,9 +25,38 @@ impl Color {
         Self([r, g, b, a])
     }
 
+    /// Convert a u32 to a color.
+    ///
+    /// The u32 should be in the format 0x00RRGGBB.
+    pub const fn from_rgb_u32(u: u32) -> Self {
+        let r = (u >> 16) as u8;
+        let g = (u >> 8) as u8;
+        let b = u as u8;
+        Self([r, g, b, 255])
+    }
+
     /// Create a new "empty" color (#00000000).
     pub const fn none() -> Self {
         Self([0, 0, 0, 0])
+    }
+
+    pub fn as_u32(&self) -> u32 {
+        u32::from_be_bytes(self.0)
+    }
+
+    pub fn as_rgb_u32(&self) -> u32 {
+        u32::from_be_bytes([0, self.r(), self.g(), self.b()])
+    }
+
+    #[inline]
+    pub fn gamma_multiply(self, factor: f32) -> Self {
+        let Self([r, g, b, a]) = self;
+        Self([
+            (r as f32 * factor + 0.5) as u8,
+            (g as f32 * factor + 0.5) as u8,
+            (b as f32 * factor + 0.5) as u8,
+            (a as f32 * factor + 0.5) as u8,
+        ])
     }
 
     pub fn as_rgb(&self) -> (u8, u8, u8) {
