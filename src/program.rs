@@ -16,8 +16,9 @@ pub trait Program: 'static {
     fn render(&mut self, frame: &mut Frame);
 
     /// This function is called whenever the running platform receives some user [`Input`].
-    fn on_input(&mut self, input: Input);
+    #[allow(unused)]
+    fn on_input(&mut self, input: Input) {}
 
     /// The ['Color'] used to clear the screen with.
-    fn clear_color(&self) -> Color;
+    fn clear_color(&self) -> Color { Color::from_rgba(43, 43, 51, 255) }
 }

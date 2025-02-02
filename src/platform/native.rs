@@ -14,6 +14,7 @@ use crate::{Buffer, Frame, Input, Program, Scancode};
 
 
 
+/// Run a dreg program inside a native desktop application.
 pub struct NativePlatform;
 
 impl super::Platform for NativePlatform {
@@ -207,6 +208,7 @@ fn keycode_to_scancode(keycode: KeyCode) -> Option<Scancode> {
     })
 }
 
+// TODO: Finish this.
 fn mouse_button_to_scancode(button: MouseButton) -> Option<Scancode> {
     Some(match button {
         MouseButton::Left => Scancode::LMB,

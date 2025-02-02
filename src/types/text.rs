@@ -8,10 +8,14 @@ use crate::{Color, TextModifier};
 
 
 
+/// A piece of text.
 pub struct Text {
     pub(crate) content: CompactString,
+    /// The text's absolute x coordinate.
     pub x: u16,
+    /// The text's absolute y coordinate.
     pub y: u16,
+    /// The text's scale, in pixels.
     pub scale: f32,
     /// The foreground color for the text.
     pub fg: Color,
@@ -36,9 +40,8 @@ impl Text {
     /// Create a new piece of text with the given content.
     ///
     /// This works at compile time and puts the content onto the stack. It will fail to build when
-    /// the content doesn't fit onto the stack and needs to be placed on the heap.
-    ///
-    /// Use `Self::default().set_content()` in that case. See [`CompactString::const_new`] for more
+    /// the content doesn't fit onto the stack and needs to be placed on the heap. Use
+    /// `Self::default().with_content()` in that case. See [`CompactString::const_new`] for more
     /// details.
     pub const fn new(content: &'static str) -> Self {
         Self {

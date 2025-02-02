@@ -26,7 +26,7 @@ pub struct Frame<'a> {
 impl<'a> Frame<'a> {
     /// Render the given ['Text'] to the frame.
     pub fn render(&mut self, text: Text) {
-        self.buffer.content.push(text);
+        self.buffer.render(text);
     }
 }
 
@@ -35,4 +35,11 @@ impl<'a> Frame<'a> {
 pub struct Buffer {
     /// The buffer's contents.
     pub content: Vec<Text>,
+}
+
+impl Buffer {
+    /// Render the given ['Text'] to the buffer.
+    pub fn render(&mut self, text: Text) {
+        self.content.push(text);
+    }
 }
