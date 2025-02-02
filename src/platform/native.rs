@@ -33,8 +33,14 @@ impl super::Platform for NativePlatform {
         event_loop.run(|event, target| {
             target.set_control_flow(winit::event_loop::ControlFlow::Poll);
 
+            program.update();
+
             match event {
                 winit::event::Event::WindowEvent { event, .. } => match event {
+                    WindowEvent::Focused(focused) => {
+                        program.on_input(Input::FocusChange(focused));
+                        window.request_redraw();
+                    }
                     WindowEvent::KeyboardInput { event, .. } => {
                         let KeyEvent { physical_key, state, .. } = event;
                         if let Some(scancode) = {
@@ -77,6 +83,7 @@ impl super::Platform for NativePlatform {
                             NonZeroU32::new(size.height),
                         );
                         surface.resize(new_width.unwrap(), new_height.unwrap()).unwrap();
+                        window.request_redraw();
                     }
                     WindowEvent::RedrawRequested => {
                         let size = window.inner_size();
@@ -98,7 +105,7 @@ impl super::Platform for NativePlatform {
                             buffer: &mut buffer,
                         };
 
-                        program.update(&mut frame);
+                        program.render(&mut frame);
 
                         // TODO: This needs optimization.
                         for text in &buffer.content {
