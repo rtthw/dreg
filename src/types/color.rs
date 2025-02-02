@@ -9,6 +9,11 @@ use std::{fmt, str::FromStr};
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
 pub struct Color([u8; 4]);
 
+// Constants.
+impl Color {
+    pub const NONE: Self = Self([0, 0, 0, 0]);
+}
+
 impl Color {
     /// Create a new color from its RGBA channels.
     pub const fn from_rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
@@ -62,6 +67,16 @@ impl Color {
     /// Get a tuple of this color's RGB channel values.
     pub fn as_rgb(&self) -> (u8, u8, u8) {
         (self.0[0], self.0[1], self.0[2])
+    }
+
+    /// Get a tuple of this color's RGBA channel values.
+    pub fn as_rgba(&self) -> (u8, u8, u8, u8) {
+        (self.0[0], self.0[1], self.0[2], self.0[3])
+    }
+
+    /// Get an array of this color's RGBA channel values.
+    pub fn as_rgba_array(&self) -> [u8; 4] {
+        self.0
     }
 
     /// The red channel value.
@@ -127,6 +142,14 @@ fn parse_hex_color(input: &str) -> Option<[u8; 4]> {
             let b = u8::from_str_radix(input.get(5..7)?, 16).ok()?;
 
             Some([r, g, b, 255])
+        }
+        9 => {
+            let r = u8::from_str_radix(input.get(1..3)?, 16).ok()?;
+            let g = u8::from_str_radix(input.get(3..5)?, 16).ok()?;
+            let b = u8::from_str_radix(input.get(5..7)?, 16).ok()?;
+            let a = u8::from_str_radix(input.get(7..9)?, 16).ok()?;
+
+            Some([r, g, b, a])
         }
         _ => None,
     }
