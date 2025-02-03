@@ -67,9 +67,11 @@ impl super::Platform for NativePlatform {
                         match state {
                             glutin::event::ElementState::Pressed => {
                                 program.on_input(Input::KeyDown(Scancode(scancode as _)));
+                                context.window().request_redraw();
                             }
                             glutin::event::ElementState::Released => {
                                 program.on_input(Input::KeyUp(Scancode(scancode as _)));
+                                context.window().request_redraw();
                             }
                         }
                         // if let Some(scancode) = {
@@ -94,9 +96,11 @@ impl super::Platform for NativePlatform {
                             match state {
                                 glutin::event::ElementState::Pressed => {
                                     program.on_input(Input::KeyDown(scancode));
+                                    context.window().request_redraw();
                                 }
                                 glutin::event::ElementState::Released => {
                                     program.on_input(Input::KeyUp(scancode));
+                                    context.window().request_redraw();
                                 }
                             }
                         }
@@ -105,6 +109,7 @@ impl super::Platform for NativePlatform {
                         let col = (position.x as f32 / cell_width).floor() as u16;
                         let row = (position.y as f32 / cell_height).floor() as u16;
                         program.on_input(Input::MouseMove(col, row));
+                        context.window().request_redraw();
                     }
                     WindowEvent::Resized(size) => {
                         width = size.width as f32;
@@ -121,6 +126,7 @@ impl super::Platform for NativePlatform {
                         // println!("W: {}, H: {}, C: {}, R: {}", width, height, cols, rows);
                         context.resize(size);
                         unsafe { gl.viewport( 0, 0, size.width as _, size.height as _); }
+                        context.window().request_redraw();
                     }
                     WindowEvent::CloseRequested => {
                         *control_flow = glutin::event_loop::ControlFlow::Exit;

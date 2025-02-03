@@ -54,9 +54,9 @@ impl Color {
 
     pub fn as_rgba_f32(&self) -> [f32; 4] {
         [
-            self.r() as f32 / 255.0,
-            self.g() as f32 / 255.0,
-            self.b() as f32 / 255.0,
+            linear_f32_from_gamma_u8(self.r()),
+            linear_f32_from_gamma_u8(self.g()),
+            linear_f32_from_gamma_u8(self.b()),
             self.a() as f32 / 255.0,
         ]
     }
@@ -113,6 +113,13 @@ impl Color {
     }
 }
 
+fn linear_f32_from_gamma_u8(s: u8) -> f32 {
+    if s <= 10 {
+        s as f32 / 3294.6
+    } else {
+        ((s as f32 + 14.025) / 269.025).powf(2.4)
+    }
+}
 
 
 /// Error type indicating a failure to parse a color string.
