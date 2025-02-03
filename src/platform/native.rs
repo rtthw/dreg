@@ -89,8 +89,9 @@ impl super::Platform for NativePlatform {
                     WindowEvent::Resized(size) => {
                         width = size.width as f32;
                         height = size.height as f32;
-                        cols = (width / cell_width).floor() as u16;
-                        rows = (height / cell_height).floor() as u16;
+                        cols = ((width / cell_width).floor() as u16).saturating_sub(1);
+                        rows = ((height / cell_height).floor() as u16).saturating_sub(1);
+                        // println!("W: {}, H: {}, C: {}, R: {}", width, height, cols, rows);
                         let (new_width, new_height) = (
                             NonZeroU32::new(size.width),
                             NonZeroU32::new(size.height),
@@ -132,6 +133,10 @@ impl super::Platform for NativePlatform {
                                     continue;
                                 }
 
+                                if col > cols || row > rows {
+                                    continue;
+                                }
+
                                 let x_pos = cell_width * col as f32;
                                 let y_pos = cell_height * row as f32;
 
@@ -142,12 +147,13 @@ impl super::Platform for NativePlatform {
                                 );
 
                                 if let Some(outline) = font.outline_glyph(glyph) {
-                                    let y_advance = outline.px_bounds().min.y;
+                                    let real_x_pos = outline.px_bounds().min.x;
+                                    let real_y_pos = outline.px_bounds().min.y;
                                     outline.draw(|x, y, c| {
                                         if c > 0.1 {
                                             surface_buffer[(
-                                                (y as f32 + y_pos + y_advance) * width
-                                                + (x as f32 + x_pos)
+                                                (y as f32 + real_y_pos + cell_height) * width
+                                                + (x as f32 + real_x_pos)
                                             ) as usize] = text.fg.gamma_multiply(c).as_rgb_u32();
                                         }
                                     });
