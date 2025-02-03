@@ -127,10 +127,19 @@ impl super::Platform for NativePlatform {
                             let mut col = first_col;
                             let mut row = text.y;
                             for ch in text.content.chars() {
-                                if ch == '\n' {
-                                    col = first_col;
-                                    row += 1;
-                                    continue;
+                                if ch.is_ascii_whitespace() {
+                                    match ch {
+                                        '\n' => {
+                                            col = first_col;
+                                            row += 1;
+                                            continue;
+                                        }
+                                        ' ' => {
+                                            col += 1;
+                                            continue;
+                                        }
+                                        _ => {}
+                                    }
                                 }
 
                                 if col > cols || row > rows {
