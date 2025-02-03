@@ -15,10 +15,10 @@ pub use text_modifier::*;
 
 
 pub struct Frame<'a> {
-    /// The width of the frame, in pixels.
-    pub width: f32,
-    /// The height of the frame, in pixels.
-    pub height: f32,
+    /// The width of the frame, in cells.
+    pub cols: u16,
+    /// The height of the frame, in cells.
+    pub rows: u16,
     /// The frame's [`Buffer`].
     pub buffer: &'a mut Buffer,
 }

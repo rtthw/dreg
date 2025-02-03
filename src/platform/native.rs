@@ -99,10 +99,19 @@ impl super::Platform for NativePlatform {
                         let mut surface_buffer = surface.buffer_mut().unwrap();
                         surface_buffer.fill(program.clear_color().as_rgb_u32());
 
+                        let scale = program.scale();
+                        let font = font.as_scaled(scale);
+                        let fullsize_glyph_id = font.glyph_id(' ');
+                        let cell_width = font.h_advance(fullsize_glyph_id)
+                            + font.h_side_bearing(fullsize_glyph_id);
+                        let cell_height = font.height() + font.line_gap();
+                        let cols = (width / cell_width).floor() as u16;
+                        let rows = (height / cell_height).floor() as u16;
+
                         let mut buffer = Buffer { content: vec![] };
                         let mut frame = Frame {
-                            width,
-                            height,
+                            cols,
+                            rows,
                             buffer: &mut buffer,
                         };
 
@@ -110,27 +119,37 @@ impl super::Platform for NativePlatform {
 
                         // TODO: This needs optimization.
                         for text in &buffer.content {
-                            let font = font.as_scaled(19.0); // TODO
-                            let mut x_cursor = text.x as f32;
-                            let y_cursor = text.y as f32;
+                            let first_col = text.x;
+                            let mut col = first_col;
+                            let mut row = text.y;
                             for ch in text.content.chars() {
+                                if ch == '\n' {
+                                    col = first_col;
+                                    row += 1;
+                                    continue;
+                                }
+
+                                let x_pos = cell_width * col as f32;
+                                let y_pos = cell_height * row as f32;
+
                                 let glyph_id = font.glyph_id(ch);
                                 let glyph = glyph_id.with_scale_and_position(
-                                    19.0, // TODO
-                                    ab_glyph::point(x_cursor, y_cursor),
+                                    scale,
+                                    ab_glyph::point(x_pos, y_pos),
                                 );
+
                                 if let Some(outline) = font.outline_glyph(glyph) {
                                     let y_advance = outline.px_bounds().min.y;
                                     outline.draw(|x, y, c| {
                                         if c > 0.1 {
                                             surface_buffer[(
-                                                (y as f32 + y_advance) * width
-                                                + (x as f32 + x_cursor)
+                                                (y as f32 + y_pos + y_advance) * width
+                                                + (x as f32 + x_pos)
                                             ) as usize] = text.fg.gamma_multiply(c).as_rgb_u32();
                                         }
                                     });
                                 }
-                                x_cursor += font.h_advance(glyph_id);
+                                col += 1;
                             }
                         }
 

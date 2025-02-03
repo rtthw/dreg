@@ -21,4 +21,7 @@ pub trait Program: 'static {
 
     /// The ['Color'] used to clear the screen with.
     fn clear_color(&self) -> Color { Color::from_rgba(43, 43, 51, 255) }
+
+    /// The scaling used to render text.
+    fn scale(&self) -> f32 { 19.0 }
 }
