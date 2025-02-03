@@ -18,6 +18,17 @@
 
 A simple text-based user interface library that will run on just about anything.
 
+## Features
+
+| Feature                                      | Terminal | Desktop | Web |
+|----------------------------------------------|----------|---------|-----|
+| Change the window title                      | ✅*      | ✅      | ✅  |
+| Change the font scaling at runtime (zoom in) | ❌       | ✅      | ✅  |
+| Change the font at runtime                   | ❌       | ✅      | ✅  |
+| Render multiple characters to a single cell  | ❌       | ✅      | ✅  |
+
+_*Most terminals support changing the window title. You'd be hard pressed to find one that doesn't._
+
 ## License
 
 [MIT](./LICENSE)
