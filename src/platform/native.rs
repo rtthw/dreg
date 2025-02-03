@@ -110,13 +110,13 @@ impl super::Platform for NativePlatform {
 
                         // TODO: This needs optimization.
                         for text in &buffer.content {
-                            let font = font.as_scaled(text.scale);
+                            let font = font.as_scaled(19.0); // TODO
                             let mut x_cursor = text.x as f32;
                             let y_cursor = text.y as f32;
                             for ch in text.content.chars() {
                                 let glyph_id = font.glyph_id(ch);
                                 let glyph = glyph_id.with_scale_and_position(
-                                    text.scale,
+                                    19.0, // TODO
                                     ab_glyph::point(x_cursor, y_cursor),
                                 );
                                 if let Some(outline) = font.outline_glyph(glyph) {

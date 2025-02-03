@@ -15,14 +15,10 @@ pub struct Text {
     pub x: u16,
     /// The text's absolute y coordinate.
     pub y: u16,
-    /// The text's scale, in pixels.
-    pub scale: f32,
     /// The foreground color for the text.
     pub fg: Color,
-
     /// The background color for the text.
     pub bg: Color,
-
     /// The modifier for the text.
     pub modifier: TextModifier,
 }
@@ -48,7 +44,6 @@ impl Text {
             content: CompactString::const_new(content),
             x: 0,
             y: 0,
-            scale: 16.0,
             fg: Color::none(),
             bg: Color::none(),
             modifier: TextModifier::empty(),
@@ -58,12 +53,6 @@ impl Text {
     /// Set the text's content.
     pub fn with_content(mut self, content: &str) -> Self {
         self.content = CompactString::new(content);
-        self
-    }
-
-    /// Set the text's scale.
-    pub fn with_scale(mut self, scale: f32) -> Self {
-        self.scale = scale;
         self
     }
 
