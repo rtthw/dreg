@@ -26,10 +26,18 @@ impl super::Platform for NativePlatform {
         let context = softbuffer::Context::new(window.clone())?;
         let mut surface = softbuffer::Surface::new(&context, window.clone())?;
 
-        let font = ab_glyph::FontRef::try_from_slice(HACK_REGULAR)?;
+        let scale = program.scale();
+        let font_ref = ab_glyph::FontRef::try_from_slice(HACK_REGULAR)?;
+        let font = font_ref.as_scaled(scale);
+        let fullsize_glyph_id = font.glyph_id(' ');
+        let cell_width = font.h_advance(fullsize_glyph_id)
+            + font.h_side_bearing(fullsize_glyph_id);
+        let cell_height = font.height() + font.line_gap();
 
         let mut width = 1.0;
         let mut height = 1.0;
+        let mut cols = 1;
+        let mut rows = 1;
 
         event_loop.run(|event, target| {
             target.set_control_flow(winit::event_loop::ControlFlow::Poll);
@@ -73,12 +81,16 @@ impl super::Platform for NativePlatform {
                         }
                     }
                     WindowEvent::CursorMoved { position, .. } => {
-                        program.on_input(Input::MouseMove(position.x as u32, position.y as u32));
+                        let col = (position.x as f32 / cell_width).floor() as u16;
+                        let row = (position.y as f32 / cell_height).floor() as u16;
+                        program.on_input(Input::MouseMove(col, row));
                         window.request_redraw();
                     }
                     WindowEvent::Resized(size) => {
                         width = size.width as f32;
                         height = size.height as f32;
+                        cols = (width / cell_width).floor() as u16;
+                        rows = (height / cell_height).floor() as u16;
                         let (new_width, new_height) = (
                             NonZeroU32::new(size.width),
                             NonZeroU32::new(size.height),
@@ -98,15 +110,6 @@ impl super::Platform for NativePlatform {
 
                         let mut surface_buffer = surface.buffer_mut().unwrap();
                         surface_buffer.fill(program.clear_color().as_rgb_u32());
-
-                        let scale = program.scale();
-                        let font = font.as_scaled(scale);
-                        let fullsize_glyph_id = font.glyph_id(' ');
-                        let cell_width = font.h_advance(fullsize_glyph_id)
-                            + font.h_side_bearing(fullsize_glyph_id);
-                        let cell_height = font.height() + font.line_gap();
-                        let cols = (width / cell_width).floor() as u16;
-                        let rows = (height / cell_height).floor() as u16;
 
                         let mut buffer = Buffer { content: vec![] };
                         let mut frame = Frame {
