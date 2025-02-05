@@ -4,7 +4,13 @@
 
 
 
-use crossterm::{event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers, ModifierKeyCode}, ExecutableCommand as _};
+use crossterm::{
+    event::{
+        KeyCode, KeyEvent, KeyEventKind, KeyModifiers, ModifierKeyCode,
+        MouseButton, MouseEvent, MouseEventKind,
+    },
+    ExecutableCommand as _,
+};
 
 use crate::{Buffer, Frame, Input, Program, Scancode};
 
@@ -52,9 +58,52 @@ impl super::Platform for TerminalPlatform {
                             }
                         }
                     }
+                    crossterm::event::Event::Mouse(MouseEvent { kind, column, row, .. }) => {
+                        match kind {
+                            MouseEventKind::Moved | MouseEventKind::Drag(_) => {
+                                program.on_input(Input::MouseMove(column, row));
+                            }
+                            MouseEventKind::Down(btn) => {
+                                let code = match btn {
+                                    MouseButton::Left => Scancode::LMB,
+                                    MouseButton::Right => Scancode::RMB,
+                                    MouseButton::Middle => Scancode::MMB,
+                                };
+                                program.on_input(Input::KeyDown(code));
+                            }
+                            MouseEventKind::Up(btn) => {
+                                let code = match btn {
+                                    MouseButton::Left => Scancode::LMB,
+                                    MouseButton::Right => Scancode::RMB,
+                                    MouseButton::Middle => Scancode::MMB,
+                                };
+                                program.on_input(Input::KeyUp(code));
+                            }
+                            // SEE: https://github.com/rtthw/dreg/issues/7
+                            MouseEventKind::ScrollUp => {
+                                program.on_input(Input::KeyDown(Scancode::SCROLLUP));
+                                program.on_input(Input::KeyUp(Scancode::SCROLLUP));
+                            }
+                            MouseEventKind::ScrollDown => {
+                                program.on_input(Input::KeyDown(Scancode::SCROLLDOWN));
+                                program.on_input(Input::KeyUp(Scancode::SCROLLDOWN));
+                            }
+                            _ => {} // TODO: ScrollRight and ScrollLeft handling.
+                        }
+                    }
+                    crossterm::event::Event::FocusGained => {
+                        program.on_input(Input::FocusChange(true));
+                    }
+                    crossterm::event::Event::FocusLost => {
+                        program.on_input(Input::FocusChange(false));
+                    }
+                    crossterm::event::Event::Resize(new_cols, new_rows) => {
+                        program.on_input(Input::Resize(new_cols, new_rows));
+                    }
                     _ => {}
                 }
             }
+            // TODO: Optimize this by storing terminal size?
             let (cols, rows) = crossterm::terminal::size()?;
 
             let mut frame = Frame {
