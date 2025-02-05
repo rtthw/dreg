@@ -9,6 +9,7 @@ use crate::{Color, TextModifier};
 
 
 /// A piece of text.
+#[derive(Eq, PartialEq)]
 pub struct Text {
     pub(crate) content: CompactString,
     /// The text's absolute x coordinate.

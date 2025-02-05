@@ -34,12 +34,20 @@ impl<'a> Frame<'a> {
 
 
 
+#[derive(Eq, PartialEq)]
 pub struct Buffer {
     /// The buffer's contents.
     pub content: Vec<Text>,
 }
 
 impl Buffer {
+    /// Create a new empty buffer.
+    pub fn empty() -> Self {
+        Self {
+            content: Vec::new(),
+        }
+    }
+
     /// Render the given ['Text'] to the buffer.
     pub fn render(&mut self, text: Text) {
         self.content.push(text);

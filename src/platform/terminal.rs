@@ -4,12 +4,13 @@
 
 
 
+use std::io::Write as _;
+
 use crossterm::{
     event::{
         KeyCode, KeyEvent, KeyEventKind, KeyModifiers, ModifierKeyCode,
         MouseButton, MouseEvent, MouseEventKind,
-    },
-    ExecutableCommand as _,
+    }, queue, style::{Attribute, Color as CtColor}, ExecutableCommand as _
 };
 
 use crate::{Buffer, Frame, Input, Program, Scancode};
@@ -121,6 +122,7 @@ impl super::Platform for TerminalPlatform {
 
             self.flush()?;
             self.swap_buffers();
+            std::io::stdout().flush()?;
         }
 
         release_terminal()?;
@@ -130,6 +132,13 @@ impl super::Platform for TerminalPlatform {
 }
 
 impl TerminalPlatform {
+    pub fn new() -> Self {
+        Self {
+            buffers: [Buffer::empty(), Buffer::empty()],
+            current: 0,
+        }
+    }
+
     /// Clear the inactive buffer and swap it with the current buffer.
     fn swap_buffers(&mut self) {
         self.buffers[1 - self.current].clear();
@@ -137,7 +146,47 @@ impl TerminalPlatform {
     }
 
     fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
+        let previous_buffer = &self.buffers[1 - self.current];
+        let current_buffer = &self.buffers[self.current];
+
+        // TODO: Actually perform a diff here.
+        if previous_buffer == current_buffer {
+            return Ok(());
+        }
+
+        let mut writer = std::io::stdout();
+        // let mut modifier = TextModifier::empty();
+
+        for text in current_buffer.content.iter() {
+            queue!(writer, crossterm::cursor::MoveTo(text.x, text.y))?;
+            // if text.modifier != modifier {
+            //     let diff = TextModifierDiff {
+            //         from: modifier,
+            //         to: text.modifier,
+            //     };
+            //     diff.queue(&mut writer)?;
+            //     modifier = text.modifier;
+            // }
+            // if cell.fg != fg || cell.bg != bg {
+            //     queue!(
+            //         writer,
+            //         crossterm::style::SetColors(crossterm::style::Colors::new(
+            //             color_to_crossterm_color(text.fg),
+            //             color_to_crossterm_color(text.bg),
+            //         )),
+            //     )?;
+            //     fg = text.fg;
+            //     bg = text.bg;
+            // }
+            queue!(writer, crossterm::style::Print(&text.content))?;
+        }
+
+        crossterm::queue!(
+            writer,
+            crossterm::style::SetForegroundColor(CtColor::Reset),
+            crossterm::style::SetBackgroundColor(CtColor::Reset),
+            crossterm::style::SetAttribute(Attribute::Reset),
+        )
     }
 }
 
