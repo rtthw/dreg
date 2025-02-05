@@ -4,9 +4,9 @@
 
 
 
-use crossterm::ExecutableCommand as _;
+use crossterm::{event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers, ModifierKeyCode}, ExecutableCommand as _};
 
-use crate::{Buffer, Frame, Program};
+use crate::{Buffer, Frame, Input, Program, Scancode};
 
 
 
@@ -26,6 +26,32 @@ impl super::Platform for TerminalPlatform {
         'main_loop: loop {
             if crossterm::event::poll(std::time::Duration::from_millis(31))? {
                 match crossterm::event::read()? {
+                    crossterm::event::Event::Key(KeyEvent { code, modifiers, kind, .. }) => {
+                        let mut scancodes = vec![];
+                        if modifiers != KeyModifiers::NONE {
+                            for m in modifiers.iter() {
+                                match m {
+                                    KeyModifiers::SHIFT => scancodes.push(Scancode::L_SHIFT),
+                                    KeyModifiers::ALT => scancodes.push(Scancode::L_ALT),
+                                    KeyModifiers::CONTROL => scancodes.push(Scancode::L_CTRL),
+                                    _ => {} // TODO: Handle other modifiers.
+                                }
+                            }
+                        }
+                        scancodes.extend(keycode_to_scancode(code));
+                        match kind {
+                            KeyEventKind::Press | KeyEventKind::Repeat => {
+                                for scancode in scancodes {
+                                    program.on_input(Input::KeyDown(scancode));
+                                }
+                            }
+                            KeyEventKind::Release => {
+                                for scancode in scancodes {
+                                    program.on_input(Input::KeyUp(scancode));
+                                }
+                            }
+                        }
+                    }
                     _ => {}
                 }
             }
@@ -98,4 +124,67 @@ fn release_terminal() -> Result<(), Box<dyn std::error::Error>> {
     writer.execute(crossterm::cursor::Show)?;
 
     Ok(())
+}
+
+fn keycode_to_scancode(code: KeyCode) -> Vec<Scancode> {
+    // All of `crossterm`'s keycodes translate to 2 or less scancodes.
+    let mut scancodes = Vec::with_capacity(2);
+    match code {
+        KeyCode::Char(c) => {
+            let (modifier, scancode) = Scancode::from_char(c);
+            if let Some(mod_code) = modifier {
+                scancodes.push(mod_code);
+            }
+            scancodes.push(scancode);
+        }
+        KeyCode::F(n) => {
+            scancodes.push(match n {
+                1 => Scancode::F1,
+                2 => Scancode::F2,
+                3 => Scancode::F3,
+                4 => Scancode::F4,
+                5 => Scancode::F5,
+                6 => Scancode::F6,
+                7 => Scancode::F7,
+                8 => Scancode::F8,
+                9 => Scancode::F9,
+                10 => Scancode::F10,
+                _ => Scancode::NULL,
+            })
+        }
+        KeyCode::Modifier(mod_keycode) => match mod_keycode {
+            ModifierKeyCode::LeftShift => { scancodes.push(Scancode::L_SHIFT); },
+            ModifierKeyCode::LeftAlt => { scancodes.push(Scancode::L_ALT); },
+            ModifierKeyCode::LeftControl => { scancodes.push(Scancode::L_CTRL); },
+
+            ModifierKeyCode::RightShift => { scancodes.push(Scancode::R_SHIFT); },
+            ModifierKeyCode::RightAlt => { scancodes.push(Scancode::R_ALT); },
+            ModifierKeyCode::RightControl => { scancodes.push(Scancode::R_CTRL); },
+
+            _ => {} // TODO: Handle other modifiers.
+        }
+
+        KeyCode::Esc => { scancodes.push(Scancode::ESC); },
+        KeyCode::Backspace => { scancodes.push(Scancode::BACKSPACE); }
+        KeyCode::Tab => { scancodes.push(Scancode::TAB); },
+        KeyCode::BackTab => { scancodes.extend([Scancode::L_SHIFT, Scancode::TAB]); }
+        KeyCode::Enter => { scancodes.push(Scancode::ENTER); },
+        KeyCode::Delete => { scancodes.push(Scancode::DELETE); },
+        KeyCode::Insert => { scancodes.push(Scancode::INSERT); },
+        KeyCode::CapsLock => { scancodes.push(Scancode::CAPSLOCK); },
+
+        KeyCode::Left => { scancodes.push(Scancode::LEFT); },
+        KeyCode::Right => { scancodes.push(Scancode::RIGHT); },
+        KeyCode::Up => { scancodes.push(Scancode::UP); },
+        KeyCode::Down => { scancodes.push(Scancode::DOWN); },
+
+        KeyCode::Home => { scancodes.push(Scancode::HOME); },
+        KeyCode::End => { scancodes.push(Scancode::END); },
+        KeyCode::PageUp => { scancodes.push(Scancode::PAGEUP); },
+        KeyCode::PageDown => { scancodes.push(Scancode::PAGEDOWN); },
+
+        _ => {}
+    }
+
+    scancodes
 }
