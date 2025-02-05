@@ -157,6 +157,7 @@ impl super::Platform for NativePlatform {
                         cols,
                         rows,
                         buffer: &mut buffer,
+                        should_exit: false,
                     };
 
                     program.render(&mut frame);

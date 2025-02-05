@@ -21,6 +21,8 @@ pub struct Frame<'a> {
     pub rows: u16,
     /// The frame's [`Buffer`].
     pub buffer: &'a mut Buffer,
+    /// Flag to indicate whether the platform should safely exit at the end of this frame.
+    pub should_exit: bool,
 }
 
 impl<'a> Frame<'a> {
@@ -41,5 +43,10 @@ impl Buffer {
     /// Render the given ['Text'] to the buffer.
     pub fn render(&mut self, text: Text) {
         self.content.push(text);
+    }
+
+    /// Clear all [`Text`] pieces in the buffer.
+    pub fn clear(&mut self) {
+        self.content.clear();
     }
 }
