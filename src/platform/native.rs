@@ -14,6 +14,7 @@ use crate::{Buffer, Frame, Input, Program, Scancode};
 
 
 /// Run a dreg program inside a native desktop application.
+#[derive(Default)]
 pub struct NativePlatform {
     args: NativeArgs,
 }
@@ -193,11 +194,27 @@ impl super::Platform for NativePlatform {
     }
 }
 
+impl NativePlatform {
+    pub fn with_args(args: NativeArgs) -> Self {
+        Self { args }
+    }
+}
 
 
+
+/// Arguments provided to the native platform when it runs.
 pub struct NativeArgs {
+    /// Window title.
+    ///
+    /// Defaults to `"Untitled"`.
     pub title: String,
+    /// Initial window size, in logical (pre-scaled) pixels.
+    ///
+    /// Defaults to `(1280, 720)`.
     pub size: (u16, u16),
+    /// Whether the window is resizable.
+    ///
+    /// Defaults to `true`.
     pub resizable: bool,
 }
 
