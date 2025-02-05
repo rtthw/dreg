@@ -10,7 +10,7 @@ repository = "https://github.com/rtthw/dreg"
 license = "MIT"
 
 [features]
-default = ["native"]
+default = ["native", "terminal", "web"]
 native = [
     # "dep:ab_glyph",
     "dep:epaint_default_fonts",
@@ -19,12 +19,14 @@ native = [
     "dep:glutin",
     # "dep:softbuffer",
 ]
+terminal = ["dep:crossterm"]
 web = []
 
 [dependencies]
 # ab_glyph = { version = "0.2", optional = true }
 bitflags = "2"
 compact_str = "0.8"
+crossterm = { version = "0.28", optional = true }
 epaint_default_fonts = { version = "0.30", optional = true }
 glow = { version = "0.13", optional = true }
 glow_glyph = { version = "0.7", optional = true }
