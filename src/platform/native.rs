@@ -105,6 +105,20 @@ impl super::Platform for NativePlatform {
                             }
                         }
                     }
+                    WindowEvent::MouseWheel { delta, .. } => {
+                        match delta {
+                            glutin::event::MouseScrollDelta::LineDelta(_h, v) => {
+                                let scancode = if v.is_sign_positive() {
+                                    Scancode::SCROLLUP
+                                } else {
+                                    Scancode::SCROLLDOWN
+                                };
+                                program.on_input(Input::KeyDown(scancode));
+                                context.window().request_redraw();
+                            }
+                            glutin::event::MouseScrollDelta::PixelDelta(_pos) => {}
+                        }
+                    }
                     WindowEvent::CursorMoved { position, .. } => {
                         let col = (position.x as f32 / cell_width).floor() as u16;
                         let row = (position.y as f32 / cell_height).floor() as u16;
