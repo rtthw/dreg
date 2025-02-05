@@ -14,13 +14,17 @@ use crate::{Buffer, Frame, Input, Program, Scancode};
 
 
 /// Run a dreg program inside a native desktop application.
-pub struct NativePlatform;
+pub struct NativePlatform {
+    args: NativeArgs,
+}
 
 impl super::Platform for NativePlatform {
-    // TODO: Something like "run_with_args" for window properties and such.
     fn run(self, mut program: impl Program) -> Result<(), Box<dyn std::error::Error>> {
         let event_loop = glutin::event_loop::EventLoop::new();
-        let window_builder = glutin::window::WindowBuilder::new().with_resizable(false);
+        let window_builder = glutin::window::WindowBuilder::new()
+            .with_title(self.args.title)
+            .with_inner_size(glutin::dpi::LogicalSize::new(self.args.size.0, self.args.size.1))
+            .with_resizable(self.args.resizable);
         let context = glutin::ContextBuilder::new()
             .with_vsync(true)
             .build_windowed(window_builder, &event_loop)?;
@@ -186,6 +190,24 @@ impl super::Platform for NativePlatform {
                 }
             }
         });
+    }
+}
+
+
+
+pub struct NativeArgs {
+    pub title: String,
+    pub size: (u16, u16),
+    pub resizable: bool,
+}
+
+impl Default for NativeArgs {
+    fn default() -> Self {
+        Self {
+            title: "Untitled".to_string(),
+            size: (1280, 720),
+            resizable: true,
+        }
     }
 }
 
