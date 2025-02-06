@@ -11,7 +11,7 @@ use std::{fmt, str::FromStr};
 /// `[tag, red, green, blue]`. A tag value of `0` is used indexed colors, and a tag value of `255`
 /// is used for raw colors.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
-pub struct Color([u8; 4]);
+pub struct Color(pub(crate) [u8; 4]);
 
 pub struct ColorSet {
     pub reset: Color,

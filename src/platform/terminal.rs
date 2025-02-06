@@ -13,7 +13,7 @@ use crossterm::{
     }, queue, style::{Attribute, Color as CtColor}, ExecutableCommand as _
 };
 
-use crate::{Buffer, Frame, Input, Program, Scancode};
+use crate::{Buffer, Color, Frame, Input, Program, Scancode};
 
 
 
@@ -155,10 +155,26 @@ impl TerminalPlatform {
         }
 
         let mut writer = std::io::stdout();
+        let mut fg = Color::RESET;
+        let mut bg = Color::RESET;
         // let mut modifier = TextModifier::empty();
 
         for text in current_buffer.content.iter() {
-            queue!(writer, crossterm::cursor::MoveTo(text.x, text.y))?;
+            if text.fg != fg || text.bg != bg {
+                queue!(
+                    writer,
+                    crossterm::style::SetColors(crossterm::style::Colors::new(
+                        color_to_crossterm_color(text.fg),
+                        color_to_crossterm_color(text.bg),
+                    )),
+                )?;
+                fg = text.fg;
+                bg = text.bg;
+            }
+            for line in text.content.lines() {
+                queue!(writer, crossterm::cursor::MoveTo(text.x, text.y))?;
+                queue!(writer, crossterm::style::Print(line))?;
+            }
             // if text.modifier != modifier {
             //     let diff = TextModifierDiff {
             //         from: modifier,
@@ -167,18 +183,6 @@ impl TerminalPlatform {
             //     diff.queue(&mut writer)?;
             //     modifier = text.modifier;
             // }
-            // if cell.fg != fg || cell.bg != bg {
-            //     queue!(
-            //         writer,
-            //         crossterm::style::SetColors(crossterm::style::Colors::new(
-            //             color_to_crossterm_color(text.fg),
-            //             color_to_crossterm_color(text.bg),
-            //         )),
-            //     )?;
-            //     fg = text.fg;
-            //     bg = text.bg;
-            // }
-            queue!(writer, crossterm::style::Print(&text.content))?;
         }
 
         crossterm::queue!(
@@ -285,4 +289,13 @@ fn keycode_to_scancode(code: KeyCode) -> Vec<Scancode> {
     }
 
     scancodes
+}
+
+fn color_to_crossterm_color(color: Color) -> CtColor {
+    match color {
+        Color::RESET => CtColor::Reset,
+        Color([0, 0, 1, i]) => CtColor::AnsiValue(i),
+        Color([255, r, g, b]) => CtColor::Rgb { r, g, b },
+        _ => unreachable!("tried to translate invalid color tag"),
+    }
 }
