@@ -41,12 +41,12 @@ impl super::Platform for NativePlatform {
 
         context.window().request_redraw();
 
-        let clear_color = program.clear_color().as_rgba_f32();
+        let clear_color = program.clear_color().as_3f32();
         unsafe {
             gl.enable(glow::FRAMEBUFFER_SRGB); // Enable automatic conversion to/from sRGB.
             gl.enable(glow::BLEND); // Enable alpha blending.
             gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA); // Set blend function.
-            gl.clear_color(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
+            gl.clear_color(clear_color[0], clear_color[1], clear_color[2], 1.0);
         }
 
         let size = context.window().inner_size();
@@ -190,7 +190,7 @@ impl super::Platform for NativePlatform {
                             bounds: (width, height),
                             text: vec![glow_glyph::Text::default()
                                 .with_text(text.content.as_str())
-                                .with_color(text.fg.as_rgba_f32())
+                                .with_color(text.fg.as_4f32())
                                 .with_scale(scale)],
                             ..glow_glyph::Section::default()
                         });

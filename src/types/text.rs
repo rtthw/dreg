@@ -45,8 +45,8 @@ impl Text {
             content: CompactString::const_new(content),
             x: 0,
             y: 0,
-            fg: Color::NONE,
-            bg: Color::NONE,
+            fg: Color::RESET,
+            bg: Color::RESET,
             modifier: TextModifier::empty(),
         }
     }
