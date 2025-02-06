@@ -5,9 +5,31 @@ use std::{fmt, str::FromStr};
 
 
 
-/// A 32-bit RGBA color.
+/// A 32-bit color.
+///
+/// # Theming
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
 pub struct Color([u8; 4]);
+
+pub struct ColorSet {
+    pub reset: Color,
+    pub black: Color,       // black
+    pub red: Color,         // red
+    pub green: Color,       // green
+    pub orange: Color,      // yellow
+    pub blue: Color,        // blue
+    pub purple: Color,      // magenta
+    pub cyan: Color,        // cyan
+    pub gray: Color,        // white
+    pub darkgray: Color,    // lightblack
+    pub pink: Color,        // lightred
+    pub lime: Color,        // lightgreen
+    pub yellow: Color,      // lightyellow
+    pub sky: Color,         // lightblue
+    pub magenta: Color,     // lightmagenta
+    pub turquoise: Color,   // lightcyan
+    pub white: Color,       // lightwhite
+}
 
 // Constants.
 impl Color {
@@ -35,11 +57,6 @@ impl Color {
         let g = (u >> 8) as u8;
         let b = u as u8;
         Self([r, g, b, 255])
-    }
-
-    /// Create a new "empty" color `#00000000`.
-    pub const fn none() -> Self {
-        Self([0, 0, 0, 0])
     }
 
     /// Convert this color into a u32 encoded as `0xRRGGBBAA`.
