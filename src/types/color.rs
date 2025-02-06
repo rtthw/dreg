@@ -8,7 +8,7 @@ use std::{fmt, str::FromStr};
 /// A 32-bit color.
 ///
 /// This is actually a 24-bit RGB color with a tag for custom colors. It is stored as
-/// `[tag, red, green, blue]`. A tag value of `0` is used indexed colors, and a tag value of `1`
+/// `[tag, red, green, blue]`. A tag value of `0` is used indexed colors, and a tag value of `255`
 /// is used for raw colors.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
 pub struct Color([u8; 4]);
@@ -67,7 +67,7 @@ impl Color {
 impl Color {
     /// Create a raw color from its red, green, and blue channels.
     pub const fn from_rgb(r: u8, g: u8, b: u8) -> Self {
-        Self([0, r, g, b])
+        Self([255, r, g, b])
     }
 
     /// Create a raw RGB color from a u32. The u32 should be in the format `0x00RRGGBB`.
@@ -75,7 +75,7 @@ impl Color {
         let r = (u >> 16) as u8;
         let g = (u >> 8) as u8;
         let b = u as u8;
-        Self([0, r, g, b])
+        Self([255, r, g, b])
     }
 
     /// Multiply this color's channels by the given gamma factor.
@@ -92,7 +92,7 @@ impl Color {
 
     /// Convert this color into a u32 encoded as `0x00RRGGBB`.
     pub fn as_u32(&self) -> u32 {
-        u32::from_be_bytes([0, self.r(), self.g(), self.b()])
+        u32::from_be_bytes([255, self.r(), self.g(), self.b()])
     }
 
     pub fn as_3f32(&self) -> [f32; 3] {
@@ -115,35 +115,29 @@ impl Color {
 
     /// Get a tuple of this color's RGB channel values.
     pub fn as_rgb_tuple(&self) -> (u8, u8, u8) {
-        (self.0[0], self.0[1], self.0[2])
+        (self.0[1], self.0[2], self.0[3])
     }
 
     /// Get an array of this color's RGB channel values.
     pub fn as_rgb_array(&self) -> [u8; 3] {
-        [self.0[0], self.0[1], self.0[2]]
+        [self.0[1], self.0[2], self.0[3]]
     }
 
     /// The red channel value.
     #[inline]
     pub fn r(&self) -> u8 {
-        self.0[0]
+        self.0[1]
     }
 
     /// The green channel value.
     #[inline]
     pub fn g(&self) -> u8 {
-        self.0[1]
+        self.0[2]
     }
 
     /// The blue channel value.
     #[inline]
     pub fn b(&self) -> u8 {
-        self.0[2]
-    }
-
-    /// The alpha channel value.
-    #[inline]
-    pub fn a(&self) -> u8 {
         self.0[3]
     }
 }
