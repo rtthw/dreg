@@ -50,6 +50,7 @@ impl super::Platform for NativePlatform {
         }
 
         let size = context.window().inner_size();
+        let mut scale = program.scale();
         let mut width = size.width as f32;
         let mut height = size.height as f32;
         let mut cols = 1;
@@ -60,7 +61,6 @@ impl super::Platform for NativePlatform {
 
         event_loop.run(move |event, _target, control_flow| {
             program.update();
-            let scale = program.scale();
 
             match event {
                 glutin::event::Event::WindowEvent { event, .. } => match event {
@@ -133,16 +133,17 @@ impl super::Platform for NativePlatform {
                     WindowEvent::Resized(size) => {
                         width = size.width as f32;
                         height = size.height as f32;
-                        cols = ((width / cell_width).floor() as u16).saturating_sub(1);
-                        rows = ((height / cell_height).floor() as u16).saturating_sub(1);
 
-                        let scale = program.scale();
                         let font = glyph_brush.fonts()[0].as_scaled(scale);
                         let fullsize_glyph_id = font.glyph_id(' ');
+
                         cell_width = font.h_advance(fullsize_glyph_id)
                             + font.h_side_bearing(fullsize_glyph_id);
                         cell_height = font.height() + font.line_gap();
-                        // println!("W: {}, H: {}, C: {}, R: {}", width, height, cols, rows);
+
+                        cols = ((width / cell_width).floor() as u16).saturating_sub(1);
+                        rows = ((height / cell_height).floor() as u16).saturating_sub(1);
+
                         context.resize(size);
                         unsafe { gl.viewport( 0, 0, size.width as _, size.height as _); }
                         context.window().request_redraw();
@@ -156,6 +157,18 @@ impl super::Platform for NativePlatform {
                 }
                 glutin::event::Event::RedrawRequested(_for_window_id) => {
                     unsafe { gl.clear(glow::COLOR_BUFFER_BIT) }
+
+                    // Update the cached cell info if the program requests a new scale.
+                    if scale != program.scale() {
+                        scale = program.scale();
+                        let font = glyph_brush.fonts()[0].as_scaled(scale);
+                        let fullsize_glyph_id = font.glyph_id(' ');
+                        cell_width = font.h_advance(fullsize_glyph_id)
+                            + font.h_side_bearing(fullsize_glyph_id);
+                        cell_height = font.height() + font.line_gap();
+                        cols = ((width / cell_width).floor() as u16).saturating_sub(1);
+                        rows = ((height / cell_height).floor() as u16).saturating_sub(1);
+                    }
 
                     let mut buffer = Buffer { content: vec![] };
                     let mut frame = Frame {
