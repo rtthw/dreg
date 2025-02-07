@@ -2,6 +2,7 @@
 <summary>Table of Contents</summary>
 
 - [Dreg](#dreg)
+  - [Features](#features)
   - [License](#license)
 
 </details>
@@ -22,10 +23,18 @@ A simple text-based user interface library that will run on just about anything.
 
 | Feature                                      | Terminal | Desktop | Web |
 |----------------------------------------------|----------|---------|-----|
+| Text colors (foreground & background)        | ✅       | ✅      | ✅  |
+| Text modifiers (bold, italic, etc.)          | ✅       | ✅*     | ✅* |
+| Text layout                                  | ✅       | ✅      | ✅  |
+| Keyboard input                               | ✅       | ✅      | ✅  |
+| Mouse input                                  | ✅       | ✅      | ✅  |
 | Change the window title                      | ✅*      | ✅      | ✅  |
-| Change the font scaling at runtime (zoom in) | ❌       | ✅      | ✅  |
+| Custom fonts                                 | ❌       | ✅      | ✅  |
 | Change the font at runtime                   | ❌       | ✅      | ✅  |
+| Change the font scaling at runtime (zoom in) | ❌       | ✅      | ✅  |
 | Render multiple characters to a single cell  | ❌       | ✅      | ✅  |
+
+_*The text modifier type is based on the standard terminal modifiers, and some platforms don't support some of these modifiers._
 
 _*Most terminals support changing the window title. You'd be hard pressed to find one that doesn't._
 
