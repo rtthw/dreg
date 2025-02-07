@@ -10,10 +10,10 @@ use crossterm::{
     event::{
         KeyCode, KeyEvent, KeyEventKind, KeyModifiers, ModifierKeyCode,
         MouseButton, MouseEvent, MouseEventKind,
-    }, queue, style::{Attribute, Color as CtColor}, ExecutableCommand as _
+    }, queue, style::{Attribute, Color as CtColor, SetAttribute}, ExecutableCommand as _
 };
 
-use crate::{Buffer, Color, Frame, Input, Program, Scancode};
+use crate::{Buffer, Color, Frame, Input, Program, Scancode, TextModifier};
 
 
 
@@ -157,7 +157,7 @@ impl TerminalPlatform {
         let mut writer = std::io::stdout();
         let mut fg = Color::RESET;
         let mut bg = Color::RESET;
-        // let mut modifier = TextModifier::empty();
+        let mut modifier = TextModifier::empty();
 
         for text in current_buffer.content.iter() {
             if text.fg != fg || text.bg != bg {
@@ -175,14 +175,14 @@ impl TerminalPlatform {
                 queue!(writer, crossterm::cursor::MoveTo(text.x, text.y))?;
                 queue!(writer, crossterm::style::Print(line))?;
             }
-            // if text.modifier != modifier {
-            //     let diff = TextModifierDiff {
-            //         from: modifier,
-            //         to: text.modifier,
-            //     };
-            //     diff.queue(&mut writer)?;
-            //     modifier = text.modifier;
-            // }
+            if text.modifier != modifier {
+                let diff = ModifierDiff {
+                    from: modifier,
+                    to: text.modifier,
+                };
+                diff.queue(&mut writer)?;
+                modifier = text.modifier;
+            }
         }
 
         crossterm::queue!(
@@ -297,5 +297,72 @@ fn color_to_crossterm_color(color: Color) -> CtColor {
         Color([0, 0, 1, i]) => CtColor::AnsiValue(i),
         Color([255, r, g, b]) => CtColor::Rgb { r, g, b },
         _ => unreachable!("tried to translate invalid color tag"),
+    }
+}
+
+/// The `ModifierDiff` struct is used to calculate the difference between two `TextModifier`s.
+/// This is useful when updating the terminal display, as it allows for more efficient updates by
+/// only sending the necessary changes.
+struct ModifierDiff {
+    pub from: TextModifier,
+    pub to: TextModifier,
+}
+
+impl ModifierDiff {
+    fn queue<W: std::io::Write>(self, mut w: W) -> std::io::Result<()> {
+        //use crossterm::Attribute;
+        let removed = self.from - self.to;
+        if removed.contains(TextModifier::REVERSED) {
+            queue!(w, SetAttribute(Attribute::NoReverse))?;
+        }
+        if removed.contains(TextModifier::BOLD) {
+            queue!(w, SetAttribute(Attribute::NormalIntensity))?;
+            if self.to.contains(TextModifier::DIM) {
+                queue!(w, SetAttribute(Attribute::Dim))?;
+            }
+        }
+        if removed.contains(TextModifier::ITALIC) {
+            queue!(w, SetAttribute(Attribute::NoItalic))?;
+        }
+        if removed.contains(TextModifier::UNDERLINED) {
+            queue!(w, SetAttribute(Attribute::NoUnderline))?;
+        }
+        if removed.contains(TextModifier::DIM) {
+            queue!(w, SetAttribute(Attribute::NormalIntensity))?;
+        }
+        if removed.contains(TextModifier::CROSSED_OUT) {
+            queue!(w, SetAttribute(Attribute::NotCrossedOut))?;
+        }
+        if removed.contains(TextModifier::SLOW_BLINK) || removed.contains(TextModifier::RAPID_BLINK) {
+            queue!(w, SetAttribute(Attribute::NoBlink))?;
+        }
+
+        let added = self.to - self.from;
+        if added.contains(TextModifier::REVERSED) {
+            queue!(w, SetAttribute(Attribute::Reverse))?;
+        }
+        if added.contains(TextModifier::BOLD) {
+            queue!(w, SetAttribute(Attribute::Bold))?;
+        }
+        if added.contains(TextModifier::ITALIC) {
+            queue!(w, SetAttribute(Attribute::Italic))?;
+        }
+        if added.contains(TextModifier::UNDERLINED) {
+            queue!(w, SetAttribute(Attribute::Underlined))?;
+        }
+        if added.contains(TextModifier::DIM) {
+            queue!(w, SetAttribute(Attribute::Dim))?;
+        }
+        if added.contains(TextModifier::CROSSED_OUT) {
+            queue!(w, SetAttribute(Attribute::CrossedOut))?;
+        }
+        if added.contains(TextModifier::SLOW_BLINK) {
+            queue!(w, SetAttribute(Attribute::SlowBlink))?;
+        }
+        if added.contains(TextModifier::RAPID_BLINK) {
+            queue!(w, SetAttribute(Attribute::RapidBlink))?;
+        }
+
+        Ok(())
     }
 }

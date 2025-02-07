@@ -87,4 +87,16 @@ impl Text {
         self.bg = color;
         self
     }
+
+    /// Add the given modifier to the text.
+    pub fn with_modifier(mut self, modifier: TextModifier) -> Self {
+        self.modifier = self.modifier.union(modifier);
+        self
+    }
+
+    /// Remove the given modifier from the text.
+    pub fn without_modifier(mut self, modifier: TextModifier) -> Self {
+        self.modifier = self.modifier.difference(modifier);
+        self
+    }
 }
