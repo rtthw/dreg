@@ -171,10 +171,6 @@ impl TerminalPlatform {
                 fg = text.fg;
                 bg = text.bg;
             }
-            for line in text.content.lines() {
-                queue!(writer, crossterm::cursor::MoveTo(text.x, text.y))?;
-                queue!(writer, crossterm::style::Print(line))?;
-            }
             if text.modifier != modifier {
                 let diff = ModifierDiff {
                     from: modifier,
@@ -182,6 +178,12 @@ impl TerminalPlatform {
                 };
                 diff.queue(&mut writer)?;
                 modifier = text.modifier;
+            }
+            let mut line_num = 0;
+            for line in text.content.lines() {
+                queue!(writer, crossterm::cursor::MoveTo(text.x, text.y + line_num))?;
+                queue!(writer, crossterm::style::Print(line))?;
+                line_num += 1;
             }
         }
 
