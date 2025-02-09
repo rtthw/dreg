@@ -52,6 +52,7 @@ impl winit::application::ApplicationHandler for NativePlatform {
     ) {
         let Some(program) = &mut self.program else { return; };
         let Some(State {
+            scale,
             cell_width,
             cell_height,
             cols,
@@ -163,6 +164,26 @@ impl winit::application::ApplicationHandler for NativePlatform {
                 };
 
                 program.render(&mut frame);
+
+                // Update cell scaling when necessary.
+                if program.scale() != *scale {
+                    let metrics = glyphon::Metrics::relative(program.scale(), 1.15);
+                    *cell_height = metrics.line_height;
+                    let mut measure_buf = glyphon::Buffer::new(font_system, metrics);
+                    measure_buf.set_text(
+                        font_system,
+                        " ",
+                        glyphon::Attrs::new().family(glyphon::Family::Monospace),
+                        glyphon::Shaping::Advanced,
+                    );
+                    if let Some(layout) = measure_buf.layout_runs().next() {
+                        *cell_width = layout.glyphs[0].w;
+                    }
+                    *cols = ((surface_config.width as f32 / *cell_width).floor() as u16)
+                        .saturating_sub(1);
+                    *rows = ((surface_config.height as f32 / *cell_height).floor() as u16)
+                        .saturating_sub(1);
+                }
 
                 let mut bufs = vec![];
                 let mut areas = vec![];
@@ -297,6 +318,7 @@ impl Default for NativeArgs {
 
 
 struct State {
+    scale: f32,
     cell_width: f32,
     cell_height: f32,
     cols: u16,
@@ -359,6 +381,7 @@ impl State {
         );
 
         Self {
+            scale: 20.0,
             cell_width: 1.0,
             cell_height: 1.0,
             cols: 1,
