@@ -35,10 +35,11 @@ impl winit::application::ApplicationHandler for NativePlatform {
         if self.state.is_some() {
             return;
         }
-        let (width, height) = (800, 600);
+        let (width, height) = self.args.size;
         let window_attributes = Window::default_attributes()
             .with_inner_size(winit::dpi::LogicalSize::new(width as f64, height as f64))
-            .with_title("Untitled");
+            .with_resizable(self.args.resizable)
+            .with_title(&self.args.title);
         let window = Arc::new(event_loop.create_window(window_attributes).unwrap());
         self.state = Some(State::new(window));
     }
