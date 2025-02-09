@@ -126,6 +126,20 @@ impl winit::application::ApplicationHandler for NativePlatform {
                 surface_config.width = size.width;
                 surface_config.height = size.height;
                 surface.configure(&device, &surface_config);
+
+                let metrics = glyphon::Metrics::relative(program.scale(), 1.15);
+                *cell_height = metrics.line_height;
+                let mut measure_buf = glyphon::Buffer::new(font_system, metrics);
+                measure_buf.set_text(
+                    font_system,
+                    " ",
+                    glyphon::Attrs::new().family(glyphon::Family::Monospace),
+                    glyphon::Shaping::Advanced,
+                );
+                if let Some(layout) = measure_buf.layout_runs().next() {
+                    *cell_width = layout.glyphs[0].w;
+                }
+
                 *cols = ((size.width as f32 / *cell_width).floor() as u16).saturating_sub(1);
                 *rows = ((size.height as f32 / *cell_height).floor() as u16).saturating_sub(1);
 
@@ -152,11 +166,9 @@ impl winit::application::ApplicationHandler for NativePlatform {
 
                 let mut bufs = vec![];
                 let mut areas = vec![];
+                let metrics = glyphon::Metrics::relative(program.scale(), 1.15);
                 for text in &buffer.content {
-                    let mut glyph_buf = glyphon::Buffer::new(
-                        font_system,
-                        glyphon::Metrics::new(program.scale(), program.scale()),
-                    );
+                    let mut glyph_buf = glyphon::Buffer::new(font_system, metrics);
                     glyph_buf.set_text(
                         font_system,
                         &text.content,
@@ -345,7 +357,6 @@ impl State {
             wgpu::MultisampleState::default(),
             None,
         );
-
 
         Self {
             cell_width: 1.0,
