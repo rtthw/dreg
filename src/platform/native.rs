@@ -10,7 +10,7 @@ use epaint_default_fonts::HACK_REGULAR;
 use pollster::FutureExt;
 use winit::{event::{KeyEvent, MouseButton}, keyboard::{KeyCode, PhysicalKey}, window::Window};
 
-use crate::{Buffer, Frame, Input, Program, Scancode};
+use crate::{Buffer, Frame, Input, Program, Scancode, TextModifier};
 
 
 
@@ -65,7 +65,6 @@ impl winit::application::ApplicationHandler for NativePlatform {
             viewport,
             atlas,
             text_renderer,
-            text_buffer,
             window,
         }) = &mut self.state else { return; };
 
@@ -141,26 +140,73 @@ impl winit::application::ApplicationHandler for NativePlatform {
                     },
                 );
 
+                let mut buffer = Buffer { content: vec![] };
+                let mut frame = Frame {
+                    cols: *cols,
+                    rows: *rows,
+                    buffer: &mut buffer,
+                    should_exit: false,
+                };
+
+                program.render(&mut frame);
+
+                let mut bufs = vec![];
+                let mut areas = vec![];
+                for text in &buffer.content {
+                    let mut glyph_buf = glyphon::Buffer::new(
+                        font_system,
+                        glyphon::Metrics::new(program.scale(), program.scale()),
+                    );
+                    glyph_buf.set_text(
+                        font_system,
+                        &text.content,
+                        glyphon::Attrs {
+                            color_opt: Some(glyphon::Color::rgb(
+                                text.fg.r(),
+                                text.fg.g(),
+                                text.fg.b(),
+                            )),
+                            family: glyphon::Family::Monospace,
+                            stretch: glyphon::Stretch::Normal,
+                            style: if text.modifier.contains(TextModifier::ITALIC) {
+                                glyphon::Style::Italic
+                            } else {
+                                glyphon::Style::Normal
+                            },
+                            weight: if text.modifier.contains(TextModifier::BOLD) {
+                                glyphon::Weight::BOLD
+                            } else {
+                                glyphon::Weight::NORMAL
+                            },
+                            metadata: 0,
+                            cache_key_flags: glyphon::cosmic_text::CacheKeyFlags::empty(),
+                            metrics_opt: None,
+                        },
+                        glyphon::Shaping::Advanced,
+                    );
+                    bufs.push(glyph_buf);
+                }
+                for (index, text) in buffer.content.into_iter().enumerate() {
+                    let x_pos = *cell_width * text.x as f32;
+                    let y_pos = *cell_height * text.y as f32;
+                    areas.push(glyphon::TextArea {
+                        buffer: bufs.get(index).unwrap(),
+                        left: x_pos,
+                        top: y_pos,
+                        scale: 1.0,
+                        bounds: glyphon::TextBounds::default(), // unbounded
+                        default_color: glyphon::Color::rgb(255, 255, 255),
+                        custom_glyphs: &[],
+                    });
+                }
+
                 text_renderer.prepare(
                     device,
                     queue,
                     font_system,
                     atlas,
                     viewport,
-                    [glyphon::TextArea {
-                        buffer: text_buffer,
-                        left: 10.0,
-                        top: 10.0,
-                        scale: 1.0,
-                        bounds: glyphon::TextBounds {
-                            left: 0,
-                            top: 0,
-                            right: 600,
-                            bottom: 160,
-                        },
-                        default_color: glyphon::Color::rgb(255, 255, 255),
-                        custom_glyphs: &[],
-                    }],
+                    areas,
                     swash_cache,
                 ).unwrap();
 
@@ -254,7 +300,6 @@ struct State {
     viewport: glyphon::Viewport,
     atlas: glyphon::TextAtlas,
     text_renderer: glyphon::TextRenderer,
-    text_buffer: glyphon::Buffer,
 
     window: Arc<Window>,
 }
@@ -262,7 +307,6 @@ struct State {
 impl State {
     fn new(window: Arc<Window>) -> Self {
         let physical_size = window.inner_size();
-        let scale_factor = window.scale_factor();
 
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor::default());
         let adapter = instance
@@ -290,7 +334,7 @@ impl State {
         };
         surface.configure(&device, &surface_config);
 
-        let mut font_system = glyphon::FontSystem::new();
+        let font_system = glyphon::FontSystem::new();
         let swash_cache = glyphon::SwashCache::new();
         let cache = glyphon::Cache::new(&device);
         let viewport = glyphon::Viewport::new(&device, &cache);
@@ -301,21 +345,7 @@ impl State {
             wgpu::MultisampleState::default(),
             None,
         );
-        let mut text_buffer = glyphon::Buffer::new(
-            &mut font_system,
-            glyphon::Metrics::new(30.0, 42.0),
-        );
 
-        let physical_width = (physical_size.width as f64 * scale_factor) as f32;
-        let physical_height = (physical_size.height as f64 * scale_factor) as f32;
-
-        text_buffer.set_size(
-            &mut font_system,
-            Some(physical_width),
-            Some(physical_height),
-        );
-        text_buffer.set_text(&mut font_system, "Hello world! 👋\nThis is rendered with 🦅 glyphon 🦁\nThe text below should be partially clipped.\na b c d e f g h i j k l m n o p q r s t u v w x y z", glyphon::Attrs::new().family(glyphon::Family::Monospace), glyphon::Shaping::Advanced);
-        text_buffer.shape_until_scroll(&mut font_system, false);
 
         Self {
             cell_width: 1.0,
@@ -331,7 +361,6 @@ impl State {
             viewport,
             atlas,
             text_renderer,
-            text_buffer,
             window,
         }
     }
