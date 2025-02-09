@@ -6,7 +6,6 @@
 
 use std::sync::Arc;
 
-use epaint_default_fonts::HACK_REGULAR;
 use pollster::FutureExt;
 use winit::{event::{KeyEvent, MouseButton}, keyboard::{KeyCode, PhysicalKey}, window::Window};
 

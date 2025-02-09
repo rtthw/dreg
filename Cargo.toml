@@ -11,13 +11,7 @@ license = "MIT"
 
 [features]
 default = ["native", "terminal", "web"]
-native = [
-    "dep:epaint_default_fonts",
-    "dep:glyphon",
-    "dep:pollster",
-    "dep:wgpu",
-    "dep:winit",
-]
+native = ["dep:glyphon", "dep:pollster", "dep:wgpu", "dep:winit"]
 terminal = ["dep:crossterm"]
 web = []
 
@@ -25,7 +19,6 @@ web = []
 bitflags = "2"
 compact_str = "0.8"
 crossterm = { version = "0.28", optional = true }
-epaint_default_fonts = { version = "0.30", optional = true }
 glyphon = { version = "0.8", optional = true }
 pollster = { version = "0.4", optional = true }
 wgpu = { version = "24", optional = true }
