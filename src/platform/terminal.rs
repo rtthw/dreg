@@ -155,6 +155,12 @@ impl TerminalPlatform {
         }
 
         let mut writer = std::io::stdout();
+
+        crossterm::queue!(
+            writer,
+            crossterm::terminal::Clear(crossterm::terminal::ClearType::All),
+        )?;
+
         let mut fg = Color::RESET;
         let mut bg = Color::RESET;
         let mut modifier = TextModifier::empty();
