@@ -108,6 +108,7 @@ pub enum Input {
 }
 
 
+
 /// A keyboard/mouse button's scancode.
 ///
 /// There are constants for just about every button, and you can still use the extremely uncommon

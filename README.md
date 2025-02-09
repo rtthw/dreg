@@ -2,12 +2,7 @@
 <summary>Table of Contents</summary>
 
 - [Dreg](#dreg)
-  - [Examples](#examples)
-  - [Overview](#overview)
-    - [Features](#features)
-    - [Limitations](#limitations)
-    - [Design Philosophy](#design-philosophy)
-  - [Acknowledgments](#acknowledgments)
+  - [Features](#features)
   - [License](#license)
 
 </details>
@@ -24,94 +19,29 @@
 
 A simple text-based user interface library that will run on just about anything.
 
-## Examples
+## Features
 
-<details>
-<summary>Simple Terminal-Only Application</summary>
+| Feature                                      | Terminal | Desktop | Web |
+|----------------------------------------------|----------|---------|-----|
+| Text colors (foreground & background)        | ✅       | ✅      | ✅  |
+| Text modifiers (bold, italic, etc.)          | ✅       | ✅*     | ✅* |
+| Text layout                                  | ✅       | ✅      | ✅  |
+| Keyboard input                               | ✅       | ✅      | ✅  |
+| Mouse input                                  | ✅       | ✅      | ✅  |
+| Change the window title                      | ✅*      | ✅      | ✅  |
+| Custom fonts                                 | ❌       | ✅      | ✅  |
+| Change the font at runtime                   | ❌       | ✅      | ✅  |
+| Change the font scaling at runtime (zoom in) | ❌       | ✅      | ✅  |
+| Render multiple characters to a single cell  | ❌       | ✅      | ✅  |
 
-```rust
-use dreg::prelude::*;
+_*The text modifier type is based on the standard terminal modifiers, and some platforms don't support some of these modifiers._
 
-fn main() -> Result<()> {
-    let program = MyProgram { should_quit: false, latest_input: Input::Null };
-    let platform = CrosstermPlatform::new()?;
-
-    run_program(program, platform)?;
-
-    Ok(())
-}
-
-struct MyProgram {
-    should_quit: bool,
-    latest_input: Input,
-}
-
-impl Program for MyProgram {
-    fn update(&mut self, frame: Frame) {
-        // When the user presses `q`, the program safely exits.
-        if frame.context.keys_down().contains(&Scancode::Q) {
-            self.should_quit = true;
-            return; // No need to render anything past this point.
-        }
-        frame.buffer.set_string(
-            1, // Column index (x-coordinate).
-            1, // Row index (y-coordinate).
-            format!("LATEST INPUT: {:?}", self.latest_input),
-            Style::new(), // No styling, cells will default to the user's terminal foreground color.
-        );
-    }
-
-    fn on_input(&mut self, input: Input) {
-        self.latest_input = input;
-    }
-
-    fn on_platform_request(&self, request: &str) -> Option<&str> {
-        // Terminals do not perform requests.
-        None
-    }
-
-    fn should_exit(&self) -> bool {
-        // This function is called every frame.
-        self.should_quit
-    }
-}
-```
-
-</details>
-
-## Overview
-
-### Features
-
-<details>
-<summary><strong>Runs on just about anything.</strong></summary>
-
-| Platform | Support |
-| --- | --- |
-| Terminal | ✔ Full support |
-| Web | ✔ Mostly supported |
-| Native | ✖ In progress |
-
-</details>
-
-### Limitations
-
-- No support for variable width fonts; even on platforms that do support them.
-
-### Design Philosophy
-
-The design of Dreg has been radical simplicity from the very start.
-
-## Acknowledgments
-
-- [`ratatui`] & [`tui-rs`], for the original inspiration for the project.
+_*Most terminals support changing the window title. You'd be hard pressed to find one that doesn't._
 
 ## License
 
 [MIT](./LICENSE)
 
-[`ratatui`]: https://docs.rs/ratatui/latest/ratatui/
-[`tui-rs`]: https://docs.rs/tui/latest/tui/
 [Crate]: https://crates.io/crates/dreg
 [Crate Badge]: https://img.shields.io/crates/v/dreg?logo=rust&style=flat-square&logoColor=E05D44&color=E05D44
 [Docs Badge]: https://img.shields.io/docsrs/dreg?logo=rust&style=flat-square&logoColor=E05D44

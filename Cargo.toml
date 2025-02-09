@@ -1,39 +1,50 @@
 [package]
 name = "dreg"
-version.workspace = true
-authors = ["Matthew Martin"]
-edition.workspace = true
+version = "0.3.0"
+authors = ["Matthew Norman"]
+edition = "2021"
 description = "A simple text-based user interface library"
 readme = "README.md"
-homepage.workspace = true
+homepage = "https://github.com/rtthw/dreg"
 repository = "https://github.com/rtthw/dreg"
-license.workspace = true
-# keywords = [""]
-# categories = [""]
-
-[package.metadata.docs.rs]
-all-features = true
-targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
-
-[features]
-default = ["term"]
-term = ["dep:dreg-term"]
-wasm = ["dep:dreg-wasm"]
-
-[dependencies]
-dreg-core = { workspace = true }
-dreg-term = { version = "0.2.2", path = "crates/dreg-term", optional = true }
-dreg-wasm = { version = "0.2.2", path = "crates/dreg-wasm", optional = true }
-
-[workspace]
-resolver = "2"
-members = ["crates/dreg-core", "crates/dreg-term", "crates/dreg-wasm"]
-
-[workspace.package]
-version = "0.2.2"
-edition = "2021"
-homepage = "https://rtthw.github.io/dreg"
 license = "MIT"
 
-[workspace.dependencies]
-dreg-core = { version = "0.2.2", path = "crates/dreg-core" }
+[features]
+default = ["native", "terminal", "web"]
+native = ["dep:glyphon", "dep:pollster", "dep:wgpu", "dep:winit"]
+terminal = ["dep:crossterm"]
+web = ["dep:wasm-bindgen", "dep:web-sys"]
+
+[dependencies]
+bitflags = "2"
+compact_str = "0.8"
+crossterm = { version = "0.28", optional = true }
+glyphon = { version = "0.8", optional = true }
+pollster = { version = "0.4", optional = true }
+wasm-bindgen = { version = "0.2.95", optional = true }
+web-sys = { version = "0.3.72", features = [
+    "CanvasRenderingContext2d",
+    "CssStyleDeclaration",
+    "Document",
+    "DomRect",
+    "Element",
+    "Event",
+    "EventTarget",
+    "HashChangeEvent",
+    "HtmlCanvasElement",
+    "HtmlElement",
+    "KeyboardEvent",
+    "MouseEvent",
+    "Node",
+    "PointerEvent",
+    "PopStateEvent",
+    "ResizeObserver",
+    "ResizeObserverBoxOptions",
+    "ResizeObserverEntry",
+    "ResizeObserverOptions",
+    "ResizeObserverSize",
+    "TextMetrics",
+    "Window",
+], optional = true }
+wgpu = { version = "24", optional = true }
+winit = { version = "0.30", optional = true }
