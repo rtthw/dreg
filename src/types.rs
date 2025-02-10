@@ -2,11 +2,13 @@
 
 
 
+pub mod area;
 pub mod color;
 pub mod input;
 pub mod text;
 pub mod text_modifier;
 
+pub use area::*;
 pub use color::*;
 pub use input::*;
 pub use text::*;

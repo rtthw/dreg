@@ -4,6 +4,8 @@
 
 use std::collections::HashSet;
 
+use super::Area;
+
 
 
 /// A utility object for managing your program's input state.
@@ -28,7 +30,7 @@ impl Default for InputContext {
 }
 
 impl InputContext {
-    /// **IMPORTANT**: This function must be called at the end of *every* update pass.
+    /// **IMPORTANT**: This function must be called at the end of *every* render pass.
     pub fn end_frame(&mut self) {
         self.resized = None;
         self.newly_focused = false;
@@ -90,6 +92,23 @@ impl InputContext {
     /// Get whether the program's display size has changed this frame.
     pub fn was_resized_this_frame(&self) -> bool {
         self.resized.is_some()
+    }
+}
+
+impl InputContext {
+    pub fn left_clicked(&self, area: &Area) -> bool {
+        self.keys_down.contains(&Scancode::LMB)
+            && self.mouse_pos.is_some_and(|(x, y)| area.contains(x, y))
+    }
+
+    pub fn right_clicked(&self, area: &Area) -> bool {
+        self.keys_down.contains(&Scancode::RMB)
+            && self.mouse_pos.is_some_and(|(x, y)| area.contains(x, y))
+    }
+
+    pub fn middle_clicked(&self, area: &Area) -> bool {
+        self.keys_down.contains(&Scancode::MMB)
+            && self.mouse_pos.is_some_and(|(x, y)| area.contains(x, y))
     }
 }
 
