@@ -20,8 +20,8 @@ impl Area {
     pub fn contains(&self, x: u16, y: u16) -> bool {
         x >= self.x
             && y >= self.y
-            && x <= self.x.saturating_add(self.w)
-            && y <= self.y.saturating_add(self.h)
+            && x < self.x.saturating_add(self.w)
+            && y < self.y.saturating_add(self.h)
     }
 }
 
