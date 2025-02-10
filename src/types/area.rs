@@ -85,7 +85,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn splitting_works() {
+    fn area_containment() {
+        let area = Area { x: 0, y: 0, w: 5, h: 7 };
+        assert!(area.contains(0, 0));
+
+        assert!(area.contains(0, 6));
+        assert!(area.contains(4, 6));
+        assert!(area.contains(4, 0));
+
+        assert!(!area.contains(0, 7));
+        assert!(!area.contains(5, 7));
+        assert!(!area.contains(5, 0));
+    }
+
+    #[test]
+    fn area_splitting() {
         let main_area = Area { x: 0, y: 0, w: 5, h: 7 };
 
         let (left_area, right_area) = main_area.hsplit_len(3);
