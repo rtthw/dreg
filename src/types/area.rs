@@ -28,6 +28,11 @@ impl Area {
 // Input.
 impl Area {
     /// Akin to `input_context.left_clicked(&self)`.
+    pub fn hovered(&self, input_context: &InputContext) -> bool {
+        input_context.hovered(self)
+    }
+
+    /// Akin to `input_context.left_clicked(&self)`.
     pub fn left_clicked(&self, input_context: &InputContext) -> bool {
         input_context.left_clicked(self)
     }

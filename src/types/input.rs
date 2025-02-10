@@ -95,20 +95,31 @@ impl InputContext {
     }
 }
 
+// Checkers.
 impl InputContext {
+    /// Akin to `self.keys_down().contains(scancode)`.
+    pub fn is_key_down(&self, scancode: &Scancode) -> bool {
+        self.keys_down.contains(scancode)
+    }
+
+    /// Akin to `area.hovered(&self)`.
+    pub fn hovered(&self, area: &Area) -> bool {
+        self.mouse_pos.is_some_and(|(x, y)| area.contains(x, y))
+    }
+
+    /// Akin to `area.left_clicked(&self)`.
     pub fn left_clicked(&self, area: &Area) -> bool {
-        self.keys_down.contains(&Scancode::LMB)
-            && self.mouse_pos.is_some_and(|(x, y)| area.contains(x, y))
+        self.is_key_down(&Scancode::LMB) && self.hovered(area)
     }
 
+    /// Akin to `area.right_clicked(&self)`.
     pub fn right_clicked(&self, area: &Area) -> bool {
-        self.keys_down.contains(&Scancode::RMB)
-            && self.mouse_pos.is_some_and(|(x, y)| area.contains(x, y))
+        self.is_key_down(&Scancode::RMB) && self.hovered(area)
     }
 
+    /// Akin to `area.middle_clicked(&self)`.
     pub fn middle_clicked(&self, area: &Area) -> bool {
-        self.keys_down.contains(&Scancode::MMB)
-            && self.mouse_pos.is_some_and(|(x, y)| area.contains(x, y))
+        self.is_key_down(&Scancode::MMB) && self.hovered(area)
     }
 }
 
