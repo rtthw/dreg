@@ -47,11 +47,39 @@ impl Rectangle {
     }
 }
 
+/// Comparison of normal, heavy, double, and round styles:
+/// ```text
+/// ┌─┐┏━┓╔═╗╭─╮
+/// │ │┃ ┃║ ║│ │
+/// └─┘┗━┛╚═╝╰─╯
+/// ```
 #[derive(Clone, Copy, Debug, Default)]
 pub enum RectangleStyle {
+    /// ```text
+    /// ┌─┐
+    /// │ │
+    /// └─┘
+    /// ```
     #[default]
     Normal,
+    /// ```text
+    /// ┏━┓
+    /// ┃ ┃
+    /// ┗━┛
+    /// ```
     Heavy,
+    /// ```text
+    /// ╔═╗
+    /// ║ ║
+    /// ╚═╝
+    /// ```
+    Double,
+    /// ```text
+    /// ╭─╮
+    /// │ │
+    /// ╰─╯
+    /// ```
+    Round,
 }
 
 impl RectangleStyle {
@@ -59,6 +87,8 @@ impl RectangleStyle {
         match self {
             RectangleStyle::Normal => ['┌', '┐', '└', '┘', '─', '│'],
             RectangleStyle::Heavy => ['┏', '┓', '┗', '┛', '━', '┃'],
+            RectangleStyle::Double => ['╔', '╗', '╚', '╝', '═', '║'],
+            RectangleStyle::Round => ['╭', '╮', '╰', '╯', '─', '│'],
         }
     }
 }
