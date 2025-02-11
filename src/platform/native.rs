@@ -249,6 +249,7 @@ impl winit::application::ApplicationHandler for NativePlatform {
                     &wgpu::CommandEncoderDescriptor { label: None }
                 );
 
+                let clear_color = program.clear_color().as_3f32();
                 {
                     let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                         label: None,
@@ -256,7 +257,12 @@ impl winit::application::ApplicationHandler for NativePlatform {
                             view: &view,
                             resolve_target: None,
                             ops: wgpu::Operations {
-                                load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+                                load: wgpu::LoadOp::Clear(wgpu::Color {
+                                    r: clear_color[0].into(),
+                                    g: clear_color[1].into(),
+                                    b: clear_color[2].into(),
+                                    a: 1.0,
+                                }),
                                 store: wgpu::StoreOp::Store,
                             },
                         })],
