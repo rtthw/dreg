@@ -19,8 +19,9 @@ web = ["dep:wasm-bindgen", "dep:web-sys"]
 bitflags = "2"
 compact_str = "0.8"
 crossterm = { version = "0.28", optional = true }
-glyphon = { version = "0.8", optional = true }
+glyphon = { version = "0.9", optional = true }
 pollster = { version = "0.4", optional = true }
+rustc-hash = "2"
 wasm-bindgen = { version = "0.2.95", optional = true }
 web-sys = { version = "0.3.72", features = [
     "CanvasRenderingContext2d",
@@ -46,5 +47,5 @@ web-sys = { version = "0.3.72", features = [
     "TextMetrics",
     "Window",
 ], optional = true }
-wgpu = { version = "24", optional = true }
+wgpu = { version = "25", optional = true }
 winit = { version = "0.30", optional = true }

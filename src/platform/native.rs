@@ -4,12 +4,12 @@
 
 
 
-use std::sync::Arc;
+use std::{hash::Hash as _, sync::Arc};
 
 use pollster::FutureExt;
 use winit::{event::{KeyEvent, MouseButton}, keyboard::{KeyCode, PhysicalKey}, window::Window};
 
-use crate::{Buffer, Frame, Input, Program, Scancode, TextModifier};
+use crate::{Buffer, Frame, Input, Program, Scancode, Text, TextModifier};
 
 
 
@@ -52,6 +52,7 @@ impl winit::application::ApplicationHandler for NativePlatform {
     ) {
         let Some(program) = &mut self.program else { return; };
         let Some(State {
+            cache,
             scale,
             cell_width,
             cell_height,
@@ -128,13 +129,21 @@ impl winit::application::ApplicationHandler for NativePlatform {
                 surface_config.height = size.height;
                 surface.configure(&device, &surface_config);
 
-                let metrics = glyphon::Metrics::relative(program.scale(), 1.15);
+                viewport.update(
+                    &queue,
+                    glyphon::Resolution {
+                        width: surface_config.width,
+                        height: surface_config.height,
+                    },
+                );
+
+                let metrics = glyphon::Metrics::relative(*scale, 1.15);
                 *cell_height = metrics.line_height;
                 let mut measure_buf = glyphon::Buffer::new(font_system, metrics);
                 measure_buf.set_text(
                     font_system,
                     " ",
-                    glyphon::Attrs::new().family(glyphon::Family::Monospace),
+                    &glyphon::Attrs::new().family(glyphon::Family::Monospace),
                     glyphon::Shaping::Advanced,
                 );
                 if let Some(layout) = measure_buf.layout_runs().next() {
@@ -147,14 +156,6 @@ impl winit::application::ApplicationHandler for NativePlatform {
                 window.request_redraw();
             }
             winit::event::WindowEvent::RedrawRequested => {
-                viewport.update(
-                    &queue,
-                    glyphon::Resolution {
-                        width: surface_config.width,
-                        height: surface_config.height,
-                    },
-                );
-
                 let mut buffer = Buffer { content: vec![] };
                 let mut frame = Frame {
                     cols: *cols,
@@ -165,73 +166,34 @@ impl winit::application::ApplicationHandler for NativePlatform {
 
                 program.render(&mut frame);
 
-                // Update cell scaling when necessary.
-                if program.scale() != *scale {
-                    let metrics = glyphon::Metrics::relative(program.scale(), 1.15);
-                    *cell_height = metrics.line_height;
-                    let mut measure_buf = glyphon::Buffer::new(font_system, metrics);
-                    measure_buf.set_text(
-                        font_system,
-                        " ",
-                        glyphon::Attrs::new().family(glyphon::Family::Monospace),
-                        glyphon::Shaping::Advanced,
-                    );
-                    if let Some(layout) = measure_buf.layout_runs().next() {
-                        *cell_width = layout.glyphs[0].w;
-                    }
-                    *cols = ((surface_config.width as f32 / *cell_width).floor() as u16)
-                        .saturating_sub(1);
-                    *rows = ((surface_config.height as f32 / *cell_height).floor() as u16)
-                        .saturating_sub(1);
-                }
+                let keys = buffer.content.iter()
+                    .map(|t| {
+                        let key = CacheKey::from((t, *scale));
+                        let (hash, _entry) = cache.allocate(font_system, key);
 
-                let mut bufs = vec![];
-                let mut areas = vec![];
-                let metrics = glyphon::Metrics::relative(program.scale(), 1.15);
-                for text in &buffer.content {
-                    let mut glyph_buf = glyphon::Buffer::new(font_system, metrics);
-                    glyph_buf.set_text(
-                        font_system,
-                        &text.content,
-                        glyphon::Attrs {
-                            color_opt: Some(glyphon::Color::rgb(
-                                text.fg.r(),
-                                text.fg.g(),
-                                text.fg.b(),
-                            )),
-                            family: glyphon::Family::Monospace,
-                            stretch: glyphon::Stretch::Normal,
-                            style: if text.modifier.contains(TextModifier::ITALIC) {
-                                glyphon::Style::Italic
-                            } else {
-                                glyphon::Style::Normal
-                            },
-                            weight: if text.modifier.contains(TextModifier::BOLD) {
-                                glyphon::Weight::BOLD
-                            } else {
-                                glyphon::Weight::NORMAL
-                            },
-                            metadata: 0,
-                            cache_key_flags: glyphon::cosmic_text::CacheKeyFlags::empty(),
-                            metrics_opt: None,
-                        },
-                        glyphon::Shaping::Advanced,
-                    );
-                    bufs.push(glyph_buf);
-                }
-                for (index, text) in buffer.content.into_iter().enumerate() {
-                    let x_pos = *cell_width * text.x as f32;
-                    let y_pos = *cell_height * text.y as f32;
-                    areas.push(glyphon::TextArea {
-                        buffer: bufs.get(index).unwrap(),
+                        hash
+                    })
+                    .collect::<Vec<_>>();
+                let text_areas = buffer.content.iter().zip(keys.iter()).map(|(t, key)| {
+                    let entry = cache.get(&key).unwrap();
+                    let x_pos = *cell_width * t.x as f32;
+                    let y_pos = *cell_height * t.y as f32;
+
+                    glyphon::TextArea {
+                        buffer: &entry.buffer,
                         left: x_pos,
                         top: y_pos,
                         scale: 1.0,
-                        bounds: glyphon::TextBounds::default(), // unbounded
-                        default_color: glyphon::Color::rgb(255, 255, 255),
+                        bounds: glyphon::TextBounds::default(),
+                        default_color: glyphon::Color::rgba(
+                            t.fg.r(),
+                            t.fg.g(),
+                            t.fg.b(),
+                            t.fg.0[0],
+                        ),
                         custom_glyphs: &[],
-                    });
-                }
+                    }
+                });
 
                 text_renderer.prepare(
                     device,
@@ -239,7 +201,7 @@ impl winit::application::ApplicationHandler for NativePlatform {
                     font_system,
                     atlas,
                     viewport,
-                    areas,
+                    text_areas,
                     swash_cache,
                 ).unwrap();
 
@@ -278,6 +240,7 @@ impl winit::application::ApplicationHandler for NativePlatform {
                 frame.present();
 
                 atlas.trim();
+                cache.trim();
             }
             winit::event::WindowEvent::CloseRequested => {
                 event_loop.exit();
@@ -324,6 +287,8 @@ impl Default for NativeArgs {
 
 
 struct State {
+    cache: Cache,
+
     scale: f32,
     cell_width: f32,
     cell_height: f32,
@@ -354,7 +319,7 @@ impl State {
             .block_on() // pollster
             .unwrap();
         let (device, queue) = adapter
-            .request_device(&wgpu::DeviceDescriptor::default(), None)
+            .request_device(&wgpu::DeviceDescriptor::default())
             .block_on() // pollster
             .unwrap();
 
@@ -387,11 +352,12 @@ impl State {
         );
 
         Self {
+            cache: Cache::default(),
             scale: 20.0,
-            cell_width: 1.0,
-            cell_height: 1.0,
-            cols: 1,
-            rows: 1,
+            cell_width: 10.0,
+            cell_height: 12.0,
+            cols: 80,
+            rows: 24,
             device,
             queue,
             surface,
@@ -475,4 +441,102 @@ fn mouse_button_to_scancode(button: MouseButton) -> Option<Scancode> {
         // MouseButton::Forward => Scancode::MOUSE_FORWARD,
         _ => { return None; }
     })
+}
+
+
+
+#[derive(Clone, Copy, Debug)]
+struct CacheKey<'a> {
+    content: &'a str,
+    modifier: TextModifier,
+    size: f32,
+}
+
+impl CacheKey<'_> {
+    fn hash<H: core::hash::Hasher>(self, mut hasher: H) -> u64 {
+        self.content.hash(&mut hasher);
+        self.modifier.hash(&mut hasher);
+        self.size.to_bits().hash(&mut hasher);
+
+        hasher.finish()
+    }
+}
+
+impl<'a> From<(&'a Text, f32)> for CacheKey<'a> {
+    fn from((value, size): (&'a Text, f32)) -> Self {
+        Self {
+            content: &value.content,
+            modifier: value.modifier,
+            size,
+        }
+    }
+}
+
+struct CacheEntry {
+    buffer: glyphon::Buffer,
+}
+
+#[derive(Default)]
+struct Cache {
+    entries: rustc_hash::FxHashMap<u64, CacheEntry>,
+    aliases: rustc_hash::FxHashMap<u64, u64>,
+    recently_used: rustc_hash::FxHashSet<u64>,
+}
+
+impl Cache {
+    fn get(&self, key: &u64) -> Option<&CacheEntry> {
+        self.entries.get(key)
+    }
+
+    fn allocate<'a>(
+        &mut self,
+        font_system: &mut glyphon::FontSystem,
+        key: CacheKey<'a>,
+    ) -> (u64, &mut CacheEntry)
+    {
+        let hash = key.hash(rustc_hash::FxHasher::default());
+        if let Some(hash) = self.aliases.get(&hash) {
+            let _ = self.recently_used.insert(*hash);
+
+            return (*hash, self.entries.get_mut(hash).unwrap());
+        }
+
+        if let std::collections::hash_map::Entry::Vacant(entry) = self.entries.entry(hash) {
+            let metrics = glyphon::Metrics::relative(key.size, 1.15);
+            let mut buffer = glyphon::Buffer::new(font_system, metrics);
+
+            // buffer.set_size(
+            //     font_system,
+            //     Some(key.bounds.x),
+            //     Some(key.bounds.y.max(key.line_height)),
+            // );
+            buffer.set_text(
+                font_system,
+                key.content,
+                &glyphon::Attrs::new()
+                    .family(glyphon::Family::Monospace)
+                    .style(if key.modifier.contains(TextModifier::ITALIC) {
+                        glyphon::Style::Italic
+                    } else {
+                        glyphon::Style::Normal
+                    }),
+                glyphon::Shaping::Advanced,
+            );
+
+            let _ = entry.insert(CacheEntry {
+                buffer,
+            });
+        }
+
+        let _ = self.recently_used.insert(hash);
+
+        (hash, self.entries.get_mut(&hash).unwrap())
+    }
+
+    fn trim(&mut self) {
+        self.entries.retain(|key, _| self.recently_used.contains(key));
+        self.aliases.retain(|_, value| self.recently_used.contains(value));
+
+        self.recently_used.clear();
+    }
 }
