@@ -26,24 +26,52 @@ impl Rectangle {
             return;
         }
 
-        let hbar_num = self.area.w.saturating_sub(1) as usize;
+        let hbar_num = self.area.w.saturating_sub(2) as usize;
         let vbar_num = self.area.h.saturating_sub(2) as usize;
 
         let chars = self.style.characters();
 
-        // FIXME: This works, but it's ugly and probably inefficient.
-        let row_str = chars[4].to_string().repeat(hbar_num.saturating_sub(1));
-        let middle_rows = format!("\n{: <hbar_num$}{}", chars[5], chars[5]).repeat(vbar_num);
-        let content = format!(
-            "{}{}{}{}\n{}{}{}",
-            chars[0], &row_str, chars[1], middle_rows, chars[2], &row_str, chars[3],
-        );
+        let row_str = chars[4].to_string().repeat(hbar_num);
+        let vline = format!("\n{}", chars[5]).repeat(vbar_num);
+
+        // Can't use `Text::new` for local variables.
+        frame.render(Text::default()
+            .with_content(&format!("{}", chars[0]))
+            .with_fg(self.fg)
+            .with_position(self.area.x, self.area.y));
+        frame.render(Text::default()
+            .with_content(&format!("{}", chars[1]))
+            .with_fg(self.fg)
+            .with_position(self.area.x + self.area.w.saturating_sub(1), self.area.y));
+        frame.render(Text::default()
+            .with_content(&format!("{}", chars[2]))
+            .with_fg(self.fg)
+            .with_position(self.area.x, self.area.y + self.area.h.saturating_sub(1)));
+        frame.render(Text::default()
+            .with_content(&format!("{}", chars[3]))
+            .with_fg(self.fg)
+            .with_position(self.area.x + self.area.w.saturating_sub(1), self.area.y + self.area.h.saturating_sub(1)));
 
         frame.render(Text::default()
-            .with_content(&content) // Can't use `Text::new` for local variable.
+            .with_content(&vline)
             .with_fg(self.fg)
             .with_x(self.area.x)
-            .with_y(self.area.y))
+            .with_y(self.area.y));
+        frame.render(Text::default()
+            .with_content(&vline)
+            .with_fg(self.fg)
+            .with_x(self.area.x + self.area.w.saturating_sub(1))
+            .with_y(self.area.y));
+        frame.render(Text::default()
+            .with_content(&row_str)
+            .with_fg(self.fg)
+            .with_x(self.area.x + 1)
+            .with_y(self.area.y));
+        frame.render(Text::default()
+            .with_content(&row_str)
+            .with_fg(self.fg)
+            .with_x(self.area.x + 1)
+            .with_y(self.area.y + self.area.h.saturating_sub(1)));
     }
 }
 

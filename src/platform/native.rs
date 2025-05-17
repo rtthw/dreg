@@ -166,6 +166,8 @@ impl winit::application::ApplicationHandler for NativePlatform {
 
                 program.render(&mut frame);
 
+                // let start_time = std::time::Instant::now();
+
                 let keys = buffer.content.iter()
                     .map(|t| {
                         let key = CacheKey::from((t, *scale));
@@ -174,6 +176,15 @@ impl winit::application::ApplicationHandler for NativePlatform {
                         hash
                     })
                     .collect::<Vec<_>>();
+
+                // let prepare_time = std::time::Instant::now()
+                //     .duration_since(start_time)
+                //     .as_nanos();
+
+                // if prepare_time >= 100_000 {
+                //     println!("Prepare took {prepare_time}ns");
+                // }
+
                 let text_areas = buffer.content.iter().zip(keys.iter()).map(|(t, key)| {
                     let entry = cache.get(&key).unwrap();
                     let x_pos = *cell_width * t.x as f32;
