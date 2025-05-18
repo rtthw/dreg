@@ -6,15 +6,23 @@ use dreg::*;
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    TerminalPlatform::new().run(Editor)
+    TerminalPlatform::new().run(Editor {
+        shutdown: false,
+    })
 }
 
 
 
-struct Editor;
+struct Editor {
+    shutdown: bool,
+}
 
 impl Program for Editor {
     fn render(&mut self, frame: &mut Frame) {
+        if self.shutdown {
+            frame.should_exit = true;
+            return;
+        }
         if frame.cols < 80 || frame.rows < 20 {
             render_frame_size_warning(frame);
             return;
@@ -35,7 +43,7 @@ impl Program for Editor {
     fn input(&mut self, input: Input) {
         match input {
             Input::KeyDown(Scancode::Q) => {
-                std::process::exit(0);
+                self.shutdown = true;
             }
             _ => {}
         }
