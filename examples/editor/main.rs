@@ -6,18 +6,23 @@ use dreg::*;
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    TerminalPlatform::new().run(Editor {
+    TerminalPlatform::new().run(App {
         shutdown: false,
+        editor: Editor {
+            content: include_str!("sample.txt").to_string(),
+            cursor_pos: (0, 0),
+        },
     })
 }
 
 
 
-struct Editor {
+struct App {
     shutdown: bool,
+    editor: Editor,
 }
 
-impl Program for Editor {
+impl Program for App {
     fn render(&mut self, frame: &mut Frame) {
         if self.shutdown {
             frame.should_exit = true;
@@ -28,16 +33,7 @@ impl Program for Editor {
             return;
         }
 
-        Rectangle {
-            area: frame.area(),
-            fg: Color::from_rgb(89, 89, 109),
-            style: RectangleStyle::Round,
-        }.render(frame);
-
-        let text_area = frame.area().inner_centered(13, 1);
-        Text::new("Hello, World!")
-            .with_position(text_area.x, text_area.y)
-            .render(frame);
+        self.editor.render(frame);
     }
 
     fn input(&mut self, input: Input) {
@@ -49,8 +45,6 @@ impl Program for Editor {
         }
     }
 }
-
-
 
 fn render_frame_size_warning(frame: &mut Frame) {
     if frame.cols < 20 || frame.rows < 3 {
@@ -85,6 +79,35 @@ fn render_frame_size_warning(frame: &mut Frame) {
         .with_modifier(TextModifier::ITALIC)
         .with_position(text_area.x, text_area.y + 2)
         .render(frame);
+}
+
+
+
+struct Editor {
+    content: String,
+    cursor_pos: (u16, u16),
+}
+
+impl Editor {
+    fn render(&mut self, frame: &mut Frame) {
+        Rectangle {
+            area: frame.area(),
+            fg: Color::from_rgb(89, 89, 109),
+            style: RectangleStyle::Round,
+        }.render(frame);
+
+        // Remember, we know that the frame's width is at least 80 cols, so the side panel is at
+        // least 15 cols ((80 - 2, from margin) * 0.2).
+        let (_side_panel_area, working_area) = frame.area().shrink(2, 2).hsplit_portion(0.2);
+        if working_area.w > 80 {
+            // TODO: Render the overflow line.
+        }
+
+        Text::default()
+            .with_content(&self.content)
+            .with_position(working_area.x, working_area.y)
+            .render(frame);
+    }
 }
 
 

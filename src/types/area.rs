@@ -15,8 +15,11 @@ pub struct Area {
 }
 
 impl Area {
+    /// An area with no size, at the origin.
+    pub const ZERO: Self = Self::new(0, 0, 0, 0);
+
     /// Create a new area with the given values.
-    pub fn new(x: u16, y: u16, w: u16, h: u16) -> Self {
+    pub const fn new(x: u16, y: u16, w: u16, h: u16) -> Self {
         Self { x, y, w, h }
     }
 }
@@ -56,6 +59,23 @@ impl Area {
 }
 
 impl Area {
+    /// Create a new area centered inside this one that has been shrunken by the given margins.
+    pub const fn shrink(self, margin_x: u16, margin_y: u16) -> Self {
+        let doubled_margin_horizontal = margin_x.saturating_mul(2);
+        let doubled_margin_vertical = margin_y.saturating_mul(2);
+
+        if self.w < doubled_margin_horizontal || self.h < doubled_margin_vertical {
+            Self::ZERO
+        } else {
+            Self {
+                x: self.x.saturating_add(margin_x),
+                y: self.y.saturating_add(margin_y),
+                w: self.w.saturating_sub(doubled_margin_horizontal),
+                h: self.h.saturating_sub(doubled_margin_vertical),
+            }
+        }
+    }
+
     /// Create a new area centered inside this one with the given width and height.
     pub fn inner_centered(&self, width: u16, height: u16) -> Self {
         let x = self.x + (self.w.saturating_sub(width) / 2);
