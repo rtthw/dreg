@@ -19,13 +19,7 @@ struct Showcase;
 
 impl Program for Showcase {
     fn render(&mut self, frame: &mut Frame) {
-        let main_area = Area {
-            x: 0,
-            y: 0,
-            w: frame.cols,
-            h: frame.rows,
-        };
-        let (left_area, right_area) = main_area.hsplit_portion(0.2);
+        let (left_area, right_area) = frame.area().hsplit_portion(0.2);
 
         Rectangle {
             area: left_area,

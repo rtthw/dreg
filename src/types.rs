@@ -32,6 +32,16 @@ impl<'a> Frame<'a> {
     pub fn render(&mut self, text: Text) {
         self.buffer.render(text);
     }
+
+    /// Get this frame's [`Area`].
+    pub fn area(&self) -> Area {
+        Area {
+            x: 0,
+            y: 0,
+            w: self.cols,
+            h: self.rows,
+        }
+    }
 }
 
 
