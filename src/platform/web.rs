@@ -357,7 +357,7 @@ fn install_hashchange(platform: &WebPlatform, target: &EventTarget) -> Result<()
 fn install_keydown(platform: &WebPlatform, target: &EventTarget) -> Result<(), JsValue> {
     platform.add_event_listener(target, "keydown", |event: web_sys::KeyboardEvent, runner| {
         if let Some(scancode) = scancode_from_keyboard_event(&event) {
-            runner.program.on_input(Input::KeyDown(scancode));
+            runner.program.input(Input::KeyDown(scancode));
             event.prevent_default();
         }
     })
@@ -366,7 +366,7 @@ fn install_keydown(platform: &WebPlatform, target: &EventTarget) -> Result<(), J
 fn install_keyup(platform: &WebPlatform, target: &EventTarget) -> Result<(), JsValue> {
     platform.add_event_listener(target, "keyup", |event: web_sys::KeyboardEvent, runner| {
         if let Some(scancode) = scancode_from_keyboard_event(&event) {
-            runner.program.on_input(Input::KeyUp(scancode));
+            runner.program.input(Input::KeyUp(scancode));
             event.prevent_default();
         }
     })
@@ -375,7 +375,7 @@ fn install_keyup(platform: &WebPlatform, target: &EventTarget) -> Result<(), JsV
 fn install_mousemove(platform: &WebPlatform, target: &EventTarget) -> Result<(), JsValue> {
     platform.add_event_listener(target, "mousemove", |event: web_sys::MouseEvent, runner| {
         let (x, y) = pos_from_mouse_event(&event, runner.dimensions);
-        runner.program.on_input(Input::MouseMove(x, y));
+        runner.program.input(Input::MouseMove(x, y));
         event.prevent_default();
     })
 }
@@ -384,7 +384,7 @@ fn install_pointerdown(platform: &WebPlatform, target: &EventTarget) -> Result<(
     platform.add_event_listener(target, "pointerdown", |event: web_sys::PointerEvent, runner| {
         // let (x, y) = pos_from_mouse_event(&event, runner.dimensions);
         if let Some(scancode) = scancode_from_mouse_event(&event) {
-            runner.program.on_input(Input::KeyDown(scancode));
+            runner.program.input(Input::KeyDown(scancode));
             event.prevent_default();
         }
     })
@@ -394,7 +394,7 @@ fn install_pointerup(platform: &WebPlatform, target: &EventTarget) -> Result<(),
     platform.add_event_listener(target, "pointerup", |event: web_sys::PointerEvent, runner| {
         // let (x, y) = pos_from_mouse_event(&event, runner.dimensions);
         if let Some(scancode) = scancode_from_mouse_event(&event) {
-            runner.program.on_input(Input::KeyUp(scancode));
+            runner.program.input(Input::KeyUp(scancode));
             event.prevent_default();
         }
     })

@@ -72,7 +72,7 @@ impl winit::application::ApplicationHandler for NativePlatform {
 
         match event {
             winit::event::WindowEvent::Focused(focused) => {
-                program.on_input(Input::FocusChange(focused));
+                program.input(Input::FocusChange(focused));
             }
             winit::event::WindowEvent::KeyboardInput { event, .. } => {
                 let KeyEvent { physical_key, state, .. } = event;
@@ -85,10 +85,10 @@ impl winit::application::ApplicationHandler for NativePlatform {
                     }
                 } {
                     if state.is_pressed() {
-                        program.on_input(Input::KeyDown(scancode));
+                        program.input(Input::KeyDown(scancode));
                         window.request_redraw();
                     } else {
-                        program.on_input(Input::KeyUp(scancode));
+                        program.input(Input::KeyUp(scancode));
                         window.request_redraw();
                     }
                 }
@@ -96,10 +96,10 @@ impl winit::application::ApplicationHandler for NativePlatform {
             winit::event::WindowEvent::MouseInput { state, button, .. } => {
                 if let Some(scancode) = mouse_button_to_scancode(button) {
                     if state.is_pressed() {
-                        program.on_input(Input::KeyDown(scancode));
+                        program.input(Input::KeyDown(scancode));
                         window.request_redraw();
                     } else {
-                        program.on_input(Input::KeyUp(scancode));
+                        program.input(Input::KeyUp(scancode));
                         window.request_redraw();
                     }
                 }
@@ -112,7 +112,7 @@ impl winit::application::ApplicationHandler for NativePlatform {
                         } else {
                             Scancode::SCROLLDOWN
                         };
-                        program.on_input(Input::KeyDown(scancode));
+                        program.input(Input::KeyDown(scancode));
                         window.request_redraw();
                     }
                     winit::event::MouseScrollDelta::PixelDelta(_pos) => {}
@@ -121,7 +121,7 @@ impl winit::application::ApplicationHandler for NativePlatform {
             winit::event::WindowEvent::CursorMoved { position, .. } => {
                 let col = (position.x as f32 / *cell_width).floor() as u16;
                 let row = (position.y as f32 / *cell_height).floor() as u16;
-                program.on_input(Input::MouseMove(col, row));
+                program.input(Input::MouseMove(col, row));
                 window.request_redraw();
             }
             winit::event::WindowEvent::Resized(size) => {

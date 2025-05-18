@@ -38,7 +38,7 @@ impl Program for Showcase {
         }.render(frame);
     }
 
-    fn on_input(&mut self, input: Input) {
+    fn input(&mut self, input: Input) {
         match input {
             Input::KeyDown(Scancode::Q) => {
                 std::process::exit(0);

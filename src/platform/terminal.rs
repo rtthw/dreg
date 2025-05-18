@@ -49,12 +49,12 @@ impl super::Platform for TerminalPlatform {
                         match kind {
                             KeyEventKind::Press | KeyEventKind::Repeat => {
                                 for scancode in scancodes {
-                                    program.on_input(Input::KeyDown(scancode));
+                                    program.input(Input::KeyDown(scancode));
                                 }
                             }
                             KeyEventKind::Release => {
                                 for scancode in scancodes {
-                                    program.on_input(Input::KeyUp(scancode));
+                                    program.input(Input::KeyUp(scancode));
                                 }
                             }
                         }
@@ -62,7 +62,7 @@ impl super::Platform for TerminalPlatform {
                     crossterm::event::Event::Mouse(MouseEvent { kind, column, row, .. }) => {
                         match kind {
                             MouseEventKind::Moved | MouseEventKind::Drag(_) => {
-                                program.on_input(Input::MouseMove(column, row));
+                                program.input(Input::MouseMove(column, row));
                             }
                             MouseEventKind::Down(btn) => {
                                 let code = match btn {
@@ -70,7 +70,7 @@ impl super::Platform for TerminalPlatform {
                                     MouseButton::Right => Scancode::RMB,
                                     MouseButton::Middle => Scancode::MMB,
                                 };
-                                program.on_input(Input::KeyDown(code));
+                                program.input(Input::KeyDown(code));
                             }
                             MouseEventKind::Up(btn) => {
                                 let code = match btn {
@@ -78,28 +78,28 @@ impl super::Platform for TerminalPlatform {
                                     MouseButton::Right => Scancode::RMB,
                                     MouseButton::Middle => Scancode::MMB,
                                 };
-                                program.on_input(Input::KeyUp(code));
+                                program.input(Input::KeyUp(code));
                             }
                             // SEE: https://github.com/rtthw/dreg/issues/7
                             MouseEventKind::ScrollUp => {
-                                program.on_input(Input::KeyDown(Scancode::SCROLLUP));
-                                program.on_input(Input::KeyUp(Scancode::SCROLLUP));
+                                program.input(Input::KeyDown(Scancode::SCROLLUP));
+                                program.input(Input::KeyUp(Scancode::SCROLLUP));
                             }
                             MouseEventKind::ScrollDown => {
-                                program.on_input(Input::KeyDown(Scancode::SCROLLDOWN));
-                                program.on_input(Input::KeyUp(Scancode::SCROLLDOWN));
+                                program.input(Input::KeyDown(Scancode::SCROLLDOWN));
+                                program.input(Input::KeyUp(Scancode::SCROLLDOWN));
                             }
                             _ => {} // TODO: ScrollRight and ScrollLeft handling.
                         }
                     }
                     crossterm::event::Event::FocusGained => {
-                        program.on_input(Input::FocusChange(true));
+                        program.input(Input::FocusChange(true));
                     }
                     crossterm::event::Event::FocusLost => {
-                        program.on_input(Input::FocusChange(false));
+                        program.input(Input::FocusChange(false));
                     }
                     crossterm::event::Event::Resize(new_cols, new_rows) => {
-                        program.on_input(Input::Resize(new_cols, new_rows));
+                        program.input(Input::Resize(new_cols, new_rows));
                     }
                     _ => {}
                 }
