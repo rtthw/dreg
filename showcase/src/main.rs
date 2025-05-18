@@ -10,12 +10,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         title: "Something".to_string(),
         ..Default::default()
     })
-        .run(Showcase)
+        .run(Showcase {
+            input_context: InputContext::default(),
+        })
 }
 
 
 
-struct Showcase;
+struct Showcase {
+    input_context: InputContext,
+}
 
 impl Program for Showcase {
     fn render(&mut self, frame: &mut Frame) {
@@ -36,14 +40,17 @@ impl Program for Showcase {
             fg: Color::from_rgb(137, 137, 151),
             style: RectangleStyle::Double,
         }.render(frame);
+
+        self.input_context.end_frame();
     }
 
     fn input(&mut self, input: Input) {
-        match input {
-            Input::KeyDown(Scancode::Q) => {
+        self.input_context.handle_input(input);
+
+        if self.input_context.is_key_down(&Scancode::Q) {
+            if self.input_context.keys_down().len() == 1 {
                 std::process::exit(0);
             }
-            _ => {}
         }
     }
 }

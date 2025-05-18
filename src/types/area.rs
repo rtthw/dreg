@@ -14,6 +14,13 @@ pub struct Area {
     pub h: u16,
 }
 
+impl Area {
+    /// Create a new area with the given values.
+    pub fn new(x: u16, y: u16, w: u16, h: u16) -> Self {
+        Self { x, y, w, h }
+    }
+}
+
 // Utilities.
 impl Area {
     /// Returns true if the given coordinates are within this area.
@@ -49,6 +56,13 @@ impl Area {
 }
 
 impl Area {
+    /// Create a new area centered inside this one with the given width and height.
+    pub fn inner_centered(&self, width: u16, height: u16) -> Self {
+        let x = self.x + (self.w.saturating_sub(width) / 2);
+        let y = self.y + (self.h.saturating_sub(height) / 2);
+        Self::new(x, y, width.min(self.w), height.min(self.h))
+    }
+
     /// Horizontally split this area at the given length.
     pub fn hsplit_len(&self, len: u16) -> (Self, Self) {
         (

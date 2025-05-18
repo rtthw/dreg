@@ -6,6 +6,8 @@ use compact_str::CompactString;
 
 use crate::{Color, TextModifier};
 
+use super::Frame;
+
 
 
 /// A piece of text.
@@ -98,5 +100,10 @@ impl Text {
     pub fn without_modifier(mut self, modifier: TextModifier) -> Self {
         self.modifier = self.modifier.difference(modifier);
         self
+    }
+
+    /// Render this text to the given [`Frame`].
+    pub fn render(self, frame: &mut Frame) {
+        frame.render(self);
     }
 }
