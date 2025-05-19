@@ -6,14 +6,20 @@ use super::InputContext;
 
 
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+/// An area is a portion of the screen.
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub struct Area {
+    /// This area's leftmost column index.
     pub x: u16,
+    /// This area's topmost row index.
     pub y: u16,
+    /// The total number of columns this area covers.
     pub w: u16,
+    /// The total number of rows this area covers.
     pub h: u16,
 }
 
+// Constructors.
 impl Area {
     /// An area with no size, at the origin.
     pub const ZERO: Self = Self::new(0, 0, 0, 0);
@@ -109,6 +115,16 @@ impl Area {
     pub fn vsplit_portion(&self, portion: f32) -> (Self, Self) {
         let len = (self.w as f32 * portion) as u16;
         self.hsplit_len(len)
+    }
+
+    /// Get a set of 1-height areas that will fit into this one's rows.
+    pub fn rows(&self) -> Vec<Self> {
+        (0..self.h)
+            .into_iter()
+            .map(|row_index| {
+                Self::new(self.x, self.y + row_index, self.w, self.h)
+            })
+            .collect()
     }
 }
 
