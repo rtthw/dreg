@@ -18,7 +18,7 @@ use crate::{Buffer, Color, Frame, Input, Program, Scancode, TextModifier};
 
 
 /// Run a dreg program inside a terminal emulator.
-pub struct TerminalPlatform {
+pub struct Terminal {
     /// Holds the results of the current and previous render calls. The two are compared at the end
     /// of each render pass to output only the necessary updates to the terminal.
     buffers: [Buffer; 2],
@@ -26,7 +26,7 @@ pub struct TerminalPlatform {
     current: usize,
 }
 
-impl super::Platform for TerminalPlatform {
+impl super::Platform for Terminal {
     fn run(mut self, mut program: impl Program) -> Result<(), Box<dyn std::error::Error>> {
         bind_terminal()?;
 
@@ -131,7 +131,7 @@ impl super::Platform for TerminalPlatform {
     }
 }
 
-impl TerminalPlatform {
+impl Terminal {
     pub fn new() -> Self {
         Self {
             buffers: [Buffer::empty(), Buffer::empty()],

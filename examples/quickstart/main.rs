@@ -6,7 +6,7 @@ use dreg::*;
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    TerminalPlatform::new().run(MyApp {
+    Terminal::new().run(MyApp {
         shutdown: false,
     })
 }

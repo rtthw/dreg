@@ -6,7 +6,7 @@ use dreg::*;
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    TerminalPlatform::new().run(App {
+    Terminal::new().run(App {
         shutdown: false,
         editor: Editor {
             content: include_str!("sample.txt").to_string(),

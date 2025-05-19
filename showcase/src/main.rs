@@ -6,13 +6,9 @@ use dreg::*;
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    NativePlatform::with_args(NativeArgs {
-        title: "Something".to_string(),
-        ..Default::default()
+    Terminal::new().run(Showcase {
+        input_context: InputContext::default(),
     })
-        .run(Showcase {
-            input_context: InputContext::default(),
-        })
 }
 
 

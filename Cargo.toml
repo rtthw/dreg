@@ -13,45 +13,12 @@ repository = "https://github.com/rtthw/dreg"
 license = "MIT"
 
 [features]
-default = ["native", "terminal", "web"]
-native = ["dep:glyphon", "dep:pollster", "dep:wgpu", "dep:winit"]
-terminal = ["dep:crossterm"]
-web = ["dep:wasm-bindgen", "dep:web-sys"]
+default = []
 
 [dependencies]
 bitflags = "2"
 compact_str = "0.8"
-crossterm = { version = "0.28", optional = true }
-glyphon = { version = "0.9", optional = true }
-pollster = { version = "0.4", optional = true }
-rustc-hash = "2"
-wasm-bindgen = { version = "0.2.95", optional = true }
-web-sys = { version = "0.3.72", features = [
-    "CanvasRenderingContext2d",
-    "CssStyleDeclaration",
-    "Document",
-    "DomRect",
-    "Element",
-    "Event",
-    "EventTarget",
-    "HashChangeEvent",
-    "HtmlCanvasElement",
-    "HtmlElement",
-    "KeyboardEvent",
-    "MouseEvent",
-    "Node",
-    "PointerEvent",
-    "PopStateEvent",
-    "ResizeObserver",
-    "ResizeObserverBoxOptions",
-    "ResizeObserverEntry",
-    "ResizeObserverOptions",
-    "ResizeObserverSize",
-    "TextMetrics",
-    "Window",
-], optional = true }
-wgpu = { version = "25", optional = true }
-winit = { version = "0.30", optional = true }
+crossterm = "0.28"
 
 
 [[example]]

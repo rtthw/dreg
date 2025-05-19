@@ -2,13 +2,8 @@
 
 
 
-pub mod native;
-pub mod terminal;
-pub mod web;
-
-pub use native::*;
+mod terminal;
 pub use terminal::*;
-pub use web::*;
 
 use crate::Program;
 
