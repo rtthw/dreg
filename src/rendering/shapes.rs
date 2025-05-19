@@ -2,7 +2,7 @@
 
 
 
-use crate::{Area, Color, Frame, Cell};
+use crate::{Area, Color, Frame};
 
 
 

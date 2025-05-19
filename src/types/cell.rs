@@ -6,7 +6,7 @@ use compact_str::CompactString;
 
 use crate::{Color, TextModifier};
 
-use super::Frame;
+use super::{Frame, Style};
 
 
 
@@ -77,6 +77,23 @@ impl Cell {
 
     pub fn set_symbol(&mut self, symbol: &str) -> &mut Self {
         self.symbol = CompactString::new(symbol);
+        self
+    }
+
+    /// Set the style for this cell.
+    ///
+    /// `style` accepts any type that is convertible to a [`Style`] object
+    ///     (e.g. [`Style`], [`Color`], or your own type that implements [`Into<Style>`]).
+    pub fn set_style<S: Into<Style>>(&mut self, style: S) -> &mut Self {
+        let style = style.into();
+        if let Some(c) = style.fg {
+            self.fg = c;
+        }
+        if let Some(c) = style.bg {
+            self.bg = c;
+        }
+        self.modifier.insert(style.add_modifier);
+        self.modifier.remove(style.sub_modifier);
         self
     }
 

@@ -6,12 +6,14 @@ mod area;
 mod color;
 mod input;
 mod cell;
+mod style;
 mod text_modifier;
 
 pub use area::*;
 pub use color::*;
 pub use input::*;
 pub use cell::*;
+pub use style::*;
 pub use text_modifier::*;
 
 use unicode_width::UnicodeWidthStr as _;

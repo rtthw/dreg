@@ -68,17 +68,6 @@ fn render_frame_size_warning(frame: &mut Frame) {
     .render(frame);
 
     let text_area = frame.area().inner_centered(18, 3);
-    Cell::new("Window too small")
-        .with_modifier(TextModifier::BOLD)
-        .with_position(text_area.x + 1, text_area.y)
-        .render(frame);
-    Cell::new("Resize to at least")
-        .with_position(text_area.x, text_area.y + 1)
-        .render(frame);
-    Cell::new("80 cols by 20 rows")
-        .with_modifier(TextModifier::ITALIC)
-        .with_position(text_area.x, text_area.y + 2)
-        .render(frame);
 }
 
 
@@ -102,11 +91,6 @@ impl Editor {
         if working_area.w > 80 {
             // TODO: Render the overflow line.
         }
-
-        Cell::default()
-            .with_content(&self.content)
-            .with_position(working_area.x, working_area.y)
-            .render(frame);
     }
 }
 
