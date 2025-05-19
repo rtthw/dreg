@@ -6,7 +6,7 @@ use super::{Color, TextModifier};
 
 
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct Style {
     pub fg: Option<Color>,
     pub bg: Option<Color>,

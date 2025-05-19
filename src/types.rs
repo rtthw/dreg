@@ -32,11 +32,6 @@ pub struct Frame<'a> {
 }
 
 impl<'a> Frame<'a> {
-    /// Render the given ['Text'] to the frame.
-    pub fn render(&mut self, text: Cell) {
-        self.buffer.render(text);
-    }
-
     /// Get this frame's [`Area`].
     pub fn area(&self) -> Area {
         self.buffer.area
@@ -61,14 +56,23 @@ impl Buffer {
         }
     }
 
-    /// Render the given ['Text'] to the buffer.
-    pub fn render(&mut self, text: Cell) {
-        self.content.push(text);
+    /// Reset all [`Cell`]s in this buffer.
+    pub fn reset(&mut self) {
+        for cell in &mut self.content {
+            cell.reset();
+        }
     }
 
-    /// Clear all [`Text`] pieces in the buffer.
-    pub fn clear(&mut self) {
-        self.content.clear();
+    /// Resize this [`Buffer`] so that the mapped area matches the given [`Area`] and that the
+    /// buffer length is equal to `area.w` * `area.h`.
+    pub fn resize(&mut self, area: Area) {
+        let length = (area.w * area.h) as usize;
+        if self.content.len() > length {
+            self.content.truncate(length);
+        } else {
+            self.content.resize(length, Cell::EMPTY);
+        }
+        self.area = area;
     }
 
     pub fn set_string<T, S>(&mut self, x: u16, y: u16, string: T, style: S)

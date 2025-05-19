@@ -6,11 +6,11 @@ use compact_str::CompactString;
 
 use crate::{Color, TextModifier};
 
-use super::{Frame, Style};
+use super::Style;
 
 
 
-#[derive(Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Cell {
     pub(crate) symbol: CompactString,
     /// The foreground color for the cell.
@@ -80,6 +80,12 @@ impl Cell {
         self
     }
 
+    pub fn set_char(&mut self, ch: char) -> &mut Self {
+        let mut buf = [0; 4];
+        self.symbol = CompactString::new(ch.encode_utf8(&mut buf));
+        self
+    }
+
     /// Set the style for this cell.
     ///
     /// `style` accepts any type that is convertible to a [`Style`] object
@@ -95,11 +101,6 @@ impl Cell {
         self.modifier.insert(style.add_modifier);
         self.modifier.remove(style.sub_modifier);
         self
-    }
-
-    /// Render this cell to the given [`Frame`].
-    pub fn render(self, frame: &mut Frame) {
-        frame.render(self);
     }
 
     /// Reset this cell to the [`Cell::EMPTY`] state.

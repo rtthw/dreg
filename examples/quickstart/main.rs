@@ -25,10 +25,13 @@ impl Program for MyApp {
         }
 
         Rectangle {
-            area: frame.area(),
-            fg: Color::from_rgb(89, 89, 109),
-            style: RectangleStyle::Round,
-        }.render(frame);
+            style: Style {
+                fg: Some(Color::Rgb(89, 89, 109)),
+                ..Default::default()
+            },
+            rect_style: RectangleStyle::Round,
+        }
+        .render(frame.area(), frame.buffer);
 
         let text_area = frame.area().inner_centered(13, 1);
     }

@@ -51,21 +51,25 @@ fn render_frame_size_warning(frame: &mut Frame) {
         // The window is too small for even the warning.
         if frame.cols >= 2 && frame.rows >= 2 {
             Rectangle {
-                area: frame.area(),
-                fg: GRAY_5,
-                style: RectangleStyle::Round,
+                style: Style {
+                    fg: Some(GRAY_5),
+                    ..Default::default()
+                },
+                rect_style: RectangleStyle::Round,
             }
-            .render(frame);
+            .render(frame.area(), frame.buffer);
         }
         return;
     }
 
     Rectangle {
-        area: frame.area(),
-        fg: GRAY_5,
-        style: RectangleStyle::Round,
+        style: Style {
+            fg: Some(GRAY_5),
+            ..Default::default()
+        },
+        rect_style: RectangleStyle::Round,
     }
-    .render(frame);
+    .render(frame.area(), frame.buffer);
 
     let text_area = frame.area().inner_centered(18, 3);
 }
@@ -80,10 +84,13 @@ struct Editor {
 impl Editor {
     fn render(&mut self, frame: &mut Frame) {
         Rectangle {
-            area: frame.area(),
-            fg: Color::from_rgb(89, 89, 109),
-            style: RectangleStyle::Round,
-        }.render(frame);
+            style: Style {
+                fg: Some(GRAY_5),
+                ..Default::default()
+            },
+            rect_style: RectangleStyle::Round,
+        }
+        .render(frame.area(), frame.buffer);
 
         // Remember, we know that the frame's width is at least 80 cols, so the side panel is at
         // least 15 cols ((80 - 2, from margin) * 0.2).

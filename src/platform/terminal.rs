@@ -13,7 +13,7 @@ use crossterm::{
     }, queue, style::{Attribute, Color as CtColor, SetAttribute}, ExecutableCommand as _
 };
 
-use crate::{Buffer, Color, Frame, Input, Program, Scancode, TextModifier};
+use crate::{Area, Buffer, Color, Frame, Input, Program, Scancode, TextModifier};
 
 
 
@@ -24,6 +24,7 @@ pub struct Terminal {
     buffers: [Buffer; 2],
     /// The index of the current buffer in the previous array.
     current: usize,
+    last_known_size: (u16, u16),
 }
 
 impl super::Platform for Terminal {
@@ -106,6 +107,12 @@ impl super::Platform for Terminal {
             }
             // TODO: Optimize this by storing terminal size?
             let (cols, rows) = crossterm::terminal::size()?;
+            if (cols, rows) != self.last_known_size {
+                let area = Area::new(0, 0, cols, rows);
+                self.buffers[self.current].resize(area);
+                self.buffers[1 - self.current].resize(area);
+                self.last_known_size = (cols, rows);
+            }
 
             let mut frame = Frame {
                 cols,
@@ -136,12 +143,13 @@ impl Terminal {
         Self {
             buffers: [Buffer::empty(), Buffer::empty()],
             current: 0,
+            last_known_size: (0, 0),
         }
     }
 
     /// Clear the inactive buffer and swap it with the current buffer.
     fn swap_buffers(&mut self) {
-        self.buffers[1 - self.current].clear();
+        self.buffers[1 - self.current].reset();
         self.current = 1 - self.current;
     }
 

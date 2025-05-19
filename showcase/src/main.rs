@@ -22,16 +22,20 @@ impl Program for Showcase {
         let (left_area, right_area) = frame.area().hsplit_portion(0.2);
 
         Rectangle {
-            area: left_area,
-            fg: Color::from_rgb(89, 89, 89),
-            style: RectangleStyle::Normal,
-        }.render(frame);
+            style: Style {
+                fg: Some(Color::from_rgb(89, 89, 89)),
+                ..Default::default()
+            },
+            rect_style: RectangleStyle::Normal,
+        }.render(left_area, frame.buffer);
 
         Rectangle {
-            area: right_area,
-            fg: Color::from_rgb(137, 137, 151),
-            style: RectangleStyle::Double,
-        }.render(frame);
+            style: Style {
+                fg: Some(Color::from_rgb(137, 137, 151)),
+                ..Default::default()
+            },
+            rect_style: RectangleStyle::Double,
+        }.render(right_area, frame.buffer);
 
         self.input_context.end_frame();
     }

@@ -2,38 +2,54 @@
 
 
 
-use crate::{Area, Color, Frame};
+use crate::{Area, Buffer, Style};
 
 
 
 pub struct Rectangle {
-    pub area: Area,
-    pub fg: Color,
-    pub style: RectangleStyle,
+    pub style: Style,
+    pub rect_style: RectangleStyle,
 }
 
 impl Rectangle {
-    pub fn new(area: Area, fg: Color) -> Self {
+    pub fn new(style: Style) -> Self {
         Self {
-            area,
-            fg,
-            style: RectangleStyle::Normal,
+            style,
+            rect_style: RectangleStyle::Normal,
         }
     }
 
-    pub fn render(self, frame: &mut Frame) {
-        if self.area.w < 2 || self.area.h < 2 {
-            return;
+    pub fn render(self, area: Area, buf: &mut Buffer) {
+        let (lt, rt, lb, rb, h, v) = self.rect_style.characters();
+
+        for y in area.top()..area.bottom() {
+            buf.get_mut(area.x, y)
+                .set_char(v)
+                .set_style(self.style);
+            buf.get_mut(area.right().saturating_sub(1), y)
+                .set_char(v)
+                .set_style(self.style);
         }
-
-        let hbar_num = self.area.w.saturating_sub(2) as usize;
-        let vbar_num = self.area.h.saturating_sub(2) as usize;
-
-        let chars = self.style.characters();
-
-        let row_str = chars[4].to_string().repeat(hbar_num);
-        let vline = format!("\n{}", chars[5]).repeat(vbar_num);
-
+        for x in area.left()..area.right() {
+            buf.get_mut(x, area.y)
+                .set_char(h)
+                .set_style(self.style);
+            buf.get_mut(x, area.bottom().saturating_sub(1))
+                .set_char(h)
+                .set_style(self.style);
+        }
+        buf.get_mut(area.x, area.y)
+            .set_char(lt)
+            .set_style(self.style);
+        buf.get_mut(area.right().saturating_sub(1), area.y)
+            .set_char(rt)
+            .set_style(self.style);
+        buf.get_mut(area.right().saturating_sub(1), area.bottom().saturating_sub(1))
+            .set_char(rb)
+            .set_style(self.style);
+        buf.get_mut(area.x, area.bottom().saturating_sub(1))
+            .set_char(lb)
+            .set_style(self.style);
     }
 }
 
@@ -73,12 +89,12 @@ pub enum RectangleStyle {
 }
 
 impl RectangleStyle {
-    const fn characters(&self) -> [char; 6] {
+    const fn characters(&self) -> (char, char, char, char, char, char) {
         match self {
-            RectangleStyle::Normal => ['┌', '┐', '└', '┘', '─', '│'],
-            RectangleStyle::Heavy => ['┏', '┓', '┗', '┛', '━', '┃'],
-            RectangleStyle::Double => ['╔', '╗', '╚', '╝', '═', '║'],
-            RectangleStyle::Round => ['╭', '╮', '╰', '╯', '─', '│'],
+            RectangleStyle::Normal => ('┌', '┐', '└', '┘', '─', '│'),
+            RectangleStyle::Heavy => ('┏', '┓', '┗', '┛', '━', '┃'),
+            RectangleStyle::Double => ('╔', '╗', '╚', '╝', '═', '║'),
+            RectangleStyle::Round => ('╭', '╮', '╰', '╯', '─', '│'),
         }
     }
 }
