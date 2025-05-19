@@ -114,7 +114,7 @@ impl Area {
     pub fn hsplit_len(&self, len: u16) -> (Self, Self) {
         (
             Self { x: self.x, y: self.y, w: len, h: self.h },
-            Self { x: len, y: self.y, w: self.w.saturating_sub(len), h: self.h },
+            Self { x: self.x + len, y: self.y, w: self.w.saturating_sub(len), h: self.h },
         )
     }
 
@@ -128,7 +128,7 @@ impl Area {
     pub fn vsplit_len(&self, len: u16) -> (Self, Self) {
         (
             Self { x: self.x, y: self.y, w: self.w, h: len },
-            Self { x: self.x, y: len, w: self.w, h: self.h.saturating_sub(len) },
+            Self { x: self.x, y: self.y + len, w: self.w, h: self.h.saturating_sub(len) },
         )
     }
 
