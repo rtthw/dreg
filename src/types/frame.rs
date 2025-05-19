@@ -2,7 +2,7 @@
 
 
 
-use super::{Area, Buffer};
+use super::{Area, Buffer, Command};
 
 
 
@@ -13,6 +13,9 @@ pub struct Frame<'a> {
     pub rows: u16,
     /// The frame's [`Buffer`].
     pub buffer: &'a mut Buffer,
+    /// A set of [`Command`]s to be processed at the end of this frame.
+    pub commands: &'a mut Vec<Command>,
+    pub cursor: Option<(u16, u16)>,
     /// Flag to indicate whether the platform should safely exit at the end of this frame.
     pub should_exit: bool,
 }

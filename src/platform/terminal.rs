@@ -13,7 +13,7 @@ use crossterm::{
     }, queue, style::{Attribute, Color as CtColor, SetAttribute}, ExecutableCommand as _
 };
 
-use crate::{Area, Buffer, Color, Frame, Input, Program, Scancode, Modifier};
+use crate::{Area, Buffer, Color, Command, CursorStyle, Frame, Input, Modifier, Program, Scancode};
 
 
 
@@ -114,14 +114,19 @@ impl super::Platform for Terminal {
                 self.last_known_size = (cols, rows);
             }
 
+            let mut commands = Vec::with_capacity(1);
             let mut frame = Frame {
                 cols,
                 rows,
                 buffer: &mut self.buffers[self.current],
+                commands: &mut commands,
+                cursor: None,
                 should_exit: false,
             };
 
             program.render(&mut frame);
+
+            let next_cursor = frame.cursor;
 
             if frame.should_exit {
                 break 'main_loop;
@@ -129,7 +134,40 @@ impl super::Platform for Terminal {
 
             self.flush()?;
             self.swap_buffers();
-            std::io::stdout().flush()?;
+
+            let mut writer = std::io::stdout();
+
+            match next_cursor {
+                None => {
+                    queue!(writer, crossterm::cursor::Hide)?;
+                }
+                Some((x, y)) => {
+                    queue!(writer, crossterm::cursor::Show)?;
+                    queue!(writer, crossterm::cursor::MoveTo(x, y))?;
+                }
+            }
+
+            for command in commands {
+                match command {
+                    Command::SetTitle(s) => queue!(writer, crossterm::terminal::SetTitle(s)),
+                    Command::SetCursorStyle(cursor_style) => queue!(writer, match cursor_style {
+                        CursorStyle::SteadyBar =>
+                            crossterm::cursor::SetCursorStyle::SteadyBar,
+                        CursorStyle::SteadyBlock =>
+                            crossterm::cursor::SetCursorStyle::SteadyBlock,
+                        CursorStyle::SteadyUnderline =>
+                            crossterm::cursor::SetCursorStyle::SteadyUnderScore,
+                        CursorStyle::BlinkingBar =>
+                            crossterm::cursor::SetCursorStyle::BlinkingBar,
+                        CursorStyle::BlinkingBlock =>
+                            crossterm::cursor::SetCursorStyle::BlinkingBlock,
+                        CursorStyle::BlinkingUnderline =>
+                            crossterm::cursor::SetCursorStyle::BlinkingUnderScore,
+                    })
+                }?
+            }
+
+            writer.flush()?;
         }
 
         release_terminal()?;
