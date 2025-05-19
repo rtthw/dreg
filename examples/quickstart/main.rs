@@ -34,6 +34,7 @@ impl Program for MyApp {
         .render(frame.area(), frame.buffer);
 
         let text_area = frame.area().inner_centered(13, 1);
+        frame.buffer.set_stringn(text_area.x, text_area.y, "Hello, World!", 13, Style::default());
     }
 
     fn input(&mut self, input: Input) {

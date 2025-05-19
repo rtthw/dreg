@@ -72,6 +72,27 @@ fn render_frame_size_warning(frame: &mut Frame) {
     .render(frame.area(), frame.buffer);
 
     let text_area = frame.area().inner_centered(18, 3);
+    frame.buffer.set_stringn(
+        text_area.x + 1,
+        text_area.y,
+        "Window too small",
+        16,
+        Style::default(),
+    );
+    frame.buffer.set_stringn(
+        text_area.x,
+        text_area.y + 1,
+        "Resize this window",
+        18,
+        Style::default(),
+    );
+    frame.buffer.set_stringn(
+        text_area.x + 1,
+        text_area.y + 2,
+        "to at least 80x20",
+        18,
+        Style::default(),
+    );
 }
 
 
