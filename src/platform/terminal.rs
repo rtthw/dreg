@@ -13,7 +13,7 @@ use crossterm::{
     }, queue, style::{Attribute, Color as CtColor, SetAttribute}, ExecutableCommand as _
 };
 
-use crate::{Area, Buffer, Color, Frame, Input, Program, Scancode, TextModifier};
+use crate::{Area, Buffer, Color, Frame, Input, Program, Scancode, Modifier};
 
 
 
@@ -162,7 +162,7 @@ impl Terminal {
         let mut writer = std::io::stdout();
         let mut fg = Color::Reset;
         let mut bg = Color::Reset;
-        let mut modifier = TextModifier::empty();
+        let mut modifier = Modifier::empty();
         let mut last_pos: Option<(u16, u16)> = None;
         for (x, y, cell) in content {
             // Move the cursor if the previous location was not (x - 1, y).
@@ -312,62 +312,62 @@ fn color_to_crossterm_color(color: Color) -> CtColor {
 /// This is useful when updating the terminal display, as it allows for more efficient updates by
 /// only sending the necessary changes.
 struct ModifierDiff {
-    pub from: TextModifier,
-    pub to: TextModifier,
+    pub from: Modifier,
+    pub to: Modifier,
 }
 
 impl ModifierDiff {
     fn queue<W: std::io::Write>(self, mut w: W) -> std::io::Result<()> {
         //use crossterm::Attribute;
         let removed = self.from - self.to;
-        if removed.contains(TextModifier::REVERSED) {
+        if removed.contains(Modifier::REVERSED) {
             queue!(w, SetAttribute(Attribute::NoReverse))?;
         }
-        if removed.contains(TextModifier::BOLD) {
+        if removed.contains(Modifier::BOLD) {
             queue!(w, SetAttribute(Attribute::NormalIntensity))?;
-            if self.to.contains(TextModifier::DIM) {
+            if self.to.contains(Modifier::DIM) {
                 queue!(w, SetAttribute(Attribute::Dim))?;
             }
         }
-        if removed.contains(TextModifier::ITALIC) {
+        if removed.contains(Modifier::ITALIC) {
             queue!(w, SetAttribute(Attribute::NoItalic))?;
         }
-        if removed.contains(TextModifier::UNDERLINED) {
+        if removed.contains(Modifier::UNDERLINED) {
             queue!(w, SetAttribute(Attribute::NoUnderline))?;
         }
-        if removed.contains(TextModifier::DIM) {
+        if removed.contains(Modifier::DIM) {
             queue!(w, SetAttribute(Attribute::NormalIntensity))?;
         }
-        if removed.contains(TextModifier::CROSSED_OUT) {
+        if removed.contains(Modifier::CROSSED_OUT) {
             queue!(w, SetAttribute(Attribute::NotCrossedOut))?;
         }
-        if removed.contains(TextModifier::SLOW_BLINK) || removed.contains(TextModifier::RAPID_BLINK) {
+        if removed.contains(Modifier::SLOW_BLINK) || removed.contains(Modifier::RAPID_BLINK) {
             queue!(w, SetAttribute(Attribute::NoBlink))?;
         }
 
         let added = self.to - self.from;
-        if added.contains(TextModifier::REVERSED) {
+        if added.contains(Modifier::REVERSED) {
             queue!(w, SetAttribute(Attribute::Reverse))?;
         }
-        if added.contains(TextModifier::BOLD) {
+        if added.contains(Modifier::BOLD) {
             queue!(w, SetAttribute(Attribute::Bold))?;
         }
-        if added.contains(TextModifier::ITALIC) {
+        if added.contains(Modifier::ITALIC) {
             queue!(w, SetAttribute(Attribute::Italic))?;
         }
-        if added.contains(TextModifier::UNDERLINED) {
+        if added.contains(Modifier::UNDERLINED) {
             queue!(w, SetAttribute(Attribute::Underlined))?;
         }
-        if added.contains(TextModifier::DIM) {
+        if added.contains(Modifier::DIM) {
             queue!(w, SetAttribute(Attribute::Dim))?;
         }
-        if added.contains(TextModifier::CROSSED_OUT) {
+        if added.contains(Modifier::CROSSED_OUT) {
             queue!(w, SetAttribute(Attribute::CrossedOut))?;
         }
-        if added.contains(TextModifier::SLOW_BLINK) {
+        if added.contains(Modifier::SLOW_BLINK) {
             queue!(w, SetAttribute(Attribute::SlowBlink))?;
         }
-        if added.contains(TextModifier::RAPID_BLINK) {
+        if added.contains(Modifier::RAPID_BLINK) {
             queue!(w, SetAttribute(Attribute::RapidBlink))?;
         }
 

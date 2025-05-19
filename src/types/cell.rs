@@ -4,7 +4,7 @@
 
 use compact_str::CompactString;
 
-use crate::{Color, TextModifier};
+use crate::{Color, Modifier};
 
 use super::Style;
 
@@ -18,7 +18,7 @@ pub struct Cell {
     /// The background color for the cell.
     pub bg: Color,
     /// The modifier for the cell.
-    pub modifier: TextModifier,
+    pub modifier: Modifier,
 }
 
 impl Default for Cell {
@@ -37,7 +37,7 @@ impl Cell {
             symbol: CompactString::const_new(content),
             fg: Color::Reset,
             bg: Color::Reset,
-            modifier: TextModifier::empty(),
+            modifier: Modifier::empty(),
         }
     }
 
@@ -47,39 +47,18 @@ impl Cell {
         self
     }
 
-    /// Set the cell's foreground color.
-    pub fn with_fg(mut self, color: Color) -> Self {
-        self.fg = color;
-        self
-    }
-
-    /// Set the cell's background color.
-    pub fn with_bg(mut self, color: Color) -> Self {
-        self.bg = color;
-        self
-    }
-
-    /// Add the given modifier to the cell.
-    pub fn with_modifier(mut self, modifier: TextModifier) -> Self {
-        self.modifier = self.modifier.union(modifier);
-        self
-    }
-
-    /// Remove the given modifier from the cell.
-    pub fn without_modifier(mut self, modifier: TextModifier) -> Self {
-        self.modifier = self.modifier.difference(modifier);
-        self
-    }
-
+    /// Get this cell's symbol as a string slice.
     pub fn symbol(&self) -> &str {
         self.symbol.as_str()
     }
 
+    /// Set this cell's symbol to the provided string slice.
     pub fn set_symbol(&mut self, symbol: &str) -> &mut Self {
         self.symbol = CompactString::new(symbol);
         self
     }
 
+    /// Set this cell's symbol to the provided character.
     pub fn set_char(&mut self, ch: char) -> &mut Self {
         let mut buf = [0; 4];
         self.symbol = CompactString::new(ch.encode_utf8(&mut buf));
@@ -108,6 +87,6 @@ impl Cell {
         self.symbol = CompactString::const_new(" ");
         self.fg = Color::Reset;
         self.bg = Color::Reset;
-        self.modifier = TextModifier::empty();
+        self.modifier = Modifier::empty();
     }
 }

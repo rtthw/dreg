@@ -7,14 +7,14 @@ mod color;
 mod input;
 mod cell;
 mod style;
-mod text_modifier;
+mod modifier;
 
 pub use area::*;
 pub use color::*;
 pub use input::*;
 pub use cell::*;
 pub use style::*;
-pub use text_modifier::*;
+pub use modifier::*;
 
 use unicode_width::UnicodeWidthStr as _;
 
@@ -40,8 +40,10 @@ impl<'a> Frame<'a> {
 
 
 
+/// A set of [`Cell`]s.
 #[derive(Eq, PartialEq)]
 pub struct Buffer {
+    /// The buffer's area.
     pub area: Area,
     /// The buffer's contents.
     pub content: Vec<Cell>,
@@ -63,8 +65,8 @@ impl Buffer {
         }
     }
 
-    /// Resize this [`Buffer`] so that the mapped area matches the given [`Area`] and that the
-    /// buffer length is equal to `area.w` * `area.h`.
+    /// Resize this buffer so that the mapped area matches the given [`Area`] and that the buffer
+    /// length is equal to `area.w` * `area.h`.
     pub fn resize(&mut self, area: Area) {
         let length = (area.w * area.h) as usize;
         if self.content.len() > length {
@@ -75,6 +77,7 @@ impl Buffer {
         self.area = area;
     }
 
+    /// Write a string to this buffer, starting at the position (x, y).
     pub fn set_string<T, S>(&mut self, x: u16, y: u16, string: T, style: S)
     where
         T: AsRef<str>,
@@ -83,7 +86,7 @@ impl Buffer {
         self.set_stringn(x, y, string, usize::MAX, style);
     }
 
-    /// Write at most the first `n` characters of a string to this [`Buffer`], if enough space is
+    /// Write at most the first `n` characters of a string to this buffer, if enough space is
     /// available until the end of the line.
     ///
     /// Use [`Buffer::set_string`] when the maximum amount of characters can be printed.
@@ -122,15 +125,18 @@ impl Buffer {
         (x, y)
     }
 
+    /// Get a mutable reference to the [`Cell`] at the given position.
     pub fn get_mut(&mut self, x: u16, y: u16) -> &mut Cell {
         let i = self.index_of(x, y);
         &mut self.content[i]
     }
 
+    /// Get the index of the [`Cell`] at the given position.
     pub fn index_of(&self, x: u16, y: u16) -> usize {
         ((y - self.area.y) * self.area.w + (x - self.area.x)) as usize
     }
 
+    /// Get the position of the [`Cell`] at the given index.
     pub fn pos_of(&self, i: usize) -> (u16, u16) {
         (
             self.area.x + (i as u16) % self.area.w,
