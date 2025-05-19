@@ -5,150 +5,45 @@ use std::{fmt, str::FromStr};
 
 
 
-/// A 32-bit color.
-///
-/// This is actually a 24-bit RGB color with a tag for custom colors. It is stored as
-/// `[tag, red, green, blue]`. A tag value of `0` is used indexed colors, and a tag value of `255`
-/// is used for raw colors.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
-pub struct Color(pub(crate) [u8; 4]);
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum Color {
+    Reset,
+    Black,
+    Red,
+    Green,
+    Yellow,
+    Blue,
+    Magenta,
+    Cyan,
+    White,
+    LightBlack,
+    LightRed,
+    LightGreen,
+    LightYellow,
+    LightBlue,
+    LightMagenta,
+    LightCyan,
+    LightWhite,
 
-pub struct ColorSet {
-    pub reset: Color,
-    pub black: Color,       // black
-    pub red: Color,         // red
-    pub green: Color,       // green
-    pub yellow: Color,      // yellow
-    pub blue: Color,        // blue
-    pub purple: Color,      // magenta
-    pub cyan: Color,        // cyan
-    pub gray: Color,        // white
-    pub darkgray: Color,    // lightblack
-    pub pink: Color,        // lightred
-    pub lime: Color,        // lightgreen
-    pub beige: Color,       // lightyellow
-    pub sky: Color,         // lightblue
-    pub magenta: Color,     // lightmagenta
-    pub turquoise: Color,   // lightcyan
-    pub white: Color,       // lightwhite
-}
-
-// Constants.
-impl Color {
-    pub const RESET: Self       = Self([0, 0, 0, 0]);
-    pub const BLACK: Self       = Self([0, 0, 1, 0]);
-    pub const RED: Self         = Self([0, 0, 1, 1]);
-    pub const GREEN: Self       = Self([0, 0, 1, 2]);
-    pub const YELLOW: Self      = Self([0, 0, 1, 3]);
-    pub const BLUE: Self        = Self([0, 0, 1, 4]);
-    pub const PURPLE: Self      = Self([0, 0, 1, 5]);
-    pub const CYAN: Self        = Self([0, 0, 1, 6]);
-    pub const GRAY: Self        = Self([0, 0, 1, 7]);
-    pub const DARKGRAY: Self    = Self([0, 0, 1, 8]);
-    pub const PINK: Self        = Self([0, 0, 1, 9]);
-    pub const LIME: Self        = Self([0, 0, 1, 10]);
-    pub const BEIGE: Self       = Self([0, 0, 1, 11]);
-    pub const SKY: Self         = Self([0, 0, 1, 12]);
-    pub const MAGENTA: Self     = Self([0, 0, 1, 13]);
-    pub const TURQOISE: Self    = Self([0, 0, 1, 14]);
-    pub const WHITE: Self       = Self([0, 0, 1, 16]);
+    Ansi(u8),
+    Rgb(u8, u8, u8),
 }
 
 impl Color {
-    pub fn is_reset(&self) -> bool {
-        matches!(self.0, [0, 0, 0, 0])
-    }
-
-    pub fn is_indexed(&self) -> bool {
-        matches!(self.0, [0, 0, 1, _])
-    }
-}
-
-impl Color {
-    /// Create a raw color from its red, green, and blue channels.
+    /// Create a color from its red, green, and blue channels.
     pub const fn from_rgb(r: u8, g: u8, b: u8) -> Self {
-        Self([255, r, g, b])
+        Self::Rgb(r, g, b)
     }
 
-    /// Create a raw RGB color from a u32. The u32 should be in the format `0x00RRGGBB`.
+    /// Create an RGB color from a u32. The u32 should be in the format `0x00RRGGBB`.
     pub const fn from_rgb_u32(u: u32) -> Self {
         let r = (u >> 16) as u8;
         let g = (u >> 8) as u8;
         let b = u as u8;
-        Self([255, r, g, b])
-    }
-
-    /// Multiply this color's channels by the given gamma factor.
-    #[inline]
-    pub fn gamma_multiply(self, factor: f32) -> Self {
-        let Self([n, r, g, b]) = self;
-        Self([
-            n,
-            (r as f32 * factor + 0.5) as u8,
-            (g as f32 * factor + 0.5) as u8,
-            (b as f32 * factor + 0.5) as u8,
-        ])
-    }
-
-    /// Convert this color into a u32 encoded as `0x00RRGGBB`.
-    pub fn as_u32(&self) -> u32 {
-        u32::from_be_bytes([255, self.r(), self.g(), self.b()])
-    }
-
-    pub fn as_3f32(&self) -> [f32; 3] {
-        [
-            linear_f32_from_gamma_u8(self.r()),
-            linear_f32_from_gamma_u8(self.g()),
-            linear_f32_from_gamma_u8(self.b()),
-            // self.a() as f32 / 255.0,
-        ]
-    }
-
-    pub fn as_4f32(&self) -> [f32; 4] {
-        [
-            linear_f32_from_gamma_u8(self.r()),
-            linear_f32_from_gamma_u8(self.g()),
-            linear_f32_from_gamma_u8(self.b()),
-            1.0,
-        ]
-    }
-
-    /// Get a tuple of this color's RGB channel values.
-    pub fn as_rgb_tuple(&self) -> (u8, u8, u8) {
-        (self.0[1], self.0[2], self.0[3])
-    }
-
-    /// Get an array of this color's RGB channel values.
-    pub fn as_rgb_array(&self) -> [u8; 3] {
-        [self.0[1], self.0[2], self.0[3]]
-    }
-
-    /// The red channel value.
-    #[inline]
-    pub fn r(&self) -> u8 {
-        self.0[1]
-    }
-
-    /// The green channel value.
-    #[inline]
-    pub fn g(&self) -> u8 {
-        self.0[2]
-    }
-
-    /// The blue channel value.
-    #[inline]
-    pub fn b(&self) -> u8 {
-        self.0[3]
+        Self::Rgb(r, g, b)
     }
 }
 
-fn linear_f32_from_gamma_u8(s: u8) -> f32 {
-    if s <= 10 {
-        s as f32 / 3294.6
-    } else {
-        ((s as f32 + 14.025) / 269.025).powf(2.4)
-    }
-}
 
 
 /// Error type indicating a failure to parse a color string.
@@ -169,7 +64,7 @@ impl FromStr for Color {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some(rgba) = parse_hex_color(s) {
-            Ok(Self(rgba))
+            Ok(Self::Rgb(rgba[0], rgba[1], rgba[2]))
         } else {
             return Err(ParseColorError);
         }
@@ -197,13 +92,6 @@ fn parse_hex_color(input: &str) -> Option<[u8; 4]> {
             Some([r, g, b, a])
         }
         _ => None,
-    }
-}
-
-impl fmt::Display for Color {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Color([n, r, g, b]) = self;
-        write!(f, "{n:02X}#{r:02X}{g:02X}{b:02X}")
     }
 }
 
@@ -286,12 +174,11 @@ fn normalized_hsl_to_rgb(hue: f64, saturation: f64, lightness: f64) -> Color {
     }
 
     // Scale RGB components to the range [0, 255] and create a Color::Rgb instance
-    Color([
-        255,
+    Color::Rgb(
         (red * 255.0).round() as u8,
         (green * 255.0).round() as u8,
         (blue * 255.0).round() as u8,
-    ])
+    )
 }
 
 /// Helper function to calculate RGB component for a specific hue value.

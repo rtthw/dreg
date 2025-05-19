@@ -35,8 +35,8 @@ impl Cell {
     pub const fn new(content: &'static str) -> Self {
         Self {
             symbol: CompactString::const_new(content),
-            fg: Color::RESET,
-            bg: Color::RESET,
+            fg: Color::Reset,
+            bg: Color::Reset,
             modifier: TextModifier::empty(),
         }
     }
@@ -88,8 +88,8 @@ impl Cell {
     /// Reset this cell to the [`Cell::EMPTY`] state.
     pub fn reset(&mut self) {
         self.symbol = CompactString::const_new(" ");
-        self.fg = Color::RESET;
-        self.bg = Color::RESET;
+        self.fg = Color::Reset;
+        self.bg = Color::Reset;
         self.modifier = TextModifier::empty();
     }
 }

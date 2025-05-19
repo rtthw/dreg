@@ -152,8 +152,8 @@ impl Terminal {
         let content = updates.into_iter();
 
         let mut writer = std::io::stdout();
-        let mut fg = Color::RESET;
-        let mut bg = Color::RESET;
+        let mut fg = Color::Reset;
+        let mut bg = Color::Reset;
         let mut modifier = TextModifier::empty();
         let mut last_pos: Option<(u16, u16)> = None;
         for (x, y, cell) in content {
@@ -293,9 +293,9 @@ fn keycode_to_scancode(code: KeyCode) -> Vec<Scancode> {
 
 fn color_to_crossterm_color(color: Color) -> CtColor {
     match color {
-        Color::RESET => CtColor::Reset,
-        Color([0, 0, 1, i]) => CtColor::AnsiValue(i),
-        Color([255, r, g, b]) => CtColor::Rgb { r, g, b },
+        Color::Reset => CtColor::Reset,
+        Color::Ansi(i) => CtColor::AnsiValue(i),
+        Color::Rgb(r, g, b) => CtColor::Rgb { r, g, b },
         _ => unreachable!("tried to translate invalid color tag"),
     }
 }
