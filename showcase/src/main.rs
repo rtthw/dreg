@@ -27,10 +27,6 @@ impl Program for Showcase {
             style: RectangleStyle::Normal,
         }.render(frame);
 
-        frame.render(Text::new("Something")
-            .with_position(1, 1)
-            .with_fg(Color::from_rgb(89, 89, 97)));
-
         Rectangle {
             area: right_area,
             fg: Color::from_rgb(137, 137, 151),

@@ -31,7 +31,7 @@ impl Program for MyApp {
         }.render(frame);
 
         let text_area = frame.area().inner_centered(13, 1);
-        Text::new("Hello, World!")
+        Cell::new("Hello, World!")
             .with_position(text_area.x, text_area.y)
             .render(frame);
     }

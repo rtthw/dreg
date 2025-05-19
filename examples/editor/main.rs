@@ -68,14 +68,14 @@ fn render_frame_size_warning(frame: &mut Frame) {
     .render(frame);
 
     let text_area = frame.area().inner_centered(18, 3);
-    Text::new("Window too small")
+    Cell::new("Window too small")
         .with_modifier(TextModifier::BOLD)
         .with_position(text_area.x + 1, text_area.y)
         .render(frame);
-    Text::new("Resize to at least")
+    Cell::new("Resize to at least")
         .with_position(text_area.x, text_area.y + 1)
         .render(frame);
-    Text::new("80 cols by 20 rows")
+    Cell::new("80 cols by 20 rows")
         .with_modifier(TextModifier::ITALIC)
         .with_position(text_area.x, text_area.y + 2)
         .render(frame);
@@ -103,7 +103,7 @@ impl Editor {
             // TODO: Render the overflow line.
         }
 
-        Text::default()
+        Cell::default()
             .with_content(&self.content)
             .with_position(working_area.x, working_area.y)
             .render(frame);

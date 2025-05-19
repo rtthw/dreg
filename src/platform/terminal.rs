@@ -148,49 +148,41 @@ impl Terminal {
     fn flush(&mut self) -> std::io::Result<()> {
         let previous_buffer = &self.buffers[1 - self.current];
         let current_buffer = &self.buffers[self.current];
-
-        // TODO: Actually perform a diff here.
-        if previous_buffer == current_buffer {
-            return Ok(());
-        }
+        let updates = previous_buffer.diff(current_buffer);
+        let content = updates.into_iter();
 
         let mut writer = std::io::stdout();
-
-        crossterm::queue!(
-            writer,
-            crossterm::terminal::Clear(crossterm::terminal::ClearType::All),
-        )?;
-
         let mut fg = Color::RESET;
         let mut bg = Color::RESET;
         let mut modifier = TextModifier::empty();
-
-        for text in current_buffer.content.iter() {
-            if text.fg != fg || text.bg != bg {
+        let mut last_pos: Option<(u16, u16)> = None;
+        for (x, y, cell) in content {
+            // Move the cursor if the previous location was not (x - 1, y).
+            if !matches!(last_pos, Some(p) if x == p.0 + 1 && y == p.1) {
+                queue!(writer, crossterm::cursor::MoveTo(x, y))?;
+            }
+            last_pos = Some((x, y));
+            if cell.modifier != modifier {
+                let diff = ModifierDiff {
+                    from: modifier,
+                    to: cell.modifier,
+                };
+                diff.queue(&mut writer)?;
+                modifier = cell.modifier;
+            }
+            if cell.fg != fg || cell.bg != bg {
                 queue!(
                     writer,
                     crossterm::style::SetColors(crossterm::style::Colors::new(
-                        color_to_crossterm_color(text.fg),
-                        color_to_crossterm_color(text.bg),
-                    )),
+                        color_to_crossterm_color(cell.fg),
+                        color_to_crossterm_color(cell.bg),
+                    ))
                 )?;
-                fg = text.fg;
-                bg = text.bg;
+                fg = cell.fg;
+                bg = cell.bg;
             }
-            if text.modifier != modifier {
-                let diff = ModifierDiff {
-                    from: modifier,
-                    to: text.modifier,
-                };
-                diff.queue(&mut writer)?;
-                modifier = text.modifier;
-            }
-            let mut line_num = 0;
-            for line in text.content.lines() {
-                queue!(writer, crossterm::cursor::MoveTo(text.x, text.y + line_num))?;
-                queue!(writer, crossterm::style::Print(line))?;
-                line_num += 1;
-            }
+
+            queue!(writer, crossterm::style::Print(cell.symbol()))?;
         }
 
         crossterm::queue!(

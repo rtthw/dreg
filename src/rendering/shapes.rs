@@ -2,7 +2,7 @@
 
 
 
-use crate::{Area, Color, Frame, Text};
+use crate::{Area, Color, Frame, Cell};
 
 
 
@@ -34,44 +34,6 @@ impl Rectangle {
         let row_str = chars[4].to_string().repeat(hbar_num);
         let vline = format!("\n{}", chars[5]).repeat(vbar_num);
 
-        // Can't use `Text::new` for local variables.
-        frame.render(Text::default()
-            .with_content(&format!("{}", chars[0]))
-            .with_fg(self.fg)
-            .with_position(self.area.x, self.area.y));
-        frame.render(Text::default()
-            .with_content(&format!("{}", chars[1]))
-            .with_fg(self.fg)
-            .with_position(self.area.x + self.area.w.saturating_sub(1), self.area.y));
-        frame.render(Text::default()
-            .with_content(&format!("{}", chars[2]))
-            .with_fg(self.fg)
-            .with_position(self.area.x, self.area.y + self.area.h.saturating_sub(1)));
-        frame.render(Text::default()
-            .with_content(&format!("{}", chars[3]))
-            .with_fg(self.fg)
-            .with_position(self.area.x + self.area.w.saturating_sub(1), self.area.y + self.area.h.saturating_sub(1)));
-
-        frame.render(Text::default()
-            .with_content(&vline)
-            .with_fg(self.fg)
-            .with_x(self.area.x)
-            .with_y(self.area.y));
-        frame.render(Text::default()
-            .with_content(&vline)
-            .with_fg(self.fg)
-            .with_x(self.area.x + self.area.w.saturating_sub(1))
-            .with_y(self.area.y));
-        frame.render(Text::default()
-            .with_content(&row_str)
-            .with_fg(self.fg)
-            .with_x(self.area.x + 1)
-            .with_y(self.area.y));
-        frame.render(Text::default()
-            .with_content(&row_str)
-            .with_fg(self.fg)
-            .with_x(self.area.x + 1)
-            .with_y(self.area.y + self.area.h.saturating_sub(1)));
     }
 }
 

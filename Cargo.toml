@@ -19,6 +19,8 @@ default = []
 bitflags = "2"
 compact_str = "0.8"
 crossterm = "0.28"
+unicode-segmentation = "1"
+unicode-width = "0.1"
 
 
 [[example]]

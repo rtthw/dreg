@@ -32,6 +32,27 @@ impl Area {
 
 // Utilities.
 impl Area {
+    /// Whether this area is empty.
+    pub const fn is_empty(self) -> bool {
+        self.w == 0 || self.h == 0
+    }
+
+    pub const fn left(self) -> u16 {
+        self.x
+    }
+
+    pub const fn right(self) -> u16 {
+        self.x.saturating_add(self.w)
+    }
+
+    pub const fn top(self) -> u16 {
+        self.y
+    }
+
+    pub const fn bottom(self) -> u16 {
+        self.y.saturating_add(self.h)
+    }
+
     /// Returns true if the given coordinates are within this area.
     pub fn contains(&self, x: u16, y: u16) -> bool {
         x >= self.x
