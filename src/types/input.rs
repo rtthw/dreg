@@ -345,6 +345,8 @@ impl Scancode {
             '\'' => (None, Self::APOSTROPHE),
             '"' => (Some(Self::L_SHIFT), Self::APOSTROPHE),
             '\n' => (None, Self::ENTER), // ???
+            '\t' => (None, Self::TAB),
+            ' ' => (None, Self::SPACE),
             ',' => (None, Self::COMMA),
             '<' => (Some(Self::L_SHIFT), Self::COMMA),
             '.' => (None, Self::DOT),
