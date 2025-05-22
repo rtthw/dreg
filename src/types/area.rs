@@ -134,8 +134,8 @@ impl Area {
 
     /// Vertically split this area at the given portion (from 0.0 to 1.0).
     pub fn vsplit_portion(&self, portion: f32) -> (Self, Self) {
-        let len = (self.w as f32 * portion) as u16;
-        self.hsplit_len(len)
+        let len = (self.h as f32 * portion) as u16;
+        self.vsplit_len(len)
     }
 
     /// Get a set of 1-height areas that will fit into this one's rows.
