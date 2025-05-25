@@ -8,12 +8,16 @@ use std::io::Write as _;
 
 use crossterm::{
     event::{
-        KeyCode, KeyEvent, KeyEventKind, KeyModifiers, ModifierKeyCode,
-        MouseButton, MouseEvent, MouseEventKind,
-    }, queue, style::{Attribute, Color as CtColor, SetAttribute}, ExecutableCommand as _
+        KeyCode, KeyEvent, KeyEventKind, KeyModifiers, ModifierKeyCode, MouseEvent, MouseEventKind,
+    },
+    queue,
+    style::{Attribute, Color as CtColor, SetAttribute},
+    ExecutableCommand as _,
 };
 
-use crate::{Area, Buffer, Color, Command, CursorStyle, Frame, Input, Modifier, Program, Scancode};
+use crate::{
+    Area, Buffer, Color, Command, CursorStyle, Frame, Input, Modifier, MouseButton, Program, Scancode,
+};
 
 
 
@@ -67,28 +71,25 @@ impl super::Platform for Terminal {
                             }
                             MouseEventKind::Down(btn) => {
                                 let code = match btn {
-                                    MouseButton::Left => Scancode::LMB,
-                                    MouseButton::Right => Scancode::RMB,
-                                    MouseButton::Middle => Scancode::MMB,
+                                    crossterm::event::MouseButton::Left => MouseButton::Left,
+                                    crossterm::event::MouseButton::Right => MouseButton::Right,
+                                    crossterm::event::MouseButton::Middle => MouseButton::Middle,
                                 };
-                                program.input(Input::KeyDown(code));
+                                program.input(Input::MouseDown(code));
                             }
                             MouseEventKind::Up(btn) => {
                                 let code = match btn {
-                                    MouseButton::Left => Scancode::LMB,
-                                    MouseButton::Right => Scancode::RMB,
-                                    MouseButton::Middle => Scancode::MMB,
+                                    crossterm::event::MouseButton::Left => MouseButton::Left,
+                                    crossterm::event::MouseButton::Right => MouseButton::Right,
+                                    crossterm::event::MouseButton::Middle => MouseButton::Middle,
                                 };
-                                program.input(Input::KeyUp(code));
+                                program.input(Input::MouseUp(code));
                             }
-                            // SEE: https://github.com/rtthw/dreg/issues/7
                             MouseEventKind::ScrollUp => {
-                                program.input(Input::KeyDown(Scancode::SCROLLUP));
-                                program.input(Input::KeyUp(Scancode::SCROLLUP));
+                                program.input(Input::WheelUp);
                             }
                             MouseEventKind::ScrollDown => {
-                                program.input(Input::KeyDown(Scancode::SCROLLDOWN));
-                                program.input(Input::KeyUp(Scancode::SCROLLDOWN));
+                                program.input(Input::WheelDown);
                             }
                             _ => {} // TODO: ScrollRight and ScrollLeft handling.
                         }

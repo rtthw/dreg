@@ -12,6 +12,7 @@ use super::Area;
 pub struct InputContext {
     keys_down: HashSet<Scancode>,
     mouse_pos: Option<(u16, u16)>,
+    latest_mouse_button: Option<(MouseButton, bool)>,
     resized: Option<(u16, u16)>,
     newly_focused: bool,
     newly_unfocused: bool,
@@ -22,6 +23,7 @@ impl Default for InputContext {
         Self {
             keys_down: HashSet::new(),
             mouse_pos: None,
+            latest_mouse_button: None,
             resized: None,
             newly_focused: false,
             newly_unfocused: false,
@@ -48,6 +50,12 @@ impl InputContext {
             }
             Input::MouseMove(x, y) => {
                 self.mouse_pos = Some((x, y));
+            }
+            Input::MouseDown(button) => {
+                self.latest_mouse_button = Some((button, true));
+            }
+            Input::MouseUp(button) => {
+                self.latest_mouse_button = Some((button, false));
             }
             Input::Resize(x, y) => {
                 self.resized = Some((x, y));
@@ -109,32 +117,50 @@ impl InputContext {
 
     /// Akin to `area.left_clicked(&self)`.
     pub fn left_clicked(&self, area: &Area) -> bool {
-        self.is_key_down(&Scancode::LMB) && self.hovered(area)
+        self.hovered(area) && self.latest_mouse_button == Some((MouseButton::Left, true))
     }
 
     /// Akin to `area.right_clicked(&self)`.
     pub fn right_clicked(&self, area: &Area) -> bool {
-        self.is_key_down(&Scancode::RMB) && self.hovered(area)
+        self.hovered(area) && self.latest_mouse_button == Some((MouseButton::Right, true))
     }
 
     /// Akin to `area.middle_clicked(&self)`.
     pub fn middle_clicked(&self, area: &Area) -> bool {
-        self.is_key_down(&Scancode::MMB) && self.hovered(area)
+        self.hovered(area) && self.latest_mouse_button == Some((MouseButton::Middle, true))
     }
 }
 
 
 
+/// An input event.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Input {
     KeyDown(Scancode),
     KeyUp(Scancode),
     MouseMove(u16, u16),
+    MouseDown(MouseButton),
+    MouseUp(MouseButton),
+    WheelDown,
+    WheelUp,
 
     FocusChange(bool),
     Resize(u16, u16),
 
     Null,
+}
+
+
+
+/// A mouse button.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum MouseButton {
+    /// The left mouse button.
+    Left,
+    /// The right mouse button.
+    Right,
+    /// The middle mouse button.
+    Middle,
 }
 
 
@@ -535,19 +561,4 @@ impl Scancode {
     pub const INSERT: Self = Self(110);
     /// The `Delete` key.
     pub const DELETE: Self = Self(111);
-
-    /// The `Wheel Up` mouse button.
-    pub const SCROLLUP: Self = Self(177);
-    /// The `Wheel Down` mouse button.
-    pub const SCROLLDOWN: Self = Self(178);
-    /// The `Left` mouse button.
-    pub const LMB: Self = Self(0x110);
-    /// The `Right` mouse button.
-    pub const RMB: Self = Self(0x111);
-    /// The `Middle` mouse button (middle click).
-    pub const MMB: Self = Self(0x112);
-    /// The `Forward` mouse button.
-    pub const MOUSE_FORWARD: Self = Self(0x115);
-    /// The `Back` mouse button.
-    pub const MOUSE_BACK: Self = Self(0x116);
 }
