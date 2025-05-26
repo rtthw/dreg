@@ -135,10 +135,10 @@ impl Color {
     /// use dreg::Color;
     ///
     /// let color: Color = Color::from_hsl(360.0, 100.0, 100.0);
-    /// assert_eq!(color, Color([255, 255, 255, 255]));
+    /// assert_eq!(color, Color::Rgb(255, 255, 255));
     ///
     /// let color: Color = Color::from_hsl(0.0, 0.0, 0.0);
-    /// assert_eq!(color, Color([0, 0, 0, 255]));
+    /// assert_eq!(color, Color::Rgb(0, 0, 0));
     /// ```
     pub fn from_hsl(h: f64, s: f64, l: f64) -> Self {
         // Clamp input values to valid ranges

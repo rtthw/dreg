@@ -12,9 +12,9 @@ bitflags::bitflags! {
     /// ## Examples
     ///
     /// ```rust
-    /// use dreg_core::prelude::*;
+    /// use dreg::Modifier;
     ///
-    /// let m = TextModifier::BOLD | TextModifier::ITALIC;
+    /// let m = Modifier::BOLD | Modifier::ITALIC;
     /// ```
     #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
     pub struct Modifier: u16 {
