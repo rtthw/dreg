@@ -143,7 +143,7 @@ impl Area {
         (0..self.h)
             .into_iter()
             .map(|row_index| {
-                Self::new(self.x, self.y + row_index, self.w, self.h)
+                Self::new(self.x, self.y + row_index, self.w, 1)
             })
             .collect()
     }
